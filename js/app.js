@@ -144,7 +144,14 @@ async function boot() {
   bindNav();
   navigate('home');
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js').catch(() => {});
+    // Recharge automatiquement la page quand une nouvelle version prend le relais.
+    let reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (reloaded) return; reloaded = true; location.reload();
+    });
+    navigator.serviceWorker.register('service-worker.js')
+      .then((reg) => { reg.update(); setInterval(() => reg.update(), 60 * 60 * 1000); })
+      .catch(() => {});
   }
 }
 
