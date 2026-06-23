@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 124 40"><defs>
+<pattern id="deck" width="16" height="200" patternUnits="userSpaceOnUse">
+  <rect width="16" height="200" fill="#b08b5e"/><rect width="1.4" height="200" fill="#9c764a"/>
+  <rect y="0" width="16" height="1.2" fill="#9c764a"/>
+</pattern>
+<pattern id="cobble" width="20" height="20" patternUnits="userSpaceOnUse" patternTransform="rotate(8)">
+  <rect width="20" height="20" fill="#d9d2c4"/><circle cx="5" cy="5" r="4.5" fill="#cfc7b6"/><circle cx="15" cy="13" r="4.5" fill="#d2cabb"/></pattern>
+<radialGradient id="canopy" cx="42%" cy="40%" r="62%">
+  <stop offset="0%" stop-color="#7fae5a"/><stop offset="60%" stop-color="#5d934a"/><stop offset="100%" stop-color="#487038"/></radialGradient>
+<radialGradient id="canopy2" cx="50%" cy="45%" r="60%">
+  <stop offset="0%" stop-color="#86b562"/><stop offset="100%" stop-color="#52853f"/></radialGradient>
+</defs><rect x="2" y="2" width="120" height="34" fill="#cfc3a8" stroke="#b3a684" stroke-width="1.5"/><path d="M10 36 Q 61 0 112 36 Z" fill="#7a6a4e" opacity="0.55"/><rect x="2" y="2" width="14" height="34" fill="#cfc3a8" stroke="#b3a684"/><rect x="108" y="2" width="14" height="34" fill="#cfc3a8" stroke="#b3a684"/></svg>

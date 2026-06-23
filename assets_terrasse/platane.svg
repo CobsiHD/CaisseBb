@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320"><defs>
+<pattern id="deck" width="16" height="200" patternUnits="userSpaceOnUse">
+  <rect width="16" height="200" fill="#b08b5e"/><rect width="1.4" height="200" fill="#9c764a"/>
+  <rect y="0" width="16" height="1.2" fill="#9c764a"/>
+</pattern>
+<pattern id="cobble" width="20" height="20" patternUnits="userSpaceOnUse" patternTransform="rotate(8)">
+  <rect width="20" height="20" fill="#d9d2c4"/><circle cx="5" cy="5" r="4.5" fill="#cfc7b6"/><circle cx="15" cy="13" r="4.5" fill="#d2cabb"/></pattern>
+<radialGradient id="canopy" cx="42%" cy="40%" r="62%">
+  <stop offset="0%" stop-color="#7fae5a"/><stop offset="60%" stop-color="#5d934a"/><stop offset="100%" stop-color="#487038"/></radialGradient>
+<radialGradient id="canopy2" cx="50%" cy="45%" r="60%">
+  <stop offset="0%" stop-color="#86b562"/><stop offset="100%" stop-color="#52853f"/></radialGradient>
+</defs><g opacity="0.9"><circle cx="160" cy="160" r="150" fill="url(#canopy)"/><circle cx="70" cy="100" r="60" fill="url(#canopy2)"/><circle cx="240" cy="110" r="66" fill="url(#canopy2)"/><circle cx="230" cy="230" r="60" fill="url(#canopy2)"/><circle cx="80" cy="230" r="58" fill="url(#canopy2)"/><circle cx="160" cy="50" r="55" fill="url(#canopy2)"/><circle cx="270" cy="170" r="52" fill="url(#canopy2)"/><circle cx="40" cy="170" r="50" fill="url(#canopy2)"/></g><circle cx="160" cy="160" r="20" fill="#6e5535" stroke="#4f3c23" stroke-width="2"/><circle cx="160" cy="160" r="9" fill="#5b452a"/></svg>

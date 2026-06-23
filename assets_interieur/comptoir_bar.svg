@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 262 184"><defs>
+<pattern id="tile" width="40" height="40" patternUnits="userSpaceOnUse">
+ <rect width="40" height="40" fill="#b8b2a8"/><rect width="40" height="40" fill="none" stroke="#9a948a" stroke-width="1.5"/></pattern>
+<radialGradient id="gold" cx="40%" cy="35%" r="70%">
+ <stop offset="0%" stop-color="#f2d585"/><stop offset="55%" stop-color="#c9a24a"/><stop offset="100%" stop-color="#8c6e2a"/></radialGradient>
+<radialGradient id="lampglow" cx="50%" cy="50%" r="50%">
+ <stop offset="0%" stop-color="#ffe9b0"/><stop offset="55%" stop-color="#f4cf86" stop-opacity="0.9"/><stop offset="100%" stop-color="#f4cf86" stop-opacity="0"/></radialGradient>
+<radialGradient id="crystal" cx="50%" cy="50%" r="50%">
+ <stop offset="0%" stop-color="#ffffff"/><stop offset="40%" stop-color="#dce6f0"/><stop offset="100%" stop-color="#9fb0c4"/></radialGradient>
+</defs><rect x="10" y="20" width="240" height="46" rx="3" fill="#8a8175" stroke="#6b6356" stroke-width="2"/><rect x="10" y="20" width="240" height="22" fill="#2a2724" stroke="#14110f" stroke-width="1.5"/><rect x="204" y="20" width="46" height="150" rx="3" fill="#8a8175" stroke="#6b6356" stroke-width="2"/><rect x="204" y="20" width="46" height="150" fill="none" stroke="#6b6356" stroke-width="2"/><rect x="204" y="20" width="22" height="150" fill="#2a2724" stroke="#14110f" stroke-width="1.5"/><line x1="12" y1="28" x2="248" y2="28" stroke="#6b6356" stroke-width="0.6" opacity="0.5"/><line x1="12" y1="37" x2="248" y2="37" stroke="#6b6356" stroke-width="0.6" opacity="0.5"/><line x1="12" y1="46" x2="248" y2="46" stroke="#6b6356" stroke-width="0.6" opacity="0.5"/><line x1="12" y1="55" x2="248" y2="55" stroke="#6b6356" stroke-width="0.6" opacity="0.5"/><line x1="12" y1="64" x2="248" y2="64" stroke="#6b6356" stroke-width="0.6" opacity="0.5"/></svg>
