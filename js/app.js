@@ -1,5 +1,5 @@
 // app.js — amorçage, navigation entre vues, réglages, service worker.
-import { state, loadAll, reloadCatalog, reloadLayout, reloadOrders, on } from './state.js';
+import { state, loadAll, reloadCatalog, reloadLayout, reloadOrders, reloadTiles, on } from './state.js';
 import { h, clear, toast, modal, field, confirmDialog } from './ui.js';
 import * as store from './store.js';
 import { renderFloor } from './floorplan.js';
@@ -85,6 +85,17 @@ async function openSettings() {
           await store.resetCatalog(); await reloadCatalog(); toast('Catalogue réinitialisé');
         }
       } }, '↻ Recharger la carte officielle')),
+    field('Configuration par défaut',
+      h('div', {},
+        h('button', { class: 'btn btn-sm', onclick: async () => {
+          if (await confirmDialog('Recharger le PLAN et la CARTE par défaut sur cet appareil ? Cela remplace le plan de salle, les tables, la carte et les tuiles, et efface les notes en cours. (Tes réglages PIN/Happy Hour sont conservés.)', { okLabel: 'Recharger', danger: true })) {
+            await store.loadDefaults();
+            await loadAll();
+            reloadCatalog(); reloadLayout(); reloadOrders(); reloadTiles();
+            toast('Configuration par défaut rechargée');
+          }
+        } }, '↺ Recharger plan + carte par défaut'),
+        h('div', { class: 'faint', style: 'font-size:12px; margin-top:6px' }, 'Réaffiche le plan officiel du Bluebird (utile sur un appareil qui a encore l\'ancienne version).'))),
   );
 
   const v = await modal({
