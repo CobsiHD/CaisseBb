@@ -1,12 +1,7 @@
 // Catalogue & plan par défaut — généré depuis la sauvegarde du Bluebird.
-// (configuration de base chargée au premier lancement d un appareil)
+// Carte dans lordre dorigine, tables numérotées par zone (Int 1XX / Arcade 2XX / Terrasse 3XX).
 
 export const CATEGORIES = [
-  {
-    "id": "bieres",
-    "name": "Bières",
-    "order": 4
-  },
   {
     "id": "cocktails",
     "name": "Cocktails",
@@ -18,14 +13,9 @@ export const CATEGORIES = [
     "order": 1
   },
   {
-    "id": "snack",
-    "name": "Snack salé",
-    "order": 6
-  },
-  {
-    "id": "softs",
-    "name": "Softs",
-    "order": 5
+    "id": "vins",
+    "name": "Vins",
+    "order": 2
   },
   {
     "id": "spiritueux",
@@ -33,270 +23,39 @@ export const CATEGORIES = [
     "order": 3
   },
   {
-    "id": "vins",
-    "name": "Vins",
-    "order": 2
+    "id": "bieres",
+    "name": "Bières",
+    "order": 4
+  },
+  {
+    "id": "softs",
+    "name": "Softs",
+    "order": 5
+  },
+  {
+    "id": "snack",
+    "name": "Snack salé",
+    "order": 6
   }
 ];
 
 export const PRODUCTS = [
   {
-    "id": "bieres-bud",
-    "categoryId": "bieres",
-    "sub": "Pressions",
-    "name": "Bud",
-    "variants": [
-      {
-        "label": "25cl",
-        "price": 3.5
-      },
-      {
-        "label": "50cl",
-        "price": 5.5
-      }
-    ],
-    "options": [],
-    "happyHour": true,
-    "desc": "",
-    "available": true,
-    "order": 86
-  },
-  {
-    "id": "bieres-delirium-tremens",
-    "categoryId": "bieres",
-    "sub": "Pressions",
-    "name": "Delirium Tremens",
-    "variants": [
-      {
-        "label": "25cl",
-        "price": 5.5
-      },
-      {
-        "label": "50cl",
-        "price": 8.5
-      }
-    ],
-    "options": [],
-    "happyHour": true,
-    "desc": "",
-    "available": true,
-    "order": 91
-  },
-  {
-    "id": "bieres-hoegarden-rose",
-    "categoryId": "bieres",
-    "sub": "Pressions",
-    "name": "Hoegarden Rosé",
-    "variants": [
-      {
-        "label": "25cl",
-        "price": 5
-      },
-      {
-        "label": "50cl",
-        "price": 8
-      }
-    ],
-    "options": [],
-    "happyHour": true,
-    "desc": "",
-    "available": true,
-    "order": 87
-  },
-  {
-    "id": "bieres-kasteel-0",
-    "categoryId": "bieres",
-    "sub": "Bouteilles",
-    "name": "Kasteel 0%",
-    "variants": [
-      {
-        "label": "",
-        "price": 6
-      }
-    ],
-    "options": [
-      {
-        "label": "Rouge",
-        "delta": 0
-      },
-      {
-        "label": "Tropicale",
-        "delta": 0
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 93
-  },
-  {
-    "id": "bieres-kasteel-framboise",
-    "categoryId": "bieres",
-    "sub": "Pressions",
-    "name": "Kasteel Framboise",
-    "variants": [
-      {
-        "label": "25cl",
-        "price": 5
-      },
-      {
-        "label": "50cl",
-        "price": 8
-      }
-    ],
-    "options": [],
-    "happyHour": true,
-    "desc": "",
-    "available": true,
-    "order": 88
-  },
-  {
-    "id": "bieres-la-bagarre",
-    "categoryId": "bieres",
-    "sub": "Pressions",
-    "name": "La Bagarre",
-    "variants": [
-      {
-        "label": "25cl",
-        "price": 5
-      },
-      {
-        "label": "50cl",
-        "price": 8
-      }
-    ],
-    "options": [],
-    "happyHour": true,
-    "desc": "",
-    "available": true,
-    "order": 90
-  },
-  {
-    "id": "bieres-la-ballon-d-orge",
-    "categoryId": "bieres",
-    "sub": "Pressions",
-    "name": "La Ballon d’orge",
-    "variants": [
-      {
-        "label": "25cl",
-        "price": 5
-      },
-      {
-        "label": "50cl",
-        "price": 8
-      }
-    ],
-    "options": [],
-    "happyHour": true,
-    "desc": "",
-    "available": true,
-    "order": 92
-  },
-  {
-    "id": "bieres-mont-blanc-rousse",
-    "categoryId": "bieres",
-    "sub": "Pressions",
-    "name": "Mont-Blanc Rousse",
-    "variants": [
-      {
-        "label": "25cl",
-        "price": 5
-      },
-      {
-        "label": "50cl",
-        "price": 8
-      }
-    ],
-    "options": [],
-    "happyHour": true,
-    "desc": "",
-    "available": true,
-    "order": 89
-  },
-  {
-    "id": "cocktails-a-smile-to-remember",
+    "id": "cocktails-le-bluebird",
     "categoryId": "cocktails",
-    "sub": "Création",
-    "name": "A Smile To Remember",
+    "sub": "Signature",
+    "name": "Le Bluebird",
     "variants": [
       {
         "label": "",
-        "price": 12
+        "price": 10.5
       }
     ],
     "options": [],
     "happyHour": false,
-    "desc": "Hendrick’s Orbium, Sirop de Rose, Liqueur de Marasquin, Jus de Litchi, Citron, Pomelo & Baies Roses",
+    "desc": "Bourbon infusé Hibiscus, Liqueur de Fleur de sureau, Prosecco, Citron, Sirop de miel maison",
     "available": true,
-    "order": 3
-  },
-  {
-    "id": "cocktails-alone-with-everybody",
-    "categoryId": "cocktails",
-    "sub": "Création",
-    "name": "Alone With Everybody",
-    "variants": [
-      {
-        "label": "",
-        "price": 11
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "Gin Hendrick’s, Liqueur Fruit de la Passion, Sirop de Fleur de Sureau, Jus de Poire, Citron",
-    "available": true,
-    "order": 2
-  },
-  {
-    "id": "cocktails-aperol-spritz",
-    "categoryId": "cocktails",
-    "sub": "Classiques",
-    "name": "Apérol Spritz",
-    "variants": [
-      {
-        "label": "",
-        "price": 8
-      }
-    ],
-    "options": [],
-    "happyHour": true,
-    "desc": "Apérol, Prosecco, Eau Pétillante",
-    "available": true,
-    "order": 10
-  },
-  {
-    "id": "cocktails-campari-spritz",
-    "categoryId": "cocktails",
-    "sub": "Classiques",
-    "name": "Campari Spritz",
-    "variants": [
-      {
-        "label": "",
-        "price": 9
-      }
-    ],
-    "options": [],
-    "happyHour": true,
-    "desc": "Campari, Prosecco, Eau Pétillante",
-    "available": true,
-    "order": 11
-  },
-  {
-    "id": "cocktails-cosmopolitan",
-    "categoryId": "cocktails",
-    "sub": "Classiques",
-    "name": "Cosmopolitan",
-    "variants": [
-      {
-        "label": "",
-        "price": 11
-      }
-    ],
-    "options": [],
-    "happyHour": true,
-    "desc": "Vodka Ciroc, Cointreau, Jus de Cranberry, Citron",
-    "available": true,
-    "order": 18
+    "order": 0
   },
   {
     "id": "cocktails-how-is-your-heart",
@@ -316,6 +75,40 @@ export const PRODUCTS = [
     "order": 1
   },
   {
+    "id": "cocktails-alone-with-everybody",
+    "categoryId": "cocktails",
+    "sub": "Création",
+    "name": "Alone With Everybody",
+    "variants": [
+      {
+        "label": "",
+        "price": 11
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "Gin Hendrick’s, Liqueur Fruit de la Passion, Sirop de Fleur de Sureau, Jus de Poire, Citron",
+    "available": true,
+    "order": 2
+  },
+  {
+    "id": "cocktails-a-smile-to-remember",
+    "categoryId": "cocktails",
+    "sub": "Création",
+    "name": "A Smile To Remember",
+    "variants": [
+      {
+        "label": "",
+        "price": 12
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "Hendrick’s Orbium, Sirop de Rose, Liqueur de Marasquin, Jus de Litchi, Citron, Pomelo & Baies Roses",
+    "available": true,
+    "order": 3
+  },
+  {
     "id": "cocktails-i-will-remember",
     "categoryId": "cocktails",
     "sub": "Création",
@@ -333,61 +126,10 @@ export const PRODUCTS = [
     "order": 4
   },
   {
-    "id": "cocktails-italicus-spritz",
+    "id": "cocktails-raw-with-love",
     "categoryId": "cocktails",
-    "sub": "Classiques",
-    "name": "Italicus Spritz",
-    "variants": [
-      {
-        "label": "",
-        "price": 9
-      }
-    ],
-    "options": [],
-    "happyHour": true,
-    "desc": "Italicus, Prosecco, Eau Pétillante",
-    "available": true,
-    "order": 12
-  },
-  {
-    "id": "cocktails-le-bluebird",
-    "categoryId": "cocktails",
-    "sub": "Signature",
-    "name": "Le Bluebird",
-    "variants": [
-      {
-        "label": "",
-        "price": 10.5
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "Bourbon infusé Hibiscus, Liqueur de Fleur de sureau, Prosecco, Citron, Sirop de miel maison",
-    "available": true,
-    "order": 0
-  },
-  {
-    "id": "cocktails-limoncello-spritz",
-    "categoryId": "cocktails",
-    "sub": "Classiques",
-    "name": "Limoncello Spritz",
-    "variants": [
-      {
-        "label": "",
-        "price": 8
-      }
-    ],
-    "options": [],
-    "happyHour": true,
-    "desc": "Limoncello, Prosecco, Eau Pétillante",
-    "available": true,
-    "order": 14
-  },
-  {
-    "id": "cocktails-margarita",
-    "categoryId": "cocktails",
-    "sub": "Classiques",
-    "name": "Margarita",
+    "sub": "Création",
+    "name": "Raw With Love",
     "variants": [
       {
         "label": "",
@@ -395,44 +137,10 @@ export const PRODUCTS = [
       }
     ],
     "options": [],
-    "happyHour": true,
-    "desc": "Tequila Milagro, Cointreau, Citron",
+    "happyHour": false,
+    "desc": "Vodka Absolut Tabasco, Tomate Acide, Sirop de Pêche, Eau pétillante",
     "available": true,
-    "order": 16
-  },
-  {
-    "id": "cocktails-melonade-spritz",
-    "categoryId": "cocktails",
-    "sub": "Classiques",
-    "name": "Melonade Spritz",
-    "variants": [
-      {
-        "label": "",
-        "price": 9
-      }
-    ],
-    "options": [],
-    "happyHour": true,
-    "desc": "Melonade, Prosecco, Eau Pétillante",
-    "available": true,
-    "order": 15
-  },
-  {
-    "id": "cocktails-mojito",
-    "categoryId": "cocktails",
-    "sub": "Classiques",
-    "name": "Mojito",
-    "variants": [
-      {
-        "label": "",
-        "price": 9
-      }
-    ],
-    "options": [],
-    "happyHour": true,
-    "desc": "Rhum Havana, Cassonade, Menthe & Citron Vert, Eau Pétillante",
-    "available": true,
-    "order": 7
+    "order": 5
   },
   {
     "id": "cocktails-more-much-more",
@@ -450,6 +158,23 @@ export const PRODUCTS = [
     "desc": "Rhum infusé au Peanut Butter, Jus d’Ananas infusé à la cannelle, Purée de Coco",
     "available": true,
     "order": 6
+  },
+  {
+    "id": "cocktails-mojito",
+    "categoryId": "cocktails",
+    "sub": "Classiques",
+    "name": "Mojito",
+    "variants": [
+      {
+        "label": "",
+        "price": 9
+      }
+    ],
+    "options": [],
+    "happyHour": true,
+    "desc": "Rhum Havana, Cassonade, Menthe & Citron Vert, Eau Pétillante",
+    "available": true,
+    "order": 7
   },
   {
     "id": "cocktails-negroni",
@@ -486,38 +211,55 @@ export const PRODUCTS = [
     "order": 9
   },
   {
-    "id": "cocktails-pina-colada",
+    "id": "cocktails-aperol-spritz",
     "categoryId": "cocktails",
     "sub": "Classiques",
-    "name": "Pina Colada",
+    "name": "Apérol Spritz",
     "variants": [
       {
         "label": "",
-        "price": 10
+        "price": 8
       }
     ],
     "options": [],
     "happyHour": true,
-    "desc": "Rhum Havana 7 ans, Purée de coco, Jus d’Ananas, Citron",
+    "desc": "Apérol, Prosecco, Eau Pétillante",
     "available": true,
-    "order": 17
+    "order": 10
   },
   {
-    "id": "cocktails-raw-with-love",
+    "id": "cocktails-campari-spritz",
     "categoryId": "cocktails",
-    "sub": "Création",
-    "name": "Raw With Love",
+    "sub": "Classiques",
+    "name": "Campari Spritz",
     "variants": [
       {
         "label": "",
-        "price": 11
+        "price": 9
       }
     ],
     "options": [],
-    "happyHour": false,
-    "desc": "Vodka Absolut Tabasco, Tomate Acide, Sirop de Pêche, Eau pétillante",
+    "happyHour": true,
+    "desc": "Campari, Prosecco, Eau Pétillante",
     "available": true,
-    "order": 5
+    "order": 11
+  },
+  {
+    "id": "cocktails-italicus-spritz",
+    "categoryId": "cocktails",
+    "sub": "Classiques",
+    "name": "Italicus Spritz",
+    "variants": [
+      {
+        "label": "",
+        "price": 9
+      }
+    ],
+    "options": [],
+    "happyHour": true,
+    "desc": "Italicus, Prosecco, Eau Pétillante",
+    "available": true,
+    "order": 12
   },
   {
     "id": "cocktails-st-germain-spritz",
@@ -537,21 +279,89 @@ export const PRODUCTS = [
     "order": 13
   },
   {
-    "id": "sans-alcool-cause-and-effect",
-    "categoryId": "sans-alcool",
-    "sub": "Cocktails Sans Alcool",
-    "name": "Cause And Effect",
+    "id": "cocktails-limoncello-spritz",
+    "categoryId": "cocktails",
+    "sub": "Classiques",
+    "name": "Limoncello Spritz",
     "variants": [
       {
         "label": "",
-        "price": 8.5
+        "price": 8
       }
     ],
     "options": [],
-    "happyHour": false,
-    "desc": "Sirop Fleur de Sureau, Purée de Passion, Jus de Poire, Citron",
+    "happyHour": true,
+    "desc": "Limoncello, Prosecco, Eau Pétillante",
     "available": true,
-    "order": 20
+    "order": 14
+  },
+  {
+    "id": "cocktails-melonade-spritz",
+    "categoryId": "cocktails",
+    "sub": "Classiques",
+    "name": "Melonade Spritz",
+    "variants": [
+      {
+        "label": "",
+        "price": 9
+      }
+    ],
+    "options": [],
+    "happyHour": true,
+    "desc": "Melonade, Prosecco, Eau Pétillante",
+    "available": true,
+    "order": 15
+  },
+  {
+    "id": "cocktails-margarita",
+    "categoryId": "cocktails",
+    "sub": "Classiques",
+    "name": "Margarita",
+    "variants": [
+      {
+        "label": "",
+        "price": 11
+      }
+    ],
+    "options": [],
+    "happyHour": true,
+    "desc": "Tequila Milagro, Cointreau, Citron",
+    "available": true,
+    "order": 16
+  },
+  {
+    "id": "cocktails-pina-colada",
+    "categoryId": "cocktails",
+    "sub": "Classiques",
+    "name": "Pina Colada",
+    "variants": [
+      {
+        "label": "",
+        "price": 10
+      }
+    ],
+    "options": [],
+    "happyHour": true,
+    "desc": "Rhum Havana 7 ans, Purée de coco, Jus d’Ananas, Citron",
+    "available": true,
+    "order": 17
+  },
+  {
+    "id": "cocktails-cosmopolitan",
+    "categoryId": "cocktails",
+    "sub": "Classiques",
+    "name": "Cosmopolitan",
+    "variants": [
+      {
+        "label": "",
+        "price": 11
+      }
+    ],
+    "options": [],
+    "happyHour": true,
+    "desc": "Vodka Ciroc, Cointreau, Jus de Cranberry, Citron",
+    "available": true,
+    "order": 18
   },
   {
     "id": "sans-alcool-roll-the-dice",
@@ -571,6 +381,23 @@ export const PRODUCTS = [
     "order": 19
   },
   {
+    "id": "sans-alcool-cause-and-effect",
+    "categoryId": "sans-alcool",
+    "sub": "Cocktails Sans Alcool",
+    "name": "Cause And Effect",
+    "variants": [
+      {
+        "label": "",
+        "price": 8.5
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "Sirop Fleur de Sureau, Purée de Passion, Jus de Poire, Citron",
+    "available": true,
+    "order": 20
+  },
+  {
     "id": "sans-alcool-virgin-more-much-more",
     "categoryId": "sans-alcool",
     "sub": "Cocktails Sans Alcool",
@@ -588,38 +415,1656 @@ export const PRODUCTS = [
     "order": 21
   },
   {
-    "id": "snack-chilli-cheese-6-pieces",
-    "categoryId": "snack",
-    "sub": "À grignoter",
-    "name": "Chilli Cheese (6 pièces)",
+    "id": "vins-cotes-de-b-uf",
+    "categoryId": "vins",
+    "sub": "Rouges",
+    "name": "Côtes de Bœuf",
+    "variants": [
+      {
+        "label": "Verre",
+        "price": 4.5
+      },
+      {
+        "label": "Bouteille",
+        "price": 23
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 22
+  },
+  {
+    "id": "vins-crozes-hermitage",
+    "categoryId": "vins",
+    "sub": "Rouges",
+    "name": "Crozes Hermitage",
+    "variants": [
+      {
+        "label": "Verre",
+        "price": 6
+      },
+      {
+        "label": "Bouteille",
+        "price": 30
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 23
+  },
+  {
+    "id": "vins-syrah",
+    "categoryId": "vins",
+    "sub": "Rouges",
+    "name": "Syrah",
+    "variants": [
+      {
+        "label": "Verre",
+        "price": 4.5
+      },
+      {
+        "label": "Bouteille",
+        "price": 23
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 24
+  },
+  {
+    "id": "vins-studio-rose",
+    "categoryId": "vins",
+    "sub": "Rosé",
+    "name": "Studio Rosé",
+    "variants": [
+      {
+        "label": "Verre",
+        "price": 6
+      },
+      {
+        "label": "Bouteille",
+        "price": 30
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 25
+  },
+  {
+    "id": "vins-cap-des-pins",
+    "categoryId": "vins",
+    "sub": "Rosé",
+    "name": "Cap des Pins",
+    "variants": [
+      {
+        "label": "Verre",
+        "price": 4
+      },
+      {
+        "label": "Bouteille",
+        "price": 21
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 26
+  },
+  {
+    "id": "vins-chardonnay-bphr",
+    "categoryId": "vins",
+    "sub": "Blancs",
+    "name": "Chardonnay Bphr",
+    "variants": [
+      {
+        "label": "Verre",
+        "price": 4.5
+      },
+      {
+        "label": "Bouteille",
+        "price": 23
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 27
+  },
+  {
+    "id": "vins-orelie",
+    "categoryId": "vins",
+    "sub": "Blancs",
+    "name": "Orélie",
+    "variants": [
+      {
+        "label": "Verre",
+        "price": 4
+      },
+      {
+        "label": "Bouteille",
+        "price": 21
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 28
+  },
+  {
+    "id": "vins-uby",
+    "categoryId": "vins",
+    "sub": "Blancs",
+    "name": "Uby",
+    "variants": [
+      {
+        "label": "Verre",
+        "price": 4.5
+      },
+      {
+        "label": "Bouteille",
+        "price": 23
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 29
+  },
+  {
+    "id": "vins-studio-blanc",
+    "categoryId": "vins",
+    "sub": "Blancs",
+    "name": "Studio Blanc",
+    "variants": [
+      {
+        "label": "Verre",
+        "price": 6
+      },
+      {
+        "label": "Bouteille",
+        "price": 28
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 30
+  },
+  {
+    "id": "vins-lallier",
+    "categoryId": "vins",
+    "sub": "Champagne",
+    "name": "Lallier",
+    "variants": [
+      {
+        "label": "Bouteille",
+        "price": 100
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 31
+  },
+  {
+    "id": "vins-veuve-clicquot",
+    "categoryId": "vins",
+    "sub": "Champagne",
+    "name": "Veuve Clicquot",
+    "variants": [
+      {
+        "label": "Bouteille",
+        "price": 130
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 32
+  },
+  {
+    "id": "vins-moet-imperial",
+    "categoryId": "vins",
+    "sub": "Champagne",
+    "name": "Moët Impérial",
+    "variants": [
+      {
+        "label": "Bouteille",
+        "price": 110
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 33
+  },
+  {
+    "id": "vins-moet-imperial-rose",
+    "categoryId": "vins",
+    "sub": "Champagne",
+    "name": "Moët Impérial Rosé",
+    "variants": [
+      {
+        "label": "Bouteille",
+        "price": 110
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 34
+  },
+  {
+    "id": "spiritueux-mathusalem-15-ans",
+    "categoryId": "spiritueux",
+    "sub": "Rhums",
+    "name": "Mathusalem 15 Ans",
+    "variants": [
+      {
+        "label": "",
+        "price": 11
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 35
+  },
+  {
+    "id": "spiritueux-centenario-20e-anniversaire",
+    "categoryId": "spiritueux",
+    "sub": "Rhums",
+    "name": "Centenario 20e Anniversaire",
+    "variants": [
+      {
+        "label": "",
+        "price": 12
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 36
+  },
+  {
+    "id": "spiritueux-angostura-1919",
+    "categoryId": "spiritueux",
+    "sub": "Rhums",
+    "name": "Angostura 1919",
+    "variants": [
+      {
+        "label": "",
+        "price": 12
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 37
+  },
+  {
+    "id": "spiritueux-appleton-12-ans",
+    "categoryId": "spiritueux",
+    "sub": "Rhums",
+    "name": "Appleton 12 Ans",
+    "variants": [
+      {
+        "label": "",
+        "price": 13
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 38
+  },
+  {
+    "id": "spiritueux-ron-libertad",
+    "categoryId": "spiritueux",
+    "sub": "Rhums",
+    "name": "Ron Libertad",
+    "variants": [
+      {
+        "label": "",
+        "price": 14
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 39
+  },
+  {
+    "id": "spiritueux-santa-teresa",
+    "categoryId": "spiritueux",
+    "sub": "Rhums",
+    "name": "Santa Teresa",
+    "variants": [
+      {
+        "label": "",
+        "price": 14
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 40
+  },
+  {
+    "id": "spiritueux-zacapa-23-ans",
+    "categoryId": "spiritueux",
+    "sub": "Rhums",
+    "name": "Zacapa 23 Ans",
+    "variants": [
+      {
+        "label": "",
+        "price": 15
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 41
+  },
+  {
+    "id": "spiritueux-monkey-shoulder-classic",
+    "categoryId": "spiritueux",
+    "sub": "Whiskys",
+    "name": "Monkey Shoulder Classic",
+    "variants": [
+      {
+        "label": "",
+        "price": 9
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 42
+  },
+  {
+    "id": "spiritueux-the-deacon",
+    "categoryId": "spiritueux",
+    "sub": "Whiskys",
+    "name": "The Deacon",
+    "variants": [
+      {
+        "label": "",
+        "price": 12
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 43
+  },
+  {
+    "id": "spiritueux-bulleit-bourbon",
+    "categoryId": "spiritueux",
+    "sub": "Whiskys",
+    "name": "Bulleit Bourbon",
+    "variants": [
+      {
+        "label": "",
+        "price": 10
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 44
+  },
+  {
+    "id": "spiritueux-bulleit-rye",
+    "categoryId": "spiritueux",
+    "sub": "Whiskys",
+    "name": "Bulleit Rye",
+    "variants": [
+      {
+        "label": "",
+        "price": 10
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 45
+  },
+  {
+    "id": "spiritueux-glenfiddich-12-ans",
+    "categoryId": "spiritueux",
+    "sub": "Whiskys",
+    "name": "Glenfiddich 12 Ans",
+    "variants": [
+      {
+        "label": "",
+        "price": 13
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 46
+  },
+  {
+    "id": "spiritueux-glenfiddich-15-ans",
+    "categoryId": "spiritueux",
+    "sub": "Whiskys",
+    "name": "Glenfiddich 15 Ans",
+    "variants": [
+      {
+        "label": "",
+        "price": 14
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 47
+  },
+  {
+    "id": "spiritueux-glenfiddich-18-ans",
+    "categoryId": "spiritueux",
+    "sub": "Whiskys",
+    "name": "Glenfiddich 18 Ans",
+    "variants": [
+      {
+        "label": "",
+        "price": 15
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 48
+  },
+  {
+    "id": "spiritueux-ailsa-bay",
+    "categoryId": "spiritueux",
+    "sub": "Whiskys",
+    "name": "Ailsa Bay",
+    "variants": [
+      {
+        "label": "",
+        "price": 13
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 49
+  },
+  {
+    "id": "spiritueux-blanton-s",
+    "categoryId": "spiritueux",
+    "sub": "Whiskys",
+    "name": "Blanton’s",
+    "variants": [
+      {
+        "label": "",
+        "price": 15
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 50
+  },
+  {
+    "id": "spiritueux-sequoia-black-cat",
+    "categoryId": "spiritueux",
+    "sub": "Whiskys",
+    "name": "Sequoia Black Cat",
+    "variants": [
+      {
+        "label": "",
+        "price": 14
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 51
+  },
+  {
+    "id": "spiritueux-sequoia-craft",
+    "categoryId": "spiritueux",
+    "sub": "Whiskys",
+    "name": "Sequoia Craft",
+    "variants": [
+      {
+        "label": "",
+        "price": 14
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 52
+  },
+  {
+    "id": "spiritueux-bellevoye-bleue",
+    "categoryId": "spiritueux",
+    "sub": "Whiskys",
+    "name": "Bellevoye Bleue",
+    "variants": [
+      {
+        "label": "",
+        "price": 13
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 53
+  },
+  {
+    "id": "spiritueux-bellevoye-blanche",
+    "categoryId": "spiritueux",
+    "sub": "Whiskys",
+    "name": "Bellevoye Blanche",
+    "variants": [
+      {
+        "label": "",
+        "price": 14
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 54
+  },
+  {
+    "id": "spiritueux-bellevoye-rouge",
+    "categoryId": "spiritueux",
+    "sub": "Whiskys",
+    "name": "Bellevoye Rouge",
+    "variants": [
+      {
+        "label": "",
+        "price": 15
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 55
+  },
+  {
+    "id": "spiritueux-milagro-silver",
+    "categoryId": "spiritueux",
+    "sub": "Tequilas",
+    "name": "Milagro Silver",
+    "variants": [
+      {
+        "label": "",
+        "price": 9
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 56
+  },
+  {
+    "id": "spiritueux-espolon-reposado",
+    "categoryId": "spiritueux",
+    "sub": "Tequilas",
+    "name": "Espolón Reposado",
+    "variants": [
+      {
+        "label": "",
+        "price": 12
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 57
+  },
+  {
+    "id": "spiritueux-patron-platinum",
+    "categoryId": "spiritueux",
+    "sub": "Tequilas",
+    "name": "Patrón Platinum",
+    "variants": [
+      {
+        "label": "",
+        "price": 50
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 58
+  },
+  {
+    "id": "spiritueux-patron-silver",
+    "categoryId": "spiritueux",
+    "sub": "Tequilas",
+    "name": "Patron Silver",
+    "variants": [
+      {
+        "label": "",
+        "price": 13
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 59
+  },
+  {
+    "id": "spiritueux-patron-reposado",
+    "categoryId": "spiritueux",
+    "sub": "Tequilas",
+    "name": "Patron Reposado",
+    "variants": [
+      {
+        "label": "",
+        "price": 14
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 60
+  },
+  {
+    "id": "spiritueux-hendrick-s",
+    "categoryId": "spiritueux",
+    "sub": "Gins & Tonic",
+    "name": "Hendrick’s",
+    "variants": [
+      {
+        "label": "",
+        "price": 10
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 61
+  },
+  {
+    "id": "spiritueux-hendrick-s-orbium",
+    "categoryId": "spiritueux",
+    "sub": "Gins & Tonic",
+    "name": "Hendrick’s Orbium",
+    "variants": [
+      {
+        "label": "",
+        "price": 10
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 62
+  },
+  {
+    "id": "spiritueux-hendrick-s-neptunia",
+    "categoryId": "spiritueux",
+    "sub": "Gins & Tonic",
+    "name": "Hendrick’s Neptunia",
+    "variants": [
+      {
+        "label": "",
+        "price": 10
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 63
+  },
+  {
+    "id": "spiritueux-hendrick-s-flora-adora",
+    "categoryId": "spiritueux",
+    "sub": "Gins & Tonic",
+    "name": "Hendrick’s Flora Adora",
+    "variants": [
+      {
+        "label": "",
+        "price": 10
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 64
+  },
+  {
+    "id": "spiritueux-hendrick-s-grand-cabaret",
+    "categoryId": "spiritueux",
+    "sub": "Gins & Tonic",
+    "name": "Hendrick’s Grand Cabaret",
+    "variants": [
+      {
+        "label": "",
+        "price": 10
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 65
+  },
+  {
+    "id": "spiritueux-4-hendrick-s-tonic-service-a-the",
+    "categoryId": "spiritueux",
+    "sub": "Gins & Tonic",
+    "name": "4 Hendrick’s Tonic (service à thé)",
+    "variants": [
+      {
+        "label": "",
+        "price": 35
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 66
+  },
+  {
+    "id": "spiritueux-kinobi",
+    "categoryId": "spiritueux",
+    "sub": "Gins & Tonic",
+    "name": "Kinobi",
+    "variants": [
+      {
+        "label": "",
+        "price": 10
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 67
+  },
+  {
+    "id": "spiritueux-apres-92-black-raspberry",
+    "categoryId": "spiritueux",
+    "sub": "Gins & Tonic",
+    "name": "Après 92 Black Raspberry",
+    "variants": [
+      {
+        "label": "",
+        "price": 11
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 68
+  },
+  {
+    "id": "spiritueux-apres-92-spices-orange",
+    "categoryId": "spiritueux",
+    "sub": "Gins & Tonic",
+    "name": "Après 92 Spices & Orange",
+    "variants": [
+      {
+        "label": "",
+        "price": 11
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 69
+  },
+  {
+    "id": "spiritueux-june-pasteque",
+    "categoryId": "spiritueux",
+    "sub": "Gins & Tonic",
+    "name": "June Pastèque",
+    "variants": [
+      {
+        "label": "",
+        "price": 10
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 70
+  },
+  {
+    "id": "spiritueux-june-poire-cardamome",
+    "categoryId": "spiritueux",
+    "sub": "Gins & Tonic",
+    "name": "June Poire & Cardamome",
+    "variants": [
+      {
+        "label": "",
+        "price": 10
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 71
+  },
+  {
+    "id": "spiritueux-june-mangue-passion",
+    "categoryId": "spiritueux",
+    "sub": "Gins & Tonic",
+    "name": "June Mangue & Passion",
+    "variants": [
+      {
+        "label": "",
+        "price": 10
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 72
+  },
+  {
+    "id": "spiritueux-june-peche-de-vigne",
+    "categoryId": "spiritueux",
+    "sub": "Gins & Tonic",
+    "name": "June Pêche de Vigne",
+    "variants": [
+      {
+        "label": "",
+        "price": 10
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 73
+  },
+  {
+    "id": "spiritueux-tanqueray-ten",
+    "categoryId": "spiritueux",
+    "sub": "Gins & Tonic",
+    "name": "Tanqueray Ten",
+    "variants": [
+      {
+        "label": "",
+        "price": 10
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 74
+  },
+  {
+    "id": "spiritueux-renais",
+    "categoryId": "spiritueux",
+    "sub": "Gins & Tonic",
+    "name": "Renais",
+    "variants": [
+      {
+        "label": "",
+        "price": 11
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 75
+  },
+  {
+    "id": "spiritueux-birdie",
+    "categoryId": "spiritueux",
+    "sub": "Gins & Tonic",
+    "name": "Birdie",
+    "variants": [
+      {
+        "label": "",
+        "price": 11
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 76
+  },
+  {
+    "id": "spiritueux-get27",
+    "categoryId": "spiritueux",
+    "sub": "Liqueurs & Autres",
+    "name": "Get27",
     "variants": [
       {
         "label": "",
         "price": 7
       }
     ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 77
+  },
+  {
+    "id": "spiritueux-genepi",
+    "categoryId": "spiritueux",
+    "sub": "Liqueurs & Autres",
+    "name": "Génépi",
+    "variants": [
+      {
+        "label": "",
+        "price": 8
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 78
+  },
+  {
+    "id": "spiritueux-chartreuse-verte",
+    "categoryId": "spiritueux",
+    "sub": "Liqueurs & Autres",
+    "name": "Chartreuse Verte",
+    "variants": [
+      {
+        "label": "",
+        "price": 8
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 79
+  },
+  {
+    "id": "spiritueux-chartreuse-jaune",
+    "categoryId": "spiritueux",
+    "sub": "Liqueurs & Autres",
+    "name": "Chartreuse Jaune",
+    "variants": [
+      {
+        "label": "",
+        "price": 8
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 80
+  },
+  {
+    "id": "spiritueux-chartreuse-vep",
+    "categoryId": "spiritueux",
+    "sub": "Liqueurs & Autres",
+    "name": "Chartreuse VEP",
+    "variants": [
+      {
+        "label": "",
+        "price": 40
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 81
+  },
+  {
+    "id": "spiritueux-pastis-des-alpes",
+    "categoryId": "spiritueux",
+    "sub": "Liqueurs & Autres",
+    "name": "Pastis des Alpes",
+    "variants": [
+      {
+        "label": "",
+        "price": 3
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 82
+  },
+  {
+    "id": "spiritueux-la-guilde-du-cognac-fins-bois-2011",
+    "categoryId": "spiritueux",
+    "sub": "Liqueurs & Autres",
+    "name": "La Guilde du Cognac Fins Bois 2011",
+    "variants": [
+      {
+        "label": "",
+        "price": 15
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 83
+  },
+  {
+    "id": "spiritueux-martel-vsop-cognac",
+    "categoryId": "spiritueux",
+    "sub": "Liqueurs & Autres",
+    "name": "Martel VSOP Cognac",
+    "variants": [
+      {
+        "label": "",
+        "price": 14
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 84
+  },
+  {
+    "id": "spiritueux-patron-xo-cafe",
+    "categoryId": "spiritueux",
+    "sub": "Liqueurs & Autres",
+    "name": "Patron XO Café",
+    "variants": [
+      {
+        "label": "",
+        "price": 8
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 85
+  },
+  {
+    "id": "bieres-bud",
+    "categoryId": "bieres",
+    "sub": "Pressions",
+    "name": "Bud",
+    "variants": [
+      {
+        "label": "25cl",
+        "price": 3.5
+      },
+      {
+        "label": "50cl",
+        "price": 5.5
+      }
+    ],
+    "options": [],
+    "happyHour": true,
+    "desc": "",
+    "available": true,
+    "order": 86
+  },
+  {
+    "id": "bieres-hoegarden-rose",
+    "categoryId": "bieres",
+    "sub": "Pressions",
+    "name": "Hoegarden Rosé",
+    "variants": [
+      {
+        "label": "25cl",
+        "price": 5
+      },
+      {
+        "label": "50cl",
+        "price": 8
+      }
+    ],
+    "options": [],
+    "happyHour": true,
+    "desc": "",
+    "available": true,
+    "order": 87
+  },
+  {
+    "id": "bieres-kasteel-framboise",
+    "categoryId": "bieres",
+    "sub": "Pressions",
+    "name": "Kasteel Framboise",
+    "variants": [
+      {
+        "label": "25cl",
+        "price": 5
+      },
+      {
+        "label": "50cl",
+        "price": 8
+      }
+    ],
+    "options": [],
+    "happyHour": true,
+    "desc": "",
+    "available": true,
+    "order": 88
+  },
+  {
+    "id": "bieres-mont-blanc-rousse",
+    "categoryId": "bieres",
+    "sub": "Pressions",
+    "name": "Mont-Blanc Rousse",
+    "variants": [
+      {
+        "label": "25cl",
+        "price": 5
+      },
+      {
+        "label": "50cl",
+        "price": 8
+      }
+    ],
+    "options": [],
+    "happyHour": true,
+    "desc": "",
+    "available": true,
+    "order": 89
+  },
+  {
+    "id": "bieres-la-bagarre",
+    "categoryId": "bieres",
+    "sub": "Pressions",
+    "name": "La Bagarre",
+    "variants": [
+      {
+        "label": "25cl",
+        "price": 5
+      },
+      {
+        "label": "50cl",
+        "price": 8
+      }
+    ],
+    "options": [],
+    "happyHour": true,
+    "desc": "",
+    "available": true,
+    "order": 90
+  },
+  {
+    "id": "bieres-delirium-tremens",
+    "categoryId": "bieres",
+    "sub": "Pressions",
+    "name": "Delirium Tremens",
+    "variants": [
+      {
+        "label": "25cl",
+        "price": 5.5
+      },
+      {
+        "label": "50cl",
+        "price": 8.5
+      }
+    ],
+    "options": [],
+    "happyHour": true,
+    "desc": "",
+    "available": true,
+    "order": 91
+  },
+  {
+    "id": "bieres-la-ballon-d-orge",
+    "categoryId": "bieres",
+    "sub": "Pressions",
+    "name": "La Ballon d’orge",
+    "variants": [
+      {
+        "label": "25cl",
+        "price": 5
+      },
+      {
+        "label": "50cl",
+        "price": 8
+      }
+    ],
+    "options": [],
+    "happyHour": true,
+    "desc": "",
+    "available": true,
+    "order": 92
+  },
+  {
+    "id": "bieres-kasteel-0",
+    "categoryId": "bieres",
+    "sub": "Bouteilles",
+    "name": "Kasteel 0%",
+    "variants": [
+      {
+        "label": "",
+        "price": 6
+      }
+    ],
     "options": [
       {
-        "label": "Mayonnaise",
+        "label": "Rouge",
         "delta": 0
       },
       {
-        "label": "Mayonnaise Spicy",
-        "delta": 0
-      },
-      {
-        "label": "Barbecue",
-        "delta": 0
-      },
-      {
-        "label": "Curry Mango",
+        "label": "Tropicale",
         "delta": 0
       }
     ],
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 106
+    "order": 93
+  },
+  {
+    "id": "softs-limonade",
+    "categoryId": "softs",
+    "sub": "Classiques",
+    "name": "Limonade",
+    "variants": [
+      {
+        "label": "",
+        "price": 3.2
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 94
+  },
+  {
+    "id": "softs-coca-cola-classique",
+    "categoryId": "softs",
+    "sub": "Classiques",
+    "name": "Coca-Cola Classique",
+    "variants": [
+      {
+        "label": "",
+        "price": 3.5
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 95
+  },
+  {
+    "id": "softs-coca-cola-zero",
+    "categoryId": "softs",
+    "sub": "Classiques",
+    "name": "Coca-Cola Zéro",
+    "variants": [
+      {
+        "label": "",
+        "price": 3.5
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 96
+  },
+  {
+    "id": "softs-badoit-fines-bulles",
+    "categoryId": "softs",
+    "sub": "Classiques",
+    "name": "Badoit Fines Bulles",
+    "variants": [
+      {
+        "label": "",
+        "price": 3.5
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 97
+  },
+  {
+    "id": "softs-sirop",
+    "categoryId": "softs",
+    "sub": "Classiques",
+    "name": "Sirop",
+    "variants": [
+      {
+        "label": "",
+        "price": 2.5
+      }
+    ],
+    "options": [
+      {
+        "label": "Fraise",
+        "delta": 0
+      },
+      {
+        "label": "Grenadine",
+        "delta": 0
+      },
+      {
+        "label": "Menthe",
+        "delta": 0
+      },
+      {
+        "label": "Pêche",
+        "delta": 0
+      },
+      {
+        "label": "Citron",
+        "delta": 0
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 98
+  },
+  {
+    "id": "softs-diabolo",
+    "categoryId": "softs",
+    "sub": "Classiques",
+    "name": "Diabolo",
+    "variants": [
+      {
+        "label": "",
+        "price": 3.5
+      }
+    ],
+    "options": [
+      {
+        "label": "Fraise",
+        "delta": 0
+      },
+      {
+        "label": "Grenadine",
+        "delta": 0
+      },
+      {
+        "label": "Menthe",
+        "delta": 0
+      },
+      {
+        "label": "Pêche",
+        "delta": 0
+      },
+      {
+        "label": "Citron",
+        "delta": 0
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 99
+  },
+  {
+    "id": "softs-jus-de-fruits-granini",
+    "categoryId": "softs",
+    "sub": "Classiques",
+    "name": "Jus de Fruits Granini",
+    "variants": [
+      {
+        "label": "",
+        "price": 3.5
+      }
+    ],
+    "options": [
+      {
+        "label": "Tomate",
+        "delta": 0
+      },
+      {
+        "label": "Orange",
+        "delta": 0
+      },
+      {
+        "label": "Pomme",
+        "delta": 0
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 100
+  },
+  {
+    "id": "softs-schweppes-tonic",
+    "categoryId": "softs",
+    "sub": "Schweppes",
+    "name": "Schweppes Tonic",
+    "variants": [
+      {
+        "label": "",
+        "price": 4.5
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 101
+  },
+  {
+    "id": "softs-schweppes-soda-pomelo",
+    "categoryId": "softs",
+    "sub": "Schweppes",
+    "name": "Schweppes Soda Pomelo",
+    "variants": [
+      {
+        "label": "",
+        "price": 4.5
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 102
+  },
+  {
+    "id": "softs-schweppes-ginger-beer",
+    "categoryId": "softs",
+    "sub": "Schweppes",
+    "name": "Schweppes Ginger Beer",
+    "variants": [
+      {
+        "label": "",
+        "price": 4.5
+      }
+    ],
+    "options": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 103
   },
   {
     "id": "snack-frites-maison",
@@ -706,25 +2151,38 @@ export const PRODUCTS = [
     "order": 105
   },
   {
-    "id": "snack-plateau-charcuterie-fromage",
+    "id": "snack-chilli-cheese-6-pieces",
     "categoryId": "snack",
     "sub": "À grignoter",
-    "name": "Plateau Charcuterie & Fromage",
+    "name": "Chilli Cheese (6 pièces)",
     "variants": [
       {
-        "label": "Petite",
-        "price": 14.5
-      },
-      {
-        "label": "Grande",
-        "price": 20.5
+        "label": "",
+        "price": 7
       }
     ],
-    "options": [],
+    "options": [
+      {
+        "label": "Mayonnaise",
+        "delta": 0
+      },
+      {
+        "label": "Mayonnaise Spicy",
+        "delta": 0
+      },
+      {
+        "label": "Barbecue",
+        "delta": 0
+      },
+      {
+        "label": "Curry Mango",
+        "delta": 0
+      }
+    ],
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 108
+    "order": 106
   },
   {
     "id": "snack-tenders-de-poulet-4-pieces",
@@ -761,1483 +2219,25 @@ export const PRODUCTS = [
     "order": 107
   },
   {
-    "id": "softs-badoit-fines-bulles",
-    "categoryId": "softs",
-    "sub": "Classiques",
-    "name": "Badoit Fines Bulles",
+    "id": "snack-plateau-charcuterie-fromage",
+    "categoryId": "snack",
+    "sub": "À grignoter",
+    "name": "Plateau Charcuterie & Fromage",
     "variants": [
       {
-        "label": "",
-        "price": 3.5
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 97
-  },
-  {
-    "id": "softs-coca-cola-classique",
-    "categoryId": "softs",
-    "sub": "Classiques",
-    "name": "Coca-Cola Classique",
-    "variants": [
-      {
-        "label": "",
-        "price": 3.5
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 95
-  },
-  {
-    "id": "softs-coca-cola-zero",
-    "categoryId": "softs",
-    "sub": "Classiques",
-    "name": "Coca-Cola Zéro",
-    "variants": [
-      {
-        "label": "",
-        "price": 3.5
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 96
-  },
-  {
-    "id": "softs-diabolo",
-    "categoryId": "softs",
-    "sub": "Classiques",
-    "name": "Diabolo",
-    "variants": [
-      {
-        "label": "",
-        "price": 3.5
-      }
-    ],
-    "options": [
-      {
-        "label": "Fraise",
-        "delta": 0
+        "label": "Petite",
+        "price": 14.5
       },
       {
-        "label": "Grenadine",
-        "delta": 0
-      },
-      {
-        "label": "Menthe",
-        "delta": 0
-      },
-      {
-        "label": "Pêche",
-        "delta": 0
-      },
-      {
-        "label": "Citron",
-        "delta": 0
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 99
-  },
-  {
-    "id": "softs-jus-de-fruits-granini",
-    "categoryId": "softs",
-    "sub": "Classiques",
-    "name": "Jus de Fruits Granini",
-    "variants": [
-      {
-        "label": "",
-        "price": 3.5
-      }
-    ],
-    "options": [
-      {
-        "label": "Tomate",
-        "delta": 0
-      },
-      {
-        "label": "Orange",
-        "delta": 0
-      },
-      {
-        "label": "Pomme",
-        "delta": 0
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 100
-  },
-  {
-    "id": "softs-limonade",
-    "categoryId": "softs",
-    "sub": "Classiques",
-    "name": "Limonade",
-    "variants": [
-      {
-        "label": "",
-        "price": 3.2
+        "label": "Grande",
+        "price": 20.5
       }
     ],
     "options": [],
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 94
-  },
-  {
-    "id": "softs-schweppes-ginger-beer",
-    "categoryId": "softs",
-    "sub": "Schweppes",
-    "name": "Schweppes Ginger Beer",
-    "variants": [
-      {
-        "label": "",
-        "price": 4.5
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 103
-  },
-  {
-    "id": "softs-schweppes-soda-pomelo",
-    "categoryId": "softs",
-    "sub": "Schweppes",
-    "name": "Schweppes Soda Pomelo",
-    "variants": [
-      {
-        "label": "",
-        "price": 4.5
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 102
-  },
-  {
-    "id": "softs-schweppes-tonic",
-    "categoryId": "softs",
-    "sub": "Schweppes",
-    "name": "Schweppes Tonic",
-    "variants": [
-      {
-        "label": "",
-        "price": 4.5
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 101
-  },
-  {
-    "id": "softs-sirop",
-    "categoryId": "softs",
-    "sub": "Classiques",
-    "name": "Sirop",
-    "variants": [
-      {
-        "label": "",
-        "price": 2.5
-      }
-    ],
-    "options": [
-      {
-        "label": "Fraise",
-        "delta": 0
-      },
-      {
-        "label": "Grenadine",
-        "delta": 0
-      },
-      {
-        "label": "Menthe",
-        "delta": 0
-      },
-      {
-        "label": "Pêche",
-        "delta": 0
-      },
-      {
-        "label": "Citron",
-        "delta": 0
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 98
-  },
-  {
-    "id": "spiritueux-4-hendrick-s-tonic-service-a-the",
-    "categoryId": "spiritueux",
-    "sub": "Gins & Tonic",
-    "name": "4 Hendrick’s Tonic (service à thé)",
-    "variants": [
-      {
-        "label": "",
-        "price": 35
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 66
-  },
-  {
-    "id": "spiritueux-ailsa-bay",
-    "categoryId": "spiritueux",
-    "sub": "Whiskys",
-    "name": "Ailsa Bay",
-    "variants": [
-      {
-        "label": "",
-        "price": 13
-      }
-    ],
-    "options": [
-      {
-        "label": "Diluant",
-        "delta": 1
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 49
-  },
-  {
-    "id": "spiritueux-angostura-1919",
-    "categoryId": "spiritueux",
-    "sub": "Rhums",
-    "name": "Angostura 1919",
-    "variants": [
-      {
-        "label": "",
-        "price": 12
-      }
-    ],
-    "options": [
-      {
-        "label": "Diluant",
-        "delta": 1
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 37
-  },
-  {
-    "id": "spiritueux-appleton-12-ans",
-    "categoryId": "spiritueux",
-    "sub": "Rhums",
-    "name": "Appleton 12 Ans",
-    "variants": [
-      {
-        "label": "",
-        "price": 13
-      }
-    ],
-    "options": [
-      {
-        "label": "Diluant",
-        "delta": 1
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 38
-  },
-  {
-    "id": "spiritueux-apres-92-black-raspberry",
-    "categoryId": "spiritueux",
-    "sub": "Gins & Tonic",
-    "name": "Après 92 Black Raspberry",
-    "variants": [
-      {
-        "label": "",
-        "price": 11
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 68
-  },
-  {
-    "id": "spiritueux-apres-92-spices-orange",
-    "categoryId": "spiritueux",
-    "sub": "Gins & Tonic",
-    "name": "Après 92 Spices & Orange",
-    "variants": [
-      {
-        "label": "",
-        "price": 11
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 69
-  },
-  {
-    "id": "spiritueux-bellevoye-blanche",
-    "categoryId": "spiritueux",
-    "sub": "Whiskys",
-    "name": "Bellevoye Blanche",
-    "variants": [
-      {
-        "label": "",
-        "price": 14
-      }
-    ],
-    "options": [
-      {
-        "label": "Diluant",
-        "delta": 1
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 54
-  },
-  {
-    "id": "spiritueux-bellevoye-bleue",
-    "categoryId": "spiritueux",
-    "sub": "Whiskys",
-    "name": "Bellevoye Bleue",
-    "variants": [
-      {
-        "label": "",
-        "price": 13
-      }
-    ],
-    "options": [
-      {
-        "label": "Diluant",
-        "delta": 1
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 53
-  },
-  {
-    "id": "spiritueux-bellevoye-rouge",
-    "categoryId": "spiritueux",
-    "sub": "Whiskys",
-    "name": "Bellevoye Rouge",
-    "variants": [
-      {
-        "label": "",
-        "price": 15
-      }
-    ],
-    "options": [
-      {
-        "label": "Diluant",
-        "delta": 1
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 55
-  },
-  {
-    "id": "spiritueux-birdie",
-    "categoryId": "spiritueux",
-    "sub": "Gins & Tonic",
-    "name": "Birdie",
-    "variants": [
-      {
-        "label": "",
-        "price": 11
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 76
-  },
-  {
-    "id": "spiritueux-blanton-s",
-    "categoryId": "spiritueux",
-    "sub": "Whiskys",
-    "name": "Blanton’s",
-    "variants": [
-      {
-        "label": "",
-        "price": 15
-      }
-    ],
-    "options": [
-      {
-        "label": "Diluant",
-        "delta": 1
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 50
-  },
-  {
-    "id": "spiritueux-bulleit-bourbon",
-    "categoryId": "spiritueux",
-    "sub": "Whiskys",
-    "name": "Bulleit Bourbon",
-    "variants": [
-      {
-        "label": "",
-        "price": 10
-      }
-    ],
-    "options": [
-      {
-        "label": "Diluant",
-        "delta": 1
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 44
-  },
-  {
-    "id": "spiritueux-bulleit-rye",
-    "categoryId": "spiritueux",
-    "sub": "Whiskys",
-    "name": "Bulleit Rye",
-    "variants": [
-      {
-        "label": "",
-        "price": 10
-      }
-    ],
-    "options": [
-      {
-        "label": "Diluant",
-        "delta": 1
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 45
-  },
-  {
-    "id": "spiritueux-centenario-20e-anniversaire",
-    "categoryId": "spiritueux",
-    "sub": "Rhums",
-    "name": "Centenario 20e Anniversaire",
-    "variants": [
-      {
-        "label": "",
-        "price": 12
-      }
-    ],
-    "options": [
-      {
-        "label": "Diluant",
-        "delta": 1
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 36
-  },
-  {
-    "id": "spiritueux-chartreuse-jaune",
-    "categoryId": "spiritueux",
-    "sub": "Liqueurs & Autres",
-    "name": "Chartreuse Jaune",
-    "variants": [
-      {
-        "label": "",
-        "price": 8
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 80
-  },
-  {
-    "id": "spiritueux-chartreuse-vep",
-    "categoryId": "spiritueux",
-    "sub": "Liqueurs & Autres",
-    "name": "Chartreuse VEP",
-    "variants": [
-      {
-        "label": "",
-        "price": 40
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 81
-  },
-  {
-    "id": "spiritueux-chartreuse-verte",
-    "categoryId": "spiritueux",
-    "sub": "Liqueurs & Autres",
-    "name": "Chartreuse Verte",
-    "variants": [
-      {
-        "label": "",
-        "price": 8
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 79
-  },
-  {
-    "id": "spiritueux-espolon-reposado",
-    "categoryId": "spiritueux",
-    "sub": "Tequilas",
-    "name": "Espolón Reposado",
-    "variants": [
-      {
-        "label": "",
-        "price": 12
-      }
-    ],
-    "options": [
-      {
-        "label": "Diluant",
-        "delta": 1
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 57
-  },
-  {
-    "id": "spiritueux-genepi",
-    "categoryId": "spiritueux",
-    "sub": "Liqueurs & Autres",
-    "name": "Génépi",
-    "variants": [
-      {
-        "label": "",
-        "price": 8
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 78
-  },
-  {
-    "id": "spiritueux-get27",
-    "categoryId": "spiritueux",
-    "sub": "Liqueurs & Autres",
-    "name": "Get27",
-    "variants": [
-      {
-        "label": "",
-        "price": 7
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 77
-  },
-  {
-    "id": "spiritueux-glenfiddich-12-ans",
-    "categoryId": "spiritueux",
-    "sub": "Whiskys",
-    "name": "Glenfiddich 12 Ans",
-    "variants": [
-      {
-        "label": "",
-        "price": 13
-      }
-    ],
-    "options": [
-      {
-        "label": "Diluant",
-        "delta": 1
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 46
-  },
-  {
-    "id": "spiritueux-glenfiddich-15-ans",
-    "categoryId": "spiritueux",
-    "sub": "Whiskys",
-    "name": "Glenfiddich 15 Ans",
-    "variants": [
-      {
-        "label": "",
-        "price": 14
-      }
-    ],
-    "options": [
-      {
-        "label": "Diluant",
-        "delta": 1
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 47
-  },
-  {
-    "id": "spiritueux-glenfiddich-18-ans",
-    "categoryId": "spiritueux",
-    "sub": "Whiskys",
-    "name": "Glenfiddich 18 Ans",
-    "variants": [
-      {
-        "label": "",
-        "price": 15
-      }
-    ],
-    "options": [
-      {
-        "label": "Diluant",
-        "delta": 1
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 48
-  },
-  {
-    "id": "spiritueux-hendrick-s",
-    "categoryId": "spiritueux",
-    "sub": "Gins & Tonic",
-    "name": "Hendrick’s",
-    "variants": [
-      {
-        "label": "",
-        "price": 10
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 61
-  },
-  {
-    "id": "spiritueux-hendrick-s-flora-adora",
-    "categoryId": "spiritueux",
-    "sub": "Gins & Tonic",
-    "name": "Hendrick’s Flora Adora",
-    "variants": [
-      {
-        "label": "",
-        "price": 10
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 64
-  },
-  {
-    "id": "spiritueux-hendrick-s-grand-cabaret",
-    "categoryId": "spiritueux",
-    "sub": "Gins & Tonic",
-    "name": "Hendrick’s Grand Cabaret",
-    "variants": [
-      {
-        "label": "",
-        "price": 10
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 65
-  },
-  {
-    "id": "spiritueux-hendrick-s-neptunia",
-    "categoryId": "spiritueux",
-    "sub": "Gins & Tonic",
-    "name": "Hendrick’s Neptunia",
-    "variants": [
-      {
-        "label": "",
-        "price": 10
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 63
-  },
-  {
-    "id": "spiritueux-hendrick-s-orbium",
-    "categoryId": "spiritueux",
-    "sub": "Gins & Tonic",
-    "name": "Hendrick’s Orbium",
-    "variants": [
-      {
-        "label": "",
-        "price": 10
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 62
-  },
-  {
-    "id": "spiritueux-june-mangue-passion",
-    "categoryId": "spiritueux",
-    "sub": "Gins & Tonic",
-    "name": "June Mangue & Passion",
-    "variants": [
-      {
-        "label": "",
-        "price": 10
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 72
-  },
-  {
-    "id": "spiritueux-june-pasteque",
-    "categoryId": "spiritueux",
-    "sub": "Gins & Tonic",
-    "name": "June Pastèque",
-    "variants": [
-      {
-        "label": "",
-        "price": 10
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 70
-  },
-  {
-    "id": "spiritueux-june-peche-de-vigne",
-    "categoryId": "spiritueux",
-    "sub": "Gins & Tonic",
-    "name": "June Pêche de Vigne",
-    "variants": [
-      {
-        "label": "",
-        "price": 10
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 73
-  },
-  {
-    "id": "spiritueux-june-poire-cardamome",
-    "categoryId": "spiritueux",
-    "sub": "Gins & Tonic",
-    "name": "June Poire & Cardamome",
-    "variants": [
-      {
-        "label": "",
-        "price": 10
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 71
-  },
-  {
-    "id": "spiritueux-kinobi",
-    "categoryId": "spiritueux",
-    "sub": "Gins & Tonic",
-    "name": "Kinobi",
-    "variants": [
-      {
-        "label": "",
-        "price": 10
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 67
-  },
-  {
-    "id": "spiritueux-la-guilde-du-cognac-fins-bois-2011",
-    "categoryId": "spiritueux",
-    "sub": "Liqueurs & Autres",
-    "name": "La Guilde du Cognac Fins Bois 2011",
-    "variants": [
-      {
-        "label": "",
-        "price": 15
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 83
-  },
-  {
-    "id": "spiritueux-martel-vsop-cognac",
-    "categoryId": "spiritueux",
-    "sub": "Liqueurs & Autres",
-    "name": "Martel VSOP Cognac",
-    "variants": [
-      {
-        "label": "",
-        "price": 14
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 84
-  },
-  {
-    "id": "spiritueux-mathusalem-15-ans",
-    "categoryId": "spiritueux",
-    "sub": "Rhums",
-    "name": "Mathusalem 15 Ans",
-    "variants": [
-      {
-        "label": "",
-        "price": 11
-      }
-    ],
-    "options": [
-      {
-        "label": "Diluant",
-        "delta": 1
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 35
-  },
-  {
-    "id": "spiritueux-milagro-silver",
-    "categoryId": "spiritueux",
-    "sub": "Tequilas",
-    "name": "Milagro Silver",
-    "variants": [
-      {
-        "label": "",
-        "price": 9
-      }
-    ],
-    "options": [
-      {
-        "label": "Diluant",
-        "delta": 1
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 56
-  },
-  {
-    "id": "spiritueux-monkey-shoulder-classic",
-    "categoryId": "spiritueux",
-    "sub": "Whiskys",
-    "name": "Monkey Shoulder Classic",
-    "variants": [
-      {
-        "label": "",
-        "price": 9
-      }
-    ],
-    "options": [
-      {
-        "label": "Diluant",
-        "delta": 1
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 42
-  },
-  {
-    "id": "spiritueux-pastis-des-alpes",
-    "categoryId": "spiritueux",
-    "sub": "Liqueurs & Autres",
-    "name": "Pastis des Alpes",
-    "variants": [
-      {
-        "label": "",
-        "price": 3
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 82
-  },
-  {
-    "id": "spiritueux-patron-platinum",
-    "categoryId": "spiritueux",
-    "sub": "Tequilas",
-    "name": "Patrón Platinum",
-    "variants": [
-      {
-        "label": "",
-        "price": 50
-      }
-    ],
-    "options": [
-      {
-        "label": "Diluant",
-        "delta": 1
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 58
-  },
-  {
-    "id": "spiritueux-patron-reposado",
-    "categoryId": "spiritueux",
-    "sub": "Tequilas",
-    "name": "Patron Reposado",
-    "variants": [
-      {
-        "label": "",
-        "price": 14
-      }
-    ],
-    "options": [
-      {
-        "label": "Diluant",
-        "delta": 1
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 60
-  },
-  {
-    "id": "spiritueux-patron-silver",
-    "categoryId": "spiritueux",
-    "sub": "Tequilas",
-    "name": "Patron Silver",
-    "variants": [
-      {
-        "label": "",
-        "price": 13
-      }
-    ],
-    "options": [
-      {
-        "label": "Diluant",
-        "delta": 1
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 59
-  },
-  {
-    "id": "spiritueux-patron-xo-cafe",
-    "categoryId": "spiritueux",
-    "sub": "Liqueurs & Autres",
-    "name": "Patron XO Café",
-    "variants": [
-      {
-        "label": "",
-        "price": 8
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 85
-  },
-  {
-    "id": "spiritueux-renais",
-    "categoryId": "spiritueux",
-    "sub": "Gins & Tonic",
-    "name": "Renais",
-    "variants": [
-      {
-        "label": "",
-        "price": 11
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 75
-  },
-  {
-    "id": "spiritueux-ron-libertad",
-    "categoryId": "spiritueux",
-    "sub": "Rhums",
-    "name": "Ron Libertad",
-    "variants": [
-      {
-        "label": "",
-        "price": 14
-      }
-    ],
-    "options": [
-      {
-        "label": "Diluant",
-        "delta": 1
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 39
-  },
-  {
-    "id": "spiritueux-santa-teresa",
-    "categoryId": "spiritueux",
-    "sub": "Rhums",
-    "name": "Santa Teresa",
-    "variants": [
-      {
-        "label": "",
-        "price": 14
-      }
-    ],
-    "options": [
-      {
-        "label": "Diluant",
-        "delta": 1
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 40
-  },
-  {
-    "id": "spiritueux-sequoia-black-cat",
-    "categoryId": "spiritueux",
-    "sub": "Whiskys",
-    "name": "Sequoia Black Cat",
-    "variants": [
-      {
-        "label": "",
-        "price": 14
-      }
-    ],
-    "options": [
-      {
-        "label": "Diluant",
-        "delta": 1
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 51
-  },
-  {
-    "id": "spiritueux-sequoia-craft",
-    "categoryId": "spiritueux",
-    "sub": "Whiskys",
-    "name": "Sequoia Craft",
-    "variants": [
-      {
-        "label": "",
-        "price": 14
-      }
-    ],
-    "options": [
-      {
-        "label": "Diluant",
-        "delta": 1
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 52
-  },
-  {
-    "id": "spiritueux-tanqueray-ten",
-    "categoryId": "spiritueux",
-    "sub": "Gins & Tonic",
-    "name": "Tanqueray Ten",
-    "variants": [
-      {
-        "label": "",
-        "price": 10
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 74
-  },
-  {
-    "id": "spiritueux-the-deacon",
-    "categoryId": "spiritueux",
-    "sub": "Whiskys",
-    "name": "The Deacon",
-    "variants": [
-      {
-        "label": "",
-        "price": 12
-      }
-    ],
-    "options": [
-      {
-        "label": "Diluant",
-        "delta": 1
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 43
-  },
-  {
-    "id": "spiritueux-zacapa-23-ans",
-    "categoryId": "spiritueux",
-    "sub": "Rhums",
-    "name": "Zacapa 23 Ans",
-    "variants": [
-      {
-        "label": "",
-        "price": 15
-      }
-    ],
-    "options": [
-      {
-        "label": "Diluant",
-        "delta": 1
-      }
-    ],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 41
-  },
-  {
-    "id": "vins-cap-des-pins",
-    "categoryId": "vins",
-    "sub": "Rosé",
-    "name": "Cap des Pins",
-    "variants": [
-      {
-        "label": "Verre",
-        "price": 4
-      },
-      {
-        "label": "Bouteille",
-        "price": 21
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 26
-  },
-  {
-    "id": "vins-chardonnay-bphr",
-    "categoryId": "vins",
-    "sub": "Blancs",
-    "name": "Chardonnay Bphr",
-    "variants": [
-      {
-        "label": "Verre",
-        "price": 4.5
-      },
-      {
-        "label": "Bouteille",
-        "price": 23
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 27
-  },
-  {
-    "id": "vins-cotes-de-b-uf",
-    "categoryId": "vins",
-    "sub": "Rouges",
-    "name": "Côtes de Bœuf",
-    "variants": [
-      {
-        "label": "Verre",
-        "price": 4.5
-      },
-      {
-        "label": "Bouteille",
-        "price": 23
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 22
-  },
-  {
-    "id": "vins-crozes-hermitage",
-    "categoryId": "vins",
-    "sub": "Rouges",
-    "name": "Crozes Hermitage",
-    "variants": [
-      {
-        "label": "Verre",
-        "price": 6
-      },
-      {
-        "label": "Bouteille",
-        "price": 30
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 23
-  },
-  {
-    "id": "vins-lallier",
-    "categoryId": "vins",
-    "sub": "Champagne",
-    "name": "Lallier",
-    "variants": [
-      {
-        "label": "Bouteille",
-        "price": 100
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 31
-  },
-  {
-    "id": "vins-moet-imperial",
-    "categoryId": "vins",
-    "sub": "Champagne",
-    "name": "Moët Impérial",
-    "variants": [
-      {
-        "label": "Bouteille",
-        "price": 110
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 33
-  },
-  {
-    "id": "vins-moet-imperial-rose",
-    "categoryId": "vins",
-    "sub": "Champagne",
-    "name": "Moët Impérial Rosé",
-    "variants": [
-      {
-        "label": "Bouteille",
-        "price": 110
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 34
-  },
-  {
-    "id": "vins-orelie",
-    "categoryId": "vins",
-    "sub": "Blancs",
-    "name": "Orélie",
-    "variants": [
-      {
-        "label": "Verre",
-        "price": 4
-      },
-      {
-        "label": "Bouteille",
-        "price": 21
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 28
-  },
-  {
-    "id": "vins-studio-blanc",
-    "categoryId": "vins",
-    "sub": "Blancs",
-    "name": "Studio Blanc",
-    "variants": [
-      {
-        "label": "Verre",
-        "price": 6
-      },
-      {
-        "label": "Bouteille",
-        "price": 28
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 30
-  },
-  {
-    "id": "vins-studio-rose",
-    "categoryId": "vins",
-    "sub": "Rosé",
-    "name": "Studio Rosé",
-    "variants": [
-      {
-        "label": "Verre",
-        "price": 6
-      },
-      {
-        "label": "Bouteille",
-        "price": 30
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 25
-  },
-  {
-    "id": "vins-syrah",
-    "categoryId": "vins",
-    "sub": "Rouges",
-    "name": "Syrah",
-    "variants": [
-      {
-        "label": "Verre",
-        "price": 4.5
-      },
-      {
-        "label": "Bouteille",
-        "price": 23
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 24
-  },
-  {
-    "id": "vins-uby",
-    "categoryId": "vins",
-    "sub": "Blancs",
-    "name": "Uby",
-    "variants": [
-      {
-        "label": "Verre",
-        "price": 4.5
-      },
-      {
-        "label": "Bouteille",
-        "price": 23
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 29
-  },
-  {
-    "id": "vins-veuve-clicquot",
-    "categoryId": "vins",
-    "sub": "Champagne",
-    "name": "Veuve Clicquot",
-    "variants": [
-      {
-        "label": "Bouteille",
-        "price": 130
-      }
-    ],
-    "options": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 32
+    "order": 108
   }
 ];
 
@@ -2262,9 +2262,10 @@ export const DEMO_LAYOUT = [
     "w": 90,
     "h": 90,
     "rotation": 0,
-    "number": "10",
+    "number": "101",
     "capacity": 2,
-    "zone": "Salle"
+    "zone": "Salle",
+    "prefix": ""
   },
   {
     "area": "interieur",
@@ -2274,9 +2275,10 @@ export const DEMO_LAYOUT = [
     "w": 90,
     "h": 90,
     "rotation": 0,
-    "number": "11",
+    "number": "102",
     "capacity": 2,
-    "zone": "Salle"
+    "zone": "Salle",
+    "prefix": ""
   },
   {
     "area": "terrasse",
@@ -2310,9 +2312,10 @@ export const DEMO_LAYOUT = [
     "w": 170,
     "h": 170,
     "rotation": 0,
-    "number": "7",
+    "number": "307",
     "capacity": 4,
-    "zone": ""
+    "zone": "",
+    "prefix": ""
   },
   {
     "area": "terrasse",
@@ -2322,9 +2325,10 @@ export const DEMO_LAYOUT = [
     "w": 170,
     "h": 170,
     "rotation": 0,
-    "number": "12",
+    "number": "312",
     "capacity": 4,
-    "zone": ""
+    "zone": "",
+    "prefix": ""
   },
   {
     "area": "terrasse",
@@ -2334,9 +2338,10 @@ export const DEMO_LAYOUT = [
     "w": 170,
     "h": 170,
     "rotation": 0,
-    "number": "16",
+    "number": "316",
     "capacity": 4,
-    "zone": ""
+    "zone": "",
+    "prefix": ""
   },
   {
     "area": "terrasse",
@@ -2346,9 +2351,10 @@ export const DEMO_LAYOUT = [
     "w": 170,
     "h": 170,
     "rotation": 0,
-    "number": "6",
+    "number": "306",
     "capacity": 4,
-    "zone": ""
+    "zone": "",
+    "prefix": ""
   },
   {
     "area": "terrasse",
@@ -2358,9 +2364,10 @@ export const DEMO_LAYOUT = [
     "w": 170,
     "h": 170,
     "rotation": 0,
-    "number": "11",
+    "number": "311",
     "capacity": 4,
-    "zone": ""
+    "zone": "",
+    "prefix": ""
   },
   {
     "area": "terrasse",
@@ -2370,9 +2377,10 @@ export const DEMO_LAYOUT = [
     "w": 170,
     "h": 170,
     "rotation": 0,
-    "number": "15",
+    "number": "315",
     "capacity": 4,
-    "zone": ""
+    "zone": "",
+    "prefix": ""
   },
   {
     "area": "terrasse",
@@ -2382,9 +2390,10 @@ export const DEMO_LAYOUT = [
     "w": 170,
     "h": 170,
     "rotation": 0,
-    "number": "5",
+    "number": "305",
     "capacity": 4,
-    "zone": ""
+    "zone": "",
+    "prefix": ""
   },
   {
     "area": "terrasse",
@@ -2394,9 +2403,10 @@ export const DEMO_LAYOUT = [
     "w": 170,
     "h": 170,
     "rotation": 0,
-    "number": "10",
+    "number": "310",
     "capacity": 4,
-    "zone": ""
+    "zone": "",
+    "prefix": ""
   },
   {
     "area": "terrasse",
@@ -2418,9 +2428,10 @@ export const DEMO_LAYOUT = [
     "w": 170,
     "h": 170,
     "rotation": 0,
-    "number": "4",
+    "number": "304",
     "capacity": 4,
-    "zone": ""
+    "zone": "",
+    "prefix": ""
   },
   {
     "area": "terrasse",
@@ -2430,9 +2441,10 @@ export const DEMO_LAYOUT = [
     "w": 170,
     "h": 170,
     "rotation": 0,
-    "number": "1",
+    "number": "301",
     "capacity": 4,
-    "zone": ""
+    "zone": "",
+    "prefix": ""
   },
   {
     "area": "terrasse",
@@ -2442,9 +2454,10 @@ export const DEMO_LAYOUT = [
     "w": 170,
     "h": 170,
     "rotation": 0,
-    "number": "2",
+    "number": "302",
     "capacity": 4,
-    "zone": ""
+    "zone": "",
+    "prefix": ""
   },
   {
     "area": "terrasse",
@@ -2454,9 +2467,10 @@ export const DEMO_LAYOUT = [
     "w": 170,
     "h": 170,
     "rotation": 0,
-    "number": "3",
+    "number": "303",
     "capacity": 4,
-    "zone": ""
+    "zone": "",
+    "prefix": ""
   },
   {
     "area": "terrasse",
@@ -2466,9 +2480,10 @@ export const DEMO_LAYOUT = [
     "w": 170,
     "h": 170,
     "rotation": 0,
-    "number": "8",
+    "number": "308",
     "capacity": 4,
-    "zone": ""
+    "zone": "",
+    "prefix": ""
   },
   {
     "area": "terrasse",
@@ -2478,9 +2493,10 @@ export const DEMO_LAYOUT = [
     "w": 170,
     "h": 170,
     "rotation": 0,
-    "number": "9",
+    "number": "309",
     "capacity": 4,
-    "zone": ""
+    "zone": "",
+    "prefix": ""
   },
   {
     "area": "terrasse",
@@ -2490,9 +2506,10 @@ export const DEMO_LAYOUT = [
     "w": 170,
     "h": 170,
     "rotation": 0,
-    "number": "13",
+    "number": "313",
     "capacity": 4,
-    "zone": ""
+    "zone": "",
+    "prefix": ""
   },
   {
     "area": "terrasse",
@@ -2502,9 +2519,10 @@ export const DEMO_LAYOUT = [
     "w": 170,
     "h": 170,
     "rotation": 0,
-    "number": "14",
+    "number": "314",
     "capacity": 4,
-    "zone": ""
+    "zone": "",
+    "prefix": ""
   },
   {
     "area": "terrasse",
@@ -2636,7 +2654,8 @@ export const DEMO_LAYOUT = [
     "rotation": 0,
     "number": "202",
     "capacity": 2,
-    "zone": ""
+    "zone": "",
+    "prefix": ""
   },
   {
     "area": "arcade",
@@ -2646,9 +2665,10 @@ export const DEMO_LAYOUT = [
     "w": 110,
     "h": 110,
     "rotation": 0,
-    "number": "203",
+    "number": "201",
     "capacity": 2,
-    "zone": ""
+    "zone": "",
+    "prefix": ""
   },
   {
     "area": "arcade",
@@ -2658,9 +2678,10 @@ export const DEMO_LAYOUT = [
     "w": 110,
     "h": 110,
     "rotation": 0,
-    "number": "204",
+    "number": "203",
     "capacity": 2,
-    "zone": ""
+    "zone": "",
+    "prefix": ""
   },
   {
     "area": "arcade",
@@ -2670,9 +2691,10 @@ export const DEMO_LAYOUT = [
     "w": 110,
     "h": 110,
     "rotation": 0,
-    "number": "205",
+    "number": "204",
     "capacity": 2,
-    "zone": ""
+    "zone": "",
+    "prefix": ""
   },
   {
     "area": "arcade",
@@ -2682,9 +2704,10 @@ export const DEMO_LAYOUT = [
     "w": 110,
     "h": 110,
     "rotation": 0,
-    "number": "206",
+    "number": "205",
     "capacity": 2,
-    "zone": ""
+    "zone": "",
+    "prefix": ""
   },
   {
     "area": "arcade",
@@ -2730,9 +2753,10 @@ export const DEMO_LAYOUT = [
     "w": 150,
     "h": 120,
     "rotation": 0,
-    "number": "207",
+    "number": "206",
     "capacity": 2,
-    "zone": ""
+    "zone": "",
+    "prefix": ""
   },
   {
     "area": "arcade",
@@ -2742,9 +2766,10 @@ export const DEMO_LAYOUT = [
     "w": 130,
     "h": 130,
     "rotation": 0,
-    "number": "208",
+    "number": "211",
     "capacity": 4,
-    "zone": ""
+    "zone": "",
+    "prefix": ""
   },
   {
     "area": "arcade",
@@ -2754,9 +2779,10 @@ export const DEMO_LAYOUT = [
     "w": 130,
     "h": 130,
     "rotation": 0,
-    "number": "209",
+    "number": "207",
     "capacity": 4,
-    "zone": ""
+    "zone": "",
+    "prefix": ""
   },
   {
     "area": "arcade",
@@ -2766,9 +2792,10 @@ export const DEMO_LAYOUT = [
     "w": 130,
     "h": 130,
     "rotation": 0,
-    "number": "210",
+    "number": "212",
     "capacity": 4,
-    "zone": ""
+    "zone": "",
+    "prefix": ""
   },
   {
     "area": "arcade",
@@ -2778,9 +2805,10 @@ export const DEMO_LAYOUT = [
     "w": 130,
     "h": 130,
     "rotation": 0,
-    "number": "211",
+    "number": "208",
     "capacity": 4,
-    "zone": ""
+    "zone": "",
+    "prefix": ""
   },
   {
     "area": "arcade",
@@ -2790,9 +2818,10 @@ export const DEMO_LAYOUT = [
     "w": 130,
     "h": 130,
     "rotation": 0,
-    "number": "212",
+    "number": "209",
     "capacity": 4,
-    "zone": ""
+    "zone": "",
+    "prefix": ""
   },
   {
     "area": "arcade",
@@ -2804,7 +2833,8 @@ export const DEMO_LAYOUT = [
     "rotation": 0,
     "number": "213",
     "capacity": 4,
-    "zone": ""
+    "zone": "",
+    "prefix": ""
   },
   {
     "area": "arcade",
@@ -2814,9 +2844,10 @@ export const DEMO_LAYOUT = [
     "w": 150,
     "h": 120,
     "rotation": 0,
-    "number": "214",
+    "number": "210",
     "capacity": 2,
-    "zone": ""
+    "zone": "",
+    "prefix": ""
   },
   {
     "area": "arcade",
