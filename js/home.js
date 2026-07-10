@@ -89,12 +89,15 @@ function renderCats() {
   }
   if (editMode) tiles.push(h('button', { class: 'tile add-tile', onclick: () => editCategory(null) },
     h('div', { class: 'plus' }, '＋'), h('div', { class: 'ts' }, 'Nouvelle famille')));
-  // tuiles personnalisées
-  for (const t of state.tiles) {
-    tiles.push(h('button', { class: 'tile custom-tile', style: `--c:${t.color || '#4FA3C7'}`, onclick: () => editMode ? editTile(t) : tapCustom(t) },
-      editMode ? h('span', { class: 'tedit' }, '✎') : null,
+  // tuiles personnalisées (triées par ordre ; réordonnables au doigt en édition)
+  for (const t of [...state.tiles].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))) {
+    const btn = h('button', { class: 'tile custom-tile', style: `--c:${t.color || '#4FA3C7'}`, dataset: { tileid: t.id },
+      onclick: editMode ? null : () => tapCustom(t) },
+      editMode ? h('span', { class: 'tedit' }, '⠿') : null,
       h('div', { class: 'tt' }, t.label || 'Tuile'),
-      t.productId ? h('div', { class: 'ts' }, 'Produit') : t.categoryId ? h('div', { class: 'ts' }, 'Famille') : null));
+      t.productId ? h('div', { class: 'ts' }, 'Produit') : t.categoryId ? h('div', { class: 'ts' }, 'Famille') : null);
+    if (editMode) enableTileDrag(btn, t);
+    tiles.push(btn);
   }
   if (editMode) tiles.push(h('button', { class: 'tile add-tile', onclick: () => editTile(null) }, h('div', { class: 'plus' }, '＋'), h('div', { class: 'ts' }, 'Nouvelle tuile')));
 
@@ -153,6 +156,64 @@ async function addProduct(product) {
 function tapCustom(t) {
   if (t.productId) { const p = state.products.find((x) => x.id === t.productId); if (p) addProduct(p); else toast('Produit introuvable'); }
   else if (t.categoryId) { nav = { level: 'products', catId: t.categoryId, sub: null, page: 0 }; renderRight(); }
+}
+
+// ── Réordonnancement des tuiles au doigt (Pointer Events) ─────
+// Tap = éditer la tuile ; glisser = la déplacer parmi les autres tuiles perso.
+function enableTileDrag(btn, tile) {
+  btn.style.touchAction = 'none';
+  btn.addEventListener('pointerdown', (e) => {
+    if (!e.isPrimary) return;
+    const startX = e.clientX, startY = e.clientY;
+    let started = false, moved = false, clone = null, grabX = 0, grabY = 0;
+    try { btn.setPointerCapture(e.pointerId); } catch {}
+
+    const onMove = (ev) => {
+      if (!started) {
+        if (Math.hypot(ev.clientX - startX, ev.clientY - startY) < 8) return;
+        started = moved = true;
+        const r = btn.getBoundingClientRect();
+        grabX = startX - r.left; grabY = startY - r.top;
+        clone = btn.cloneNode(true);
+        Object.assign(clone.style, { position: 'fixed', left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px', margin: '0', zIndex: '9999', pointerEvents: 'none', opacity: '.92', transform: 'scale(1.04)', boxShadow: '0 12px 32px rgba(0,0,0,.5)' });
+        document.body.append(clone);
+        btn.classList.add('drag-src');
+      }
+      clone.style.left = (ev.clientX - grabX) + 'px';
+      clone.style.top = (ev.clientY - grabY) + 'px';
+      const under = document.elementFromPoint(ev.clientX, ev.clientY);
+      const target = under && under.closest('.custom-tile');
+      if (target && target !== btn && target.parentNode) {
+        const rect = target.getBoundingClientRect();
+        const midX = rect.left + rect.width / 2, midY = rect.top + rect.height / 2;
+        const before = ev.clientY < midY - 2 || (Math.abs(ev.clientY - midY) <= rect.height / 2 && ev.clientX < midX);
+        target.parentNode.insertBefore(btn, before ? target : target.nextSibling);
+      }
+    };
+    const onUp = () => {
+      btn.removeEventListener('pointermove', onMove);
+      btn.removeEventListener('pointerup', onUp);
+      btn.removeEventListener('pointercancel', onUp);
+      if (clone) clone.remove();
+      btn.classList.remove('drag-src');
+      if (!moved) { editTile(tile); return; }
+      persistTileOrder();
+    };
+    btn.addEventListener('pointermove', onMove);
+    btn.addEventListener('pointerup', onUp);
+    btn.addEventListener('pointercancel', onUp);
+  });
+}
+
+async function persistTileOrder() {
+  const ids = [...rightEl.querySelectorAll('.custom-tile')].map((el) => el.dataset.tileid);
+  const byId = new Map(state.tiles.map((t) => [String(t.id), t]));
+  const seen = new Set(ids);
+  const ordered = [...ids.map((id) => byId.get(id)).filter(Boolean), ...state.tiles.filter((t) => !seen.has(String(t.id)))];
+  ordered.forEach((t, i) => { t.order = i; });
+  await store.bulkPut('tiles', ordered);
+  await reloadTiles();
+  toast('Ordre des tuiles enregistré');
 }
 
 // ── Envoi vers une table ─────────────────────────────────────

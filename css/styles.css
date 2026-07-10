@@ -399,7 +399,8 @@ body {
 .home-screen { position: absolute; inset: 0; display: grid; grid-template-columns: minmax(300px, 34%) 1fr; }
 .custom-tile { box-shadow: inset 0 0 0 1px var(--c, var(--line-2)); background: linear-gradient(155deg, color-mix(in srgb, var(--c) 26%, var(--ink-2)), var(--ink-2)); }
 .custom-tile .tt { font-weight: 800; font-size: 19px; }
-.custom-tile .tedit { align-self: flex-end; color: var(--c); font-weight: 800; }
+.custom-tile .tedit { align-self: flex-end; color: var(--c); font-weight: 800; cursor: grab; }
+.custom-tile.drag-src { opacity: .3; }
 .add-tile { border: 1px dashed var(--line-2); background: transparent; align-items: center; justify-content: center; color: var(--muted); }
 .add-tile .plus { font-size: 34px; font-weight: 700; line-height: 1; }
 .swatch { width: 34px; height: 34px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; padding: 0; }
