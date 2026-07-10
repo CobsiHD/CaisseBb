@@ -262,16 +262,78 @@ async function editTile(tile) {
   const label = h('input', { class: 'input', value: tile.label || '', placeholder: 'ex. Mojito, Pression 50cl…' });
   const picker = colorPicker(tile.color || '#4FA3C7');
 
-  // lien : aucun / produit / famille
-  const linkSel = h('select', { class: 'input' },
-    h('option', { value: '' }, '— Aucun (juste un libellé) —'),
-    h('optgroup', { label: 'Familles' }, state.categories.map((c) => h('option', { value: 'cat:' + c.id, selected: tile.categoryId === c.id }, c.name))),
-    h('optgroup', { label: 'Produits' }, state.products.map((p) => h('option', { value: 'prod:' + p.id, selected: tile.productId === p.id }, `${p.name}`))));
+  // Le libellé se remplit tout seul depuis le produit/famille, tant que l'utilisateur n'a pas tapé le sien.
+  let labelAuto = isNew && !tile.label;
+  label.addEventListener('input', () => { labelAuto = false; });
 
-  const body = h('div', { class: 'modal-body', style: 'padding:0' },
+  // Raccourci courant : { type:'prod'|'cat', id } ou null.
+  let link = tile.productId ? { type: 'prod', id: tile.productId } : tile.categoryId ? { type: 'cat', id: tile.categoryId } : null;
+
+  function linkedItem() {
+    if (link?.type === 'prod') return state.products.find((p) => p.id === link.id);
+    if (link?.type === 'cat') return state.categories.find((c) => c.id === link.id);
+    return null;
+  }
+  function chooserText() {
+    const it = linkedItem();
+    if (!it) return '＋ Choisir un produit…';
+    return (link.type === 'prod' ? '🍹 ' : '📂 ') + it.name;
+  }
+  function applyLink() {
+    const it = linkedItem();
+    if (!it) return;
+    const color = link.type === 'prod' ? (it.color || catColor(it.categoryId)) : catColor(it.id);
+    if (labelAuto || !label.value.trim()) { label.value = it.name; labelAuto = true; }
+    if (color) picker.set(color);
+  }
+
+  const chooserBtn = h('button', { class: 'btn btn-ghost', style: 'width:100%; justify-content:flex-start', onclick: openPicker }, chooserText());
+  function refreshChooser() { clear(chooserBtn).append(document.createTextNode(chooserText())); }
+
+  // ── Vues : formulaire ⇄ sélecteur (familles → produits) ─────
+  const formView = h('div', {},
+    field('Raccourci (produit ou famille)', chooserBtn),
     field('Libellé', label),
-    field('Couleur', picker.el),
-    field('Raccourci', linkSel));
+    field('Couleur', picker.el));
+  const pickerView = h('div', { hidden: true });
+  const body = h('div', { class: 'modal-body', style: 'padding:0' }, formView, pickerView);
+
+  const pickerGrid = () => h('div', { style: 'display:grid; gap:10px; grid-template-columns:repeat(3,1fr); grid-auto-rows:86px; max-height:52vh; overflow:auto; padding:2px' });
+  function openPicker() { formView.hidden = true; pickerView.hidden = false; pickerCats(); }
+  function closePicker() { pickerView.hidden = true; clear(pickerView); formView.hidden = false; }
+  function choose(res) { link = res; if (res) applyLink(); refreshChooser(); closePicker(); }
+
+  function pickerCats() {
+    clear(pickerView);
+    pickerView.append(h('div', { class: 'pos-bar' },
+      h('h3', {}, 'Choisir un produit'), h('div', { class: 'spacer' }),
+      h('button', { class: 'chip', onclick: () => choose(null) }, 'Sans raccourci'),
+      h('button', { class: 'chip', onclick: closePicker }, '‹ Retour')));
+    const grid = pickerGrid();
+    for (const c of state.categories) {
+      const count = state.products.filter((p) => p.categoryId === c.id).length;
+      if (!count) continue;
+      grid.append(h('button', { class: 'tile cat-tile', style: `--c:${catColor(c.id)}`, onclick: () => pickerProds(c.id) },
+        h('span', { class: 'tcount' }, `${count}`), h('div', { class: 'tt' }, c.name)));
+    }
+    pickerView.append(grid);
+  }
+  function pickerProds(cid) {
+    clear(pickerView);
+    const cat = state.categories.find((c) => c.id === cid);
+    pickerView.append(h('div', { class: 'pos-bar' },
+      h('button', { class: 'chip', onclick: pickerCats }, '‹ Familles'),
+      h('h3', {}, cat?.name || ''), h('div', { class: 'spacer' })));
+    const grid = pickerGrid();
+    grid.append(h('button', { class: 'tile custom-tile', style: `--c:${catColor(cid)}`, onclick: () => choose({ type: 'cat', id: cid }) },
+      h('div', { class: 'tt' }, 'Toute la famille'), h('div', { class: 'ts' }, cat?.name || '')));
+    for (const p of state.products.filter((p) => p.categoryId === cid)) {
+      grid.append(h('button', { class: 'tile prod-tile', style: `--c:${p.color || catColor(cid)}`, onclick: () => choose({ type: 'prod', id: p.id }) },
+        h('div', { class: 'tt' }, p.name),
+        h('div', { class: 'tp' }, p.variants.map((v) => `${v.label ? v.label + ' ' : ''}${money(v.price)}`).join(' · '))));
+    }
+    pickerView.append(grid);
+  }
 
   const actions = [{ label: 'Annuler', value: null }, { label: isNew ? 'Créer' : 'Enregistrer', kind: 'primary', value: 'save' }];
   if (!isNew) actions.unshift({ label: 'Supprimer', kind: 'danger', value: 'del' });
@@ -279,8 +341,8 @@ async function editTile(tile) {
 
   if (v === 'del') { await store.del('tiles', tile.id); await reloadTiles(); renderRight(); toast('Tuile supprimée'); return; }
   if (v !== 'save') return;
-  const link = linkSel.value;
-  const obj = { ...tile, label: label.value.trim() || 'Tuile', color: picker.get(), productId: link.startsWith('prod:') ? link.slice(5) : null, categoryId: link.startsWith('cat:') ? link.slice(4) : null };
+  const obj = { ...tile, label: label.value.trim() || 'Tuile', color: picker.get(),
+    productId: link?.type === 'prod' ? link.id : null, categoryId: link?.type === 'cat' ? link.id : null };
   if (isNew) { obj.order = state.tiles.length; await store.put('tiles', obj); }
   else await store.put('tiles', obj);
   await reloadTiles(); renderRight();

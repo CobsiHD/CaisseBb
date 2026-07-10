@@ -12,18 +12,16 @@ export const TILE_COLORS = ['#C9A24B', '#4FA3C7', '#5FA8A0', '#9B5A6A', '#C98A4B
 export const catColor = (id) =>
   state.categories.find((c) => c.id === id)?.color || CAT_COLORS[id] || '#4FA3C7';
 
-// Sélecteur de couleur réutilisable : renvoie { el, get() }.
+// Sélecteur de couleur réutilisable : renvoie { el, get(), set(c) }.
 export function colorPicker(initial = '#4FA3C7') {
   let value = initial;
   const row = h('div', { class: 'opt-toggle' });
+  const paint = () => row.querySelectorAll('.swatch').forEach((s) => s.classList.toggle('on', s.dataset.c === value));
   TILE_COLORS.forEach((c) => {
-    const dot = h('button', {
-      class: `swatch ${c === value ? 'on' : ''}`, style: `background:${c}`,
-      onclick: () => { value = c; row.querySelectorAll('.swatch').forEach((s) => s.classList.remove('on')); dot.classList.add('on'); },
-    });
-    row.append(dot);
+    row.append(h('button', { class: 'swatch', style: `background:${c}`, dataset: { c }, onclick: () => { value = c; paint(); } }));
   });
-  return { el: row, get: () => value };
+  paint();
+  return { el: row, get: () => value, set: (c) => { value = c; paint(); } };
 }
 
 // Remplit une grille SANS scroll : calcule colonnes/lignes selon la place
