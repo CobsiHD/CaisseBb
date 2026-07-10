@@ -191,7 +191,7 @@ function renderProducts() {
 
   const list = (nav.sub ? all.filter((p) => p.sub === nav.sub) : all);
   const tiles = list.map((p) => h('button', {
-    class: `tile prod-tile ${p.available === false ? 'unavail' : ''}`, style: `--c:${catColor(nav.catId)}`,
+    class: `tile prod-tile ${p.available === false ? 'unavail' : ''}`, style: `--c:${p.color || catColor(nav.catId)}`,
     onclick: () => p.available !== false && quickAdd(p),
   },
     h('div', { class: 'tt' }, p.name),
