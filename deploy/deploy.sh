@@ -18,7 +18,7 @@ APP_DIR=/opt/caisse-bluebird
 
 echo "▶ Envoi de l'appli vers $TARGET:$WEB_DIR"
 rsync -az --delete --rsync-path="sudo rsync" \
-  --exclude '.git' --exclude '.idea' --exclude 'deploy' --exclude 'server' \
+  --exclude '.git' --exclude '.idea' --exclude 'deploy' --exclude 'server' --exclude 'agent' \
   --exclude '*.md' --exclude '.DS_Store' --exclude 'node_modules' \
   ./ "$TARGET:$WEB_DIR/"
 
