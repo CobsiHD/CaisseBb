@@ -16,6 +16,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/mobile.css" />
 </head>
 <body>
   <header class="topbar">
@@ -30,6 +31,7 @@
       <button class="tab" data-view="floor" role="tab">Salle</button>
       <button class="tab" data-view="menu" role="tab">Carte</button>
       <button class="tab" data-view="catalog" role="tab">Produits</button>
+      <button class="tab" data-view="cuisine" role="tab">Cuisine</button>
       <button class="tab" data-view="dashboard" role="tab">Tableau&nbsp;de&nbsp;bord</button>
     </nav>
     <div class="topbar-actions">
@@ -38,6 +40,9 @@
   </header>
 
   <main id="view" class="view"></main>
+
+  <!-- Barre d'onglets du bas (interface téléphone uniquement) -->
+  <nav class="m-nav" id="m-nav" role="tablist" hidden></nav>
 
   <!-- Tiroir de note (commande) -->
   <aside id="drawer" class="drawer" hidden></aside>

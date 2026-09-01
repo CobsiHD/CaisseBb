@@ -8,6 +8,8 @@ export const state = {
   layout: [],
   orders: [],
   tiles: [],
+  tickets: [],
+  prints: [],
   area: 'terrasse',      // onglet actif du plan
   planMode: 'service',   // 'service' | 'edition'
 };
@@ -25,13 +27,15 @@ export function emit(evt, payload) {
 
 export async function loadAll() {
   await store.init();
-  const [settings, categories, products, layout, orders, tiles] = await Promise.all([
+  const [settings, categories, products, layout, orders, tiles, tickets, prints] = await Promise.all([
     store.getSettings(),
     store.getAll('categories'),
     store.getAll('products'),
     store.getAll('layout'),
     store.getAll('orders'),
     store.getAll('tiles'),
+    store.getAll('tickets'),
+    store.getAll('prints'),
   ]);
   state.settings = settings;
   state.categories = categories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
@@ -39,12 +43,24 @@ export async function loadAll() {
   state.layout = layout;
   state.orders = orders;
   state.tiles = tiles;
+  state.tickets = tickets;
+  state.prints = prints;
   state.area = settings.activeArea || 'terrasse';
 }
 
 export async function reloadTiles() {
   state.tiles = await store.getAll('tiles');
   emit('tiles');
+}
+
+export async function reloadTickets() {
+  state.tickets = await store.getAll('tickets');
+  emit('tickets');
+}
+
+export async function reloadPrints() {
+  state.prints = await store.getAll('prints');
+  emit('tickets');   // même écran : l'accusé d'impression s'affiche sur le bon
 }
 
 export async function reloadOrders() {

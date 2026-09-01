@@ -35,6 +35,7 @@ export const CATEGORIES = [
   {
     "id": "snack",
     "name": "Snack salé",
+    "cuisine": true,
     "order": 6
   }
 ];

@@ -1,0 +1,23 @@
+[Unit]
+Description=Caisse Bluebird — API de synchronisation
+After=network.target
+
+[Service]
+Type=simple
+User=caisse
+Group=caisse
+WorkingDirectory=/opt/caisse-bluebird
+EnvironmentFile=/etc/caisse-bluebird.env
+ExecStart=/usr/bin/node /opt/caisse-bluebird/server.js
+Restart=always
+RestartSec=3
+
+# Cloisonnement : le service ne peut écrire que dans son dossier de données.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/caisse-bluebird
+
+[Install]
+WantedBy=multi-user.target

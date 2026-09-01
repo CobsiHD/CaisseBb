@@ -1,5 +1,5 @@
 // service-worker.js — cache applicatif pour fonctionnement hors-ligne.
-const CACHE = 'bluebird-v15';
+const CACHE = 'bluebird-v20';
 const ASSETS_EXT = [
   'arche_pierre', 'caniveau', 'chaise_noire', 'chaise_verte', 'deck_tile',
   'enseigne_bluebird', 'enseigne_neon_b', 'guirlande_lumineuse', 'jardiniere',
@@ -16,10 +16,14 @@ const ASSETS_INT = [
 const ASSETS = [...ASSETS_EXT, ...ASSETS_INT];
 const CORE = [
   '.', 'index.html',
-  'css/styles.css',
+  'css/styles.css', 'css/mobile.css',
   'js/app.js', 'js/state.js', 'js/store.js', 'js/seed.js', 'js/ui.js', 'js/pos.js',
   'js/floorplan.js', 'js/elements.js', 'js/order.js', 'js/home.js',
   'js/catalog.js', 'js/menu.js', 'js/dashboard.js',
+  'js/kitchen.js', 'js/cuisine.js', 'js/note.js', 'js/openorder.js',
+  'js/mobile/shell.js', 'js/mobile/views.js', 'js/mobile/mfloor.js',
+  'js/mobile/morder.js', 'js/mobile/mhome.js',
+  'js/cloud.js', 'js/cloud-config.js',
   'manifest.webmanifest',
   'assets/icons/icon.svg', 'assets/icons/icon-maskable.svg',
   ...ASSETS,
@@ -39,7 +43,13 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const { request } = e;
   if (request.method !== 'GET') return;
-  const sameOrigin = new URL(request.url).origin === self.location.origin;
+  const reqUrl = new URL(request.url);
+  // API de synchronisation : jamais de cache, toujours le réseau (données en direct).
+  if (reqUrl.pathname.startsWith('/api/')) {
+    e.respondWith(fetch(request));
+    return;
+  }
+  const sameOrigin = reqUrl.origin === self.location.origin;
 
   const cacheCopy = (res) => {
     if (res && res.status === 200 && (res.type === 'basic' || res.type === 'cors')) {

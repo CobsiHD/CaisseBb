@@ -3,6 +3,8 @@ import { state, reloadCatalog, money } from './state.js';
 import { h, clear, toast, modal, field, confirmDialog } from './ui.js';
 import * as store from './store.js';
 import { requirePin } from './app.js';
+import { colorPicker } from './pos.js';
+import { isCuisineProduct } from './kitchen.js';
 
 const slug = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
@@ -80,10 +82,16 @@ function optionRow(o = { label: '', delta: 0 }) {
 
 async function editProduct(p, container) {
   const isNew = !p;
-  p = p || { name: '', categoryId: state.categories[0].id, sub: '', variants: [{ label: '', price: 0 }], options: [], happyHour: false, available: true, desc: '' };
+  p = p || { name: '', categoryId: state.categories[0]?.id || '__new__', sub: '', variants: [{ label: '', price: 0 }], options: [], happyHour: false, available: true, desc: '' };
 
   const name = h('input', { class: 'input', value: p.name, placeholder: 'Nom du produit' });
-  const catSel = h('select', { class: 'input' }, state.categories.map((c) => h('option', { value: c.id, selected: c.id === p.categoryId }, c.name)));
+  const catSel = h('select', { class: 'input', onchange: () => { newCatWrap.hidden = catSel.value !== '__new__'; } },
+    state.categories.map((c) => h('option', { value: c.id, selected: c.id === p.categoryId }, c.name)),
+    h('option', { value: '__new__' }, '＋ Nouvelle catégorie…'));
+  const newCatName = h('input', { class: 'input', placeholder: 'Nom de la nouvelle catégorie' });
+  const newCatColor = colorPicker('#4FA3C7');
+  const newCatWrap = h('div', { hidden: p.categoryId !== '__new__', style: 'margin-top:8px; display:grid; gap:8px' },
+    newCatName, newCatColor.el);
   const sub = h('input', { class: 'input', value: p.sub || '', placeholder: 'Sous-catégorie (ex. Classiques)' });
   const desc = h('input', { class: 'input', value: p.desc || '', placeholder: 'Composition / description (optionnel)' });
 
@@ -94,15 +102,19 @@ async function editProduct(p, container) {
 
   const hh = h('input', { type: 'checkbox', checked: !!p.happyHour });
   const avail = h('input', { type: 'checkbox', checked: p.available !== false });
+  // Par défaut le produit suit sa famille ; cette case fige son cas particulier.
+  const cuisine = h('input', { type: 'checkbox', checked: isCuisineProduct(p) });
 
   const body = h('div', { class: 'modal-body', style: 'padding:0' },
     field('Nom', name),
     h('div', { class: 'row' }, field('Catégorie', catSel), field('Sous-catégorie', sub)),
+    newCatWrap,
     field('Description', desc),
     field('Formats & prix', h('div', {}, variantsBox, addVariant)),
     field('Options (+ prix)', h('div', {}, optionsBox, addOption)),
     h('label', { class: 'switch' }, hh, h('span', { class: 'track' }), h('span', { class: 'muted' }, 'Éligible Bluebird\'s Hour (1+1)')),
     h('label', { class: 'switch' }, avail, h('span', { class: 'track' }), h('span', { class: 'muted' }, 'Disponible')),
+    h('label', { class: 'switch' }, cuisine, h('span', { class: 'track' }), h('span', { class: 'muted' }, 'Bon de cuisine (part au Bluebird)')),
   );
 
   const actions = [{ label: 'Annuler', value: null }, { label: isNew ? 'Créer' : 'Enregistrer', kind: 'primary', value: 'save' }];
@@ -119,16 +131,27 @@ async function editProduct(p, container) {
   if (v !== 'save') return;
   if (!name.value.trim()) { toast('Le nom est requis'); return; }
 
+  // Catégorie : existante, ou création à la volée si « ＋ Nouvelle catégorie… ».
+  let categoryId = catSel.value;
+  if (categoryId === '__new__') {
+    const nm = newCatName.value.trim();
+    if (!nm) { toast('Nom de la nouvelle catégorie requis'); return; }
+    categoryId = slug(nm);
+    while (state.categories.some((c) => c.id === categoryId)) categoryId += '-2';
+    await store.put('categories', { id: categoryId, name: nm, color: newCatColor.get(), order: state.categories.length });
+  }
+
   const variants = [...variantsBox.children].map((r) => r._get()).filter((x) => x.label !== '' || x.price > 0);
   if (!variants.length) variants.push({ label: '', price: 0 });
   const options = [...optionsBox.children].map((r) => r._get()).filter((x) => x.label);
 
   const obj = {
     ...p,
-    name: name.value.trim(), categoryId: catSel.value, sub: sub.value.trim(), desc: desc.value.trim(),
+    name: name.value.trim(), categoryId, sub: sub.value.trim(), desc: desc.value.trim(),
     variants, options, happyHour: hh.checked, available: avail.checked,
+    cuisine: cuisine.checked,
   };
-  if (isNew) { obj.id = `${obj.categoryId}-${slug(obj.name)}-${Date.now().toString(36).slice(-4)}`; obj.order = state.products.length; }
+  if (isNew) { obj.id = `${categoryId}-${slug(obj.name)}-${Date.now().toString(36).slice(-4)}`; obj.order = state.products.length; }
   await store.put('products', obj);
   await reloadCatalog();
   renderCatalog(container);

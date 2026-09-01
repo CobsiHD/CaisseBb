@@ -3,10 +3,23 @@
 import { CATEGORIES, PRODUCTS, DEMO_LAYOUT, SETTINGS_DEFAULTS, TILES } from './seed.js';
 
 const DB_NAME = 'bluebird-caisse';
-const DB_VERSION = 2;
-const STORES = ['settings', 'categories', 'products', 'layout', 'orders', 'tiles'];
+const DB_VERSION = 4;
+const STORES = ['settings', 'categories', 'products', 'layout', 'orders', 'tiles', 'tickets', 'prints'];
 
 let dbPromise = null;
+
+// Hook de synchronisation (branché par cloud.js). Appelé après chaque écriture :
+// syncHook(op, store, valueOuId). Reste null tant que le cloud n'est pas actif.
+let syncHook = null;
+export function setSyncHook(fn) { syncHook = fn; }
+
+// Stores dont les ids étaient auto-incrémentés : avec la synchro entre iPads, deux
+// appareils attribueraient le même numéro. On génère donc un id unique côté client.
+const UID_STORES = new Set(['layout', 'orders', 'tiles', 'tickets']);
+export function uid() {
+  return crypto.randomUUID ? crypto.randomUUID()
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
 
 function openDB() {
   if (dbPromise) return dbPromise;
@@ -26,6 +39,14 @@ function openDB() {
         db.createObjectStore('orders', { keyPath: 'id', autoIncrement: true });
       if (!db.objectStoreNames.contains('tiles'))
         db.createObjectStore('tiles', { keyPath: 'id', autoIncrement: true });
+      // Bons de commande cuisine (envoyés du 22 vers le Bluebird).
+      if (!db.objectStoreNames.contains('tickets'))
+        db.createObjectStore('tickets', { keyPath: 'id' });
+      // Accusés d'impression, écrits UNIQUEMENT par l'agent du Raspberry Pi.
+      // Table séparée des bons : la synchro applique le dernier-écrit-gagne par
+      // ligne, donc l'agent et la cuisine ne doivent jamais viser la même.
+      if (!db.objectStoreNames.contains('prints'))
+        db.createObjectStore('prints', { keyPath: 'id' });
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
@@ -51,21 +72,30 @@ export async function get(store, id) {
   return asPromise((await tx(store)).get(id));
 }
 export async function put(store, value) {
+  if (value && value.id == null && UID_STORES.has(store)) value.id = uid();
   const os = await tx(store, 'readwrite');
   const key = await asPromise(os.put(value));
+  if (value.id == null) value = { ...value, id: key };
+  syncHook && syncHook('put', store, value);
   return value.id ?? key;
 }
 export async function bulkPut(store, values) {
+  if (UID_STORES.has(store)) for (const v of values) if (v && v.id == null) v.id = uid();
   const os = await tx(store, 'readwrite');
   await Promise.all(values.map((v) => asPromise(os.put(v))));
+  syncHook && syncHook('bulkPut', store, values);
 }
 export async function del(store, id) {
   const os = await tx(store, 'readwrite');
-  return asPromise(os.delete(id));
+  const r = await asPromise(os.delete(id));
+  syncHook && syncHook('del', store, id);
+  return r;
 }
 export async function clear(store) {
   const os = await tx(store, 'readwrite');
-  return asPromise(os.clear());
+  const r = await asPromise(os.clear());
+  syncHook && syncHook('clear', store);
+  return r;
 }
 
 // ── Réglages (clé/valeur) ────────────────────────────────────
@@ -94,12 +124,12 @@ export async function init() {
 
 // ── Sauvegarde / restauration JSON ───────────────────────────
 export async function exportAll() {
-  const [settings, categories, products, layout, orders] = await Promise.all(
+  const [settings, categories, products, layout, orders, tiles, tickets, prints] = await Promise.all(
     STORES.map((s) => getAll(s))
   );
   return {
     app: 'bluebird-caisse', version: DB_VERSION,
-    data: { settings, categories, products, layout, orders },
+    data: { settings, categories, products, layout, orders, tiles, tickets, prints },
   };
 }
 
@@ -125,7 +155,7 @@ export async function resetCatalog() {
 // Efface aussi les notes en cours (sinon elles pointeraient vers d'anciennes tables).
 // Ne touche pas aux réglages (PIN, happy hour).
 export async function loadDefaults() {
-  for (const s of ['categories', 'products', 'layout', 'tiles', 'orders']) await clear(s);
+  for (const s of ['categories', 'products', 'layout', 'tiles', 'orders', 'tickets', 'prints']) await clear(s);
   await bulkPut('categories', CATEGORIES.map((c, i) => ({ ...c, order: i })));
   await bulkPut('products', PRODUCTS.map((p, i) => ({ ...p, order: i })));
   await bulkPut('layout', DEMO_LAYOUT);

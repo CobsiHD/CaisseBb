@@ -1,0 +1,285 @@
+/* ============================================================
+   Bluebird · Caisse — interface téléphone (portrait 9/16)
+   ------------------------------------------------------------
+   Tout est portée par `body.mobile`, posée par mobile/shell.js : sans cette
+   classe, ce fichier ne change rien et l'iPad garde exactement son écran.
+   Principes : une seule colonne, les actions dans la zone du pouce (bas de
+   l'écran), et du défilement plutôt que de la pagination.
+   ============================================================ */
+body.mobile {
+  --mnav: 58px;                 /* hauteur de la barre d'onglets du bas */
+  --mtop: 50px;                 /* hauteur de la barre de titre */
+  --peek: 62px;                 /* résumé de note toujours visible */
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --tap: 52px;
+}
+
+/* ── Barre de titre : réduite au strict minimum ─────────────── */
+body.mobile .topbar {
+  height: var(--mtop);
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  padding: 0 14px;
+}
+body.mobile .tabs { display: none; }
+body.mobile .brand-name { font-size: 21px; }
+body.mobile .brand-mark { width: 21px; height: 21px; }
+body.mobile .icon-btn { width: 40px; height: 40px; font-size: 17px; }
+
+body.mobile .view {
+  inset: calc(var(--mtop) + env(safe-area-inset-top, 0px)) 0 calc(var(--mnav) + var(--safe-b)) 0;
+}
+
+/* ── Barre d'onglets du bas ────────────────────────────────── */
+.m-nav {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 45;
+  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+  height: calc(var(--mnav) + var(--safe-b));
+  padding-bottom: var(--safe-b);
+  border-top: 1px solid var(--line-2);
+  background: linear-gradient(180deg, rgba(19,36,58,.94), rgba(14,27,42,.98));
+  backdrop-filter: blur(12px);
+}
+.m-tab {
+  appearance: none; border: 0; background: transparent; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  color: var(--faint); font-family: var(--ui); font-weight: 700; padding: 0;
+  position: relative; min-height: 0;
+}
+.m-tab-ico { font-size: 19px; line-height: 1; filter: grayscale(1) opacity(.75); }
+.m-tab-lbl { font-size: 10.5px; letter-spacing: .01em; }
+/* On réutilise la classe `.tab` d'app.js pour l'état actif : il faut donc
+   annuler la pilule dorée de la version iPad. */
+.m-nav .tab.active { background: transparent; color: var(--brass); }
+.m-nav .tab.active .m-tab-ico { filter: none; }
+.m-nav .tab.active::before {
+  content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 28px; height: 3px; border-radius: 0 0 3px 3px; background: var(--brass);
+}
+.m-nav .tab.has-badge::after { top: 4px; right: calc(50% - 22px); }
+
+/* ── Feuille du bas générique (menu « Plus ») ───────────────── */
+.m-sheet-layer {
+  position: fixed; inset: 0; z-index: 70;
+  background: rgba(6,12,20,0); transition: background .2s ease;
+  display: flex; align-items: flex-end;
+}
+.m-sheet-layer.on { background: rgba(6,12,20,.62); }
+.m-sheet {
+  width: 100%; max-height: 85dvh; overflow: auto;
+  background: var(--ink-1); border-top: 1px solid var(--line-2);
+  border-radius: 20px 20px 0 0; box-shadow: var(--shadow);
+  padding-bottom: max(14px, var(--safe-b));
+  transform: translateY(100%); transition: transform .22s cubic-bezier(.2,.8,.3,1);
+}
+.m-sheet-layer.on .m-sheet { transform: none; }
+.m-sheet-grab { height: 26px; display: grid; place-items: center; cursor: pointer; }
+.m-sheet-grab::after { content: ''; width: 40px; height: 4px; border-radius: 999px; background: var(--line-2); }
+.m-sheet-title { font-family: var(--display); font-size: 24px; font-weight: 600; padding: 0 18px 8px; }
+.m-sheet-body { padding: 6px 14px 10px; }
+
+.m-more-row {
+  appearance: none; width: 100%; cursor: pointer; text-align: left;
+  display: flex; align-items: center; gap: 12px;
+  min-height: 54px; padding: 0 12px; margin-bottom: 6px;
+  border: 1px solid var(--line); border-radius: var(--r);
+  background: var(--ink-2); color: var(--text);
+  font-family: var(--ui); font-size: 16px; font-weight: 600;
+}
+.m-more-ico { font-size: 18px; width: 24px; text-align: center; }
+.m-more-chev { margin-left: auto; color: var(--faint); font-size: 20px; }
+.m-more-sep { font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--brass); font-weight: 700; padding: 12px 4px 8px; }
+.m-seg { display: flex; gap: 8px; }
+.m-seg .chip { flex: 1; }
+
+/* ── Salle : liste de tables ───────────────────────────────── */
+.m-floorbar { flex-direction: column; align-items: stretch; gap: 10px; padding: 12px 14px; }
+.m-floorbar-top { display: flex; align-items: baseline; gap: 10px; }
+.m-floorbar-top .spacer { flex: 1; }
+.m-floorbar h2 { font-size: 26px; }
+.m-floorsum { font-size: 13px; color: var(--muted); text-align: right; }
+.m-floorsum .n { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* Les rangées de chips défilent horizontalement plutôt que de passer à la ligne :
+   la hauteur de la barre reste stable quand on change de zone. */
+.m-chips {
+  display: flex; align-items: center; gap: 8px;
+  overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.m-chips::-webkit-scrollbar { display: none; }
+.m-chips > * { flex: 0 0 auto; }
+.m-chips .spacer { flex: 1 0 auto; }
+.m-crumb { font-weight: 700; color: var(--muted); font-size: 14px; }
+
+.m-tables { padding: 12px 14px calc(14px + var(--safe-b)); display: grid; gap: 8px; }
+.m-table {
+  appearance: none; cursor: pointer; text-align: left; width: 100%;
+  display: grid; grid-template-columns: 10px 1fr auto; align-items: center; gap: 12px;
+  min-height: 68px; padding: 12px 14px;
+  border: 1px solid var(--line); border-left: 3px solid var(--faint);
+  border-radius: var(--r); background: var(--ink-1); color: var(--text);
+  font-family: var(--ui);
+}
+.m-table:active { transform: translateY(1px); }
+.m-table.libre { opacity: .62; }
+.m-table.occupee   { border-left-color: var(--occupee); background: var(--ink-2); }
+.m-table.encaisser { border-left-color: var(--encaisser); background: var(--ink-2); }
+.m-table-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--libre); }
+.m-table.occupee   .m-table-dot { background: var(--occupee); }
+.m-table.encaisser .m-table-dot { background: var(--encaisser); animation: pulse 1.6s infinite; }
+.m-table-main { min-width: 0; }
+.m-table-num { font-family: var(--display); font-size: 27px; font-weight: 600; line-height: 1.05; }
+.m-table-meta { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.m-table-side { text-align: right; }
+.m-table-amount { font-weight: 800; font-size: 17px; color: var(--brass-soft); font-variant-numeric: tabular-nums; }
+.m-table-state { font-size: 11.5px; color: var(--muted); }
+.m-table.encaisser .m-table-state { color: var(--encaisser); font-weight: 700; }
+
+/* Le plan reste consultable : on masque juste la palette d'édition, inutilisable
+   sur 390 px de large. */
+body.mobile .pal-side { display: none; }
+body.mobile .floor-bar { gap: 8px; padding: 10px 12px; }
+
+/* ── Écrans à tuiles : commande (plein écran) et comptoir ──── */
+.m-order {
+  position: fixed; inset: 0; z-index: 55;
+  display: flex; flex-direction: column; background: var(--ink);
+}
+.m-home { position: absolute; inset: 0; display: flex; flex-direction: column; }
+
+.m-order-top {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; padding-top: max(8px, env(safe-area-inset-top, 0px));
+  border-bottom: 1px solid var(--line); background: var(--ink-1);
+}
+.m-order-top.flat { padding-top: 10px; background: transparent; }
+.m-order-ttl { flex: 1; min-width: 0; }
+.m-order-name { font-family: var(--display); font-size: 25px; font-weight: 600; line-height: 1.1; }
+.m-order-sub2 { font-size: 12px; color: var(--muted); }
+.m-iconbtn {
+  appearance: none; cursor: pointer; flex: 0 0 auto;
+  width: 44px; height: 44px; border-radius: 12px;
+  border: 1px solid var(--line); background: var(--ink-2); color: var(--text);
+  font-size: 19px; display: grid; place-items: center;
+}
+.m-iconbtn.on { border-color: var(--bluebird); color: var(--bluebird); }
+
+.m-order-sub { padding: 10px 12px 0; }
+.m-order-sub .input { height: 46px; }
+
+.m-grid {
+  flex: 1; min-height: 0; overflow: auto; -webkit-overflow-scrolling: touch;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  grid-auto-rows: minmax(86px, auto); align-content: start;
+  padding: 12px;
+  /* la feuille de note flotte au-dessus : on lui réserve sa place */
+  padding-bottom: calc(var(--peek) + 16px);
+}
+.m-grid .tile { padding: 12px; border-radius: var(--r); gap: 4px; }
+.m-grid .tile .tt { font-size: 16px; }
+.m-grid .cat-tile .tt { font-size: 23px; }
+.m-grid .tile .tp { font-size: 13px; }
+.m-grid .tile .ts { font-size: 11px; }
+
+.m-empty {
+  grid-column: 1 / -1; display: grid; place-items: center; gap: 6px;
+  padding: 40px 20px; color: var(--muted); text-align: center;
+}
+.m-empty .big { font-family: var(--display); font-size: 24px; color: var(--text); }
+
+/* ── Feuille de note ───────────────────────────────────────── */
+/* Fermée, elle n'affiche que le résumé (nb d'articles + total) : le serveur
+   garde le total sous les yeux sans perdre de place pour les produits. */
+.m-tick {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 10;
+  display: flex; flex-direction: column;
+  max-height: var(--peek); overflow: hidden;
+  background: var(--ink-1); border-top: 1px solid var(--line-2);
+  border-radius: 18px 18px 0 0; box-shadow: 0 -14px 34px -18px rgba(0,0,0,.85);
+  transition: max-height .24s cubic-bezier(.2,.8,.3,1);
+}
+.m-tick.open { max-height: 86%; }
+
+.m-tick-bar {
+  appearance: none; border: 0; background: transparent; cursor: pointer; width: 100%;
+  flex: 0 0 var(--peek);
+  display: flex; align-items: center; gap: 10px; padding: 0 16px;
+  color: var(--text); font-family: var(--ui); font-size: 15px; font-weight: 700;
+}
+.m-tick-bar .spacer { flex: 1; }
+.m-tick-chev { color: var(--faint); font-size: 18px; line-height: 1; }
+.m-tick-count { color: var(--muted); }
+.m-tick-total { font-family: var(--display); font-size: 27px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.m-tick-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--bluebird); }
+.m-tick-bar.pulse .m-tick-total { animation: tickpulse .35s ease; }
+@keyframes tickpulse { 0% { transform: scale(1) } 40% { transform: scale(1.12); color: var(--brass) } 100% { transform: scale(1) } }
+
+.m-tick-notes { display: flex; gap: 6px; padding: 0 14px 10px; overflow-x: auto; scrollbar-width: none; }
+.m-tick-notes::-webkit-scrollbar { display: none; }
+.m-tick-notes > * { flex: 0 0 auto; }
+
+.m-tick-lines { flex: 1; min-height: 0; overflow: auto; -webkit-overflow-scrolling: touch; border-top: 1px solid var(--line); }
+.m-tick-foot {
+  border-top: 1px solid var(--line); padding: 12px 14px;
+  padding-bottom: 14px; background: var(--ink-1);
+}
+.m-order .m-tick-foot { padding-bottom: max(14px, var(--safe-b)); }
+
+/* Nom / prix / compteur sur une seule ligne : sur un écran de 5 pouces,
+   chaque ligne de note gagnée est une ligne de plus visible sans scroller. */
+.m-line {
+  display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 2px 10px;
+  padding: 10px 12px 10px 14px; border-bottom: 1px solid var(--line);
+}
+.m-line-main { min-width: 0; cursor: pointer; }
+.m-line-main .nm { font-weight: 700; font-size: 15px; line-height: 1.25; }
+.m-line-main .vr { font-size: 13px; color: var(--muted); font-weight: 500; }
+.m-line-main .opt { font-size: 12px; color: var(--bluebird); }
+.m-line-main .hh { font-size: 11px; color: var(--brass); font-weight: 700; }
+.m-line-side { text-align: right; }
+.m-line-side .price { font-weight: 800; font-size: 15px; font-variant-numeric: tabular-nums; }
+.m-line-side .faint { font-size: 11px; color: var(--faint); white-space: nowrap; }
+.m-line .qty { gap: 0; }
+.m-line .qty button { width: 38px; height: 38px; font-size: 19px; }
+.m-line .qty .n { min-width: 28px; font-size: 16px; }
+
+/* ── Vues réutilisées de l'iPad, resserrées ────────────────── */
+body.mobile .viewbar { padding: 12px 14px; }
+body.mobile .viewbar h2 { font-size: 26px; }
+
+body.mobile .catalog { padding: 12px 14px calc(14px + var(--safe-b)); }
+body.mobile .prod-row { grid-template-columns: 1fr auto; gap: 4px 10px; padding: 12px; }
+body.mobile .prod-row .badge { grid-column: 2; }
+
+body.mobile .dash { padding: 14px; }
+body.mobile .cards { grid-template-columns: 1fr 1fr; gap: 10px; }
+body.mobile .card { padding: 14px; }
+body.mobile .card .v { font-size: 32px; }
+body.mobile .open-row { grid-template-columns: auto 1fr auto; gap: 8px 12px; }
+
+body.mobile .menu-page { padding: 20px 18px 60px; }
+body.mobile .menu-cat > h2 { font-size: 28px; }
+body.mobile .menu-item .mi-name { font-size: 20px; }
+body.mobile .menu-item .mi-price { font-size: 19px; }
+
+body.mobile .cuisine-grid { grid-template-columns: 1fr; }
+body.mobile .k-card { padding: 12px; }
+
+/* ── Dialogues : centrés sur iPad, feuilles du bas ici ──────── */
+body.mobile .modal-layer { place-items: end stretch; padding: 0; }
+body.mobile .modal {
+  width: 100%; max-height: 88dvh;
+  border-radius: 20px 20px 0 0; border-bottom: 0;
+}
+body.mobile .modal-foot { padding-bottom: max(20px, var(--safe-b)); }
+body.mobile .modal-foot .btn { flex: 1; }
+/* En haut : en bas, il tomberait sur le total et les boutons d'encaissement,
+   qui sont précisément ce qu'on regarde au moment où le toast apparaît. */
+body.mobile .toast {
+  top: calc(env(safe-area-inset-top, 0px) + 62px); bottom: auto;
+  width: max-content; max-width: 88vw; font-size: 14px; padding: 11px 16px;
+}
+
+/* Le tiroir latéral de note n'a pas lieu d'être : sur téléphone tout passe
+   par la feuille du bas. */
+body.mobile .drawer { display: none; }

@@ -1,5 +1,5 @@
 // app.js — amorçage, navigation entre vues, réglages, service worker.
-import { state, loadAll, reloadCatalog, reloadLayout, reloadOrders, reloadTiles, on } from './state.js';
+import { state, loadAll, reloadCatalog, reloadLayout, reloadOrders, reloadTiles, reloadTickets, reloadPrints, on } from './state.js';
 import { h, clear, toast, modal, field, confirmDialog } from './ui.js';
 import * as store from './store.js';
 import { renderFloor } from './floorplan.js';
@@ -7,16 +7,28 @@ import { renderCatalog } from './catalog.js';
 import { renderMenu } from './menu.js';
 import { renderDashboard } from './dashboard.js';
 import { renderHome } from './home.js';
+import { renderCuisine } from './cuisine.js';
+import { notifyNewTickets, newTicketCount } from './kitchen.js';
+import { initCloud, syncActive, disconnectCloud, cloudEnabled } from './cloud.js';
+import { isMobileUI, mountMobileShell } from './mobile/shell.js';
+import { MOBILE_VIEWS, MOBILE_HOME_VIEW } from './mobile/views.js';
+import { isListMode } from './mobile/mfloor.js';
 
-const VIEWS = {
+const PAD_VIEWS = {
   home: renderHome,
   floor: renderFloor,
   menu: renderMenu,
   catalog: renderCatalog,
   dashboard: renderDashboard,
+  cuisine: renderCuisine,
 };
 
-let current = 'home';
+// L'iPad garde son écran paysage ; le téléphone a ses propres vues Salle et
+// Comptoir (mobile/views.js) et réutilise les autres.
+const MOBILE = isMobileUI();
+const VIEWS = MOBILE ? MOBILE_VIEWS : PAD_VIEWS;
+
+let current = MOBILE ? MOBILE_HOME_VIEW : 'home';
 
 function navigate(view) {
   current = view;
@@ -28,12 +40,25 @@ function navigate(view) {
 }
 
 // Re-render la vue courante quand les données changent.
+on('tickets', () => { notifyNewTickets(); refreshCuisineBadge(); });
+
 on('*', (evt) => {
-  if (['orders', 'layout', 'catalog', 'tiles'].includes(evt)) {
-    // Le plan se met à jour finement lui-même ; les autres vues se redessinent.
-    if (current !== 'floor' || evt === 'catalog') navigate(current);
+  if (['orders', 'layout', 'catalog', 'tiles', 'tickets'].includes(evt)) {
+    // Le plan se met à jour finement lui-même ; les autres vues se redessinent
+    // (sur téléphone, la Salle est une liste : elle a besoin du redessin).
+    const planSelfUpdates = current === 'floor' && evt !== 'catalog' && !(MOBILE && isListMode());
+    if (!planSelfUpdates) navigate(current);
   }
 });
+
+// Pastille de l'onglet Cuisine : nombre de bons pas encore pris en charge.
+function refreshCuisineBadge() {
+  const n = newTicketCount();
+  document.querySelectorAll('.tab[data-view="cuisine"]').forEach((tab) => {
+    tab.dataset.badge = n > 0 ? String(n) : '';
+    tab.classList.toggle('has-badge', n > 0);
+  });
+}
 
 function bindNav() {
   document.getElementById('tabs').addEventListener('click', (e) => {
@@ -45,7 +70,7 @@ function bindNav() {
 }
 
 // ── Réglages (PIN, happy hour, sauvegarde, réinitialisation) ──
-async function openSettings() {
+export async function openSettings() {
   const s = state.settings;
   const pinInput = h('input', { class: 'input', type: 'tel', inputmode: 'numeric', maxlength: 6, value: s.pin || '', placeholder: 'Aucun' });
   const hhEnabled = h('input', { type: 'checkbox', checked: !!s.happyHour?.enabled });
@@ -60,7 +85,7 @@ async function openSettings() {
       if (!(await confirmDialog('Remplacer toutes les données actuelles par cette sauvegarde ?', { okLabel: 'Importer', danger: true }))) return;
       await store.importAll(dump);
       await loadAll();
-      reloadCatalog(); reloadLayout(); reloadOrders();
+      reloadCatalog(); reloadLayout(); reloadOrders(); reloadTickets();
       toast('Sauvegarde importée');
     } catch (e) { toast('Fichier invalide'); }
   });
@@ -73,6 +98,16 @@ async function openSettings() {
         h('div', { class: 'row', style: 'margin-top:10px' },
           field('De', hhFrom), field('À', hhTo)),
       )),
+    field('Synchronisation entre iPads',
+      h('div', {},
+        h('div', { class: 'muted' }, cloudEnabled()
+          ? (syncActive() ? '\u2713 Connecté à la caisse partagée' : 'Hors ligne — données locales seulement')
+          : 'Désactivée dans la configuration'),
+        syncActive() ? h('button', { class: 'btn btn-sm btn-ghost', style: 'margin-top:8px', onclick: async () => {
+          if (await confirmDialog('Déconnecter cet iPad de la caisse partagée ? Ses données resteront en local.', { okLabel: 'Déconnecter', danger: true })) {
+            disconnectCloud(); toast('iPad déconnecté — recharge la page pour te reconnecter');
+          }
+        } }, 'Déconnecter cet iPad') : null)),
     field('Sauvegarde',
       h('div', { class: 'row' },
         h('button', { class: 'btn btn-sm', onclick: doExport }, '⤓ Exporter (.json)'),
@@ -91,7 +126,7 @@ async function openSettings() {
           if (await confirmDialog('Recharger le PLAN et la CARTE par défaut sur cet appareil ? Cela remplace le plan de salle, les tables, la carte et les tuiles, et efface les notes en cours. (Tes réglages PIN/Happy Hour sont conservés.)', { okLabel: 'Recharger', danger: true })) {
             await store.loadDefaults();
             await loadAll();
-            reloadCatalog(); reloadLayout(); reloadOrders(); reloadTiles();
+            reloadCatalog(); reloadLayout(); reloadOrders(); reloadTiles(); reloadTickets();
             toast('Configuration par défaut rechargée');
           }
         } }, '↺ Recharger plan + carte par défaut'),
@@ -142,7 +177,19 @@ export async function requirePin(reason = 'Accès protégé') {
 async function boot() {
   await loadAll();
   bindNav();
-  navigate('home');
+  if (MOBILE) mountMobileShell({ navigate, openSettings });
+  navigate(current);
+  refreshCuisineBadge();
+  // Synchro (si configurée) : répercute en direct ce que font les autres iPads.
+  initCloud(async (tables) => {
+    if (tables.has('categories') || tables.has('products')) await reloadCatalog();
+    if (tables.has('layout')) await reloadLayout();
+    if (tables.has('orders')) await reloadOrders();
+    if (tables.has('tickets')) await reloadTickets();
+    if (tables.has('prints')) await reloadPrints();
+    if (tables.has('tiles')) await reloadTiles();
+    if (tables.has('settings')) state.settings = await store.getSettings();
+  }).catch(() => {});
   if ('serviceWorker' in navigator) {
     // Recharge automatiquement la page quand une nouvelle version prend le relais.
     let reloaded = false;

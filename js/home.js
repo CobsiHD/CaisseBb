@@ -242,9 +242,12 @@ async function editCategory(cat) {
   const name = h('input', { class: 'input', value: cat.name || '', placeholder: 'ex. Cocktails, Softs…' });
   const picker = colorPicker(cat.color || catColor(cat.id));
 
+  const cuisine = h('input', { type: 'checkbox', checked: !!cat.cuisine });
   const body = h('div', { class: 'modal-body', style: 'padding:0' },
     field('Nom de la famille', name),
-    field('Couleur', picker.el));
+    field('Couleur', picker.el),
+    h('label', { class: 'switch' }, cuisine, h('span', { class: 'track' }),
+      h('span', { class: 'muted' }, 'Bouffe — envoyer les commandes en cuisine')));
 
   const actions = [{ label: 'Annuler', value: null }, { label: isNew ? 'Créer' : 'Enregistrer', kind: 'primary', value: 'save' }];
   if (!isNew) actions.unshift({ label: 'Supprimer', kind: 'danger', value: 'del' });
@@ -265,9 +268,9 @@ async function editCategory(cat) {
   if (isNew) {
     newId = slug(name.value); // id unique
     while (state.categories.some((c) => c.id === newId)) newId += '-2';
-    await store.put('categories', { id: newId, name: name.value.trim(), color: picker.get(), order: state.categories.length });
+    await store.put('categories', { id: newId, name: name.value.trim(), color: picker.get(), cuisine: cuisine.checked, order: state.categories.length });
   } else {
-    await store.put('categories', { ...cat, name: name.value.trim(), color: picker.get() });
+    await store.put('categories', { ...cat, name: name.value.trim(), color: picker.get(), cuisine: cuisine.checked });
   }
   await reloadCatalog();
   if (newId) nav = { level: 'products', catId: newId, sub: null, page: 0 }; // on entre dans la famille pour y ajouter des touches

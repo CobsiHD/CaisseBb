@@ -415,3 +415,91 @@ body {
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+
+/* ============================================================
+   Cuisine — bons de commande envoyés du 22 vers le Bluebird
+   ============================================================ */
+
+/* Pastille de l'onglet : nombre de bons pas encore pris en charge. */
+.tab.has-badge { position: relative; }
+.tab.has-badge::after {
+  content: attr(data-badge);
+  position: absolute; top: 2px; right: 2px;
+  min-width: 18px; height: 18px; padding: 0 5px;
+  border-radius: 999px;
+  background: var(--encaisser); color: #fff;
+  font-size: 11px; font-weight: 800; line-height: 18px; text-align: center;
+}
+
+.cuisine-warn {
+  margin: 0 0 14px; padding: 10px 14px;
+  border: 1px solid rgba(201,162,75,.45); border-radius: var(--r-sm);
+  background: rgba(201,162,75,.08); color: var(--muted); font-size: 13px;
+}
+.cuisine-warn b { color: var(--brass-soft); }
+
+.cuisine-grid {
+  display: grid; gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  align-content: start;
+}
+
+.k-card {
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 14px; border-radius: var(--r);
+  background: var(--ink-1); border: 1px solid var(--line-2);
+  border-left: 4px solid var(--faint);
+}
+.k-card.st-nouveau   { border-left-color: var(--encaisser); background: var(--ink-2); }
+.k-card.st-en-cours  { border-left-color: var(--brass); }
+.k-card.st-pret      { border-left-color: var(--libre); }
+.k-card.st-servi     { opacity: .5; }
+/* L'attente se voit de loin : un bon qui traîne change de couleur tout seul. */
+.k-card.warn .k-age  { color: var(--brass); font-weight: 800; }
+.k-card.late .k-age  { color: var(--encaisser); font-weight: 800; }
+
+.k-head { display: flex; align-items: baseline; gap: 10px; }
+.k-head .spacer { flex: 1; }
+.k-num   { font-family: var(--display); font-size: 22px; color: var(--brass); }
+.k-place { font-weight: 800; font-size: 16px; }
+.k-age   { font-size: 13px; color: var(--muted); }
+
+.k-lines { display: grid; gap: 10px; }
+.k-line  { display: flex; gap: 10px; align-items: baseline; }
+.k-qty   { font-size: 22px; font-weight: 800; color: var(--brass-soft); min-width: 42px; }
+.k-body  { min-width: 0; }
+.k-name  { font-size: 18px; font-weight: 700; line-height: 1.25; }
+.k-var   { color: var(--muted); font-weight: 500; }
+.k-opt   { font-size: 13px; color: var(--bluebird); margin-top: 2px; }
+.k-note  { font-size: 14px; color: var(--brass); margin-top: 2px; font-style: italic; }
+
+.k-foot { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.k-foot .spacer { flex: 1; }
+.k-badge {
+  font-size: 11px; font-weight: 800; letter-spacing: .04em;
+  padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line-2); color: var(--muted);
+}
+.k-badge.nouveau  { color: var(--encaisser); border-color: rgba(210,121,107,.45); }
+.k-badge.en-cours { color: var(--brass);     border-color: rgba(201,162,75,.45); }
+.k-badge.pret     { color: var(--libre);     border-color: rgba(94,140,106,.55); }
+
+.k-actions { display: flex; gap: 8px; margin-top: 2px; }
+.k-actions .btn { min-height: var(--tap); }
+
+/* Prise de commande : état d'envoi d'une ligne bouffe. */
+.k-sent { font-size: 12px; margin-top: 3px; color: var(--libre); }
+.k-sent.partial { color: var(--brass); }
+.k-sent.todo    { color: var(--muted); }
+
+.btn-send {
+  width: 100%; min-height: var(--tap); margin-bottom: 10px;
+  background: var(--bluebird); color: #06121C;
+  font-weight: 800; border: 0; border-radius: var(--r-sm);
+}
+.btn-send:active { filter: brightness(.92); }
+
+/* Accusé d'impression remonté par l'agent du Raspberry Pi. */
+.k-print { font-size: 11px; }
+.k-print.ok   { color: var(--libre); }
+.k-print.wait { color: var(--faint); }
+.k-print.err  { color: var(--encaisser); font-weight: 700; }

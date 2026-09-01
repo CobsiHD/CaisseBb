@@ -2,7 +2,7 @@
 import { state, money, orderTotal, tableStatus, tableLabel, areaName } from './state.js';
 import { h, clear } from './ui.js';
 import { isTableType } from './elements.js';
-import { openNote } from './order.js';
+import { openNote } from './openorder.js';
 
 function ageText(ts) {
   if (!ts) return '';

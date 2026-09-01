@@ -5,7 +5,7 @@ import { h, clear, toast, modal, field, confirmDialog } from './ui.js';
 import * as store from './store.js';
 import { TYPE_MAP, assetFor, isTableType, typesForArea } from './elements.js';
 import { requirePin } from './app.js';
-import { openNote } from './order.js';
+import { openNote } from './openorder.js';
 
 const STAGE = { w: 1200, h: 760 };
 const GRID = 10;
