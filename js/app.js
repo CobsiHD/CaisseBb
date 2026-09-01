@@ -10,7 +10,7 @@ import { renderHome } from './home.js';
 import { renderCuisine } from './cuisine.js';
 import { notifyNewTickets, newTicketCount } from './kitchen.js';
 import { initCloud, syncActive, disconnectCloud, cloudEnabled } from './cloud.js';
-import { isMobileUI, mountMobileShell } from './mobile/shell.js';
+import { isMobileUI, mountMobileShell, uiModeSelector } from './mobile/shell.js';
 import { MOBILE_VIEWS, MOBILE_HOME_VIEW } from './mobile/views.js';
 import { isListMode } from './mobile/mfloor.js';
 
@@ -108,6 +108,11 @@ export async function openSettings() {
             disconnectCloud(); toast('iPad déconnecté — recharge la page pour te reconnecter');
           }
         } }, 'Déconnecter cet iPad') : null)),
+    field('Interface',
+      h('div', {},
+        uiModeSelector(),
+        h('div', { class: 'faint', style: 'font-size:12px; margin-top:6px' },
+          'Auto choisit selon la largeur de l\'écran (téléphone sous 560 px). Forcer un mode recharge la page ; le choix est mémorisé sur cet appareil.'))),
     field('Sauvegarde',
       h('div', { class: 'row' },
         h('button', { class: 'btn btn-sm', onclick: doExport }, '⤓ Exporter (.json)'),

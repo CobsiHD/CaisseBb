@@ -12,10 +12,27 @@ server {
     gzip on;
     gzip_types text/css text/javascript application/javascript application/json image/svg+xml;
 
-    # L'appli et le service worker doivent toujours être frais : sinon les iPads
-    # restent bloqués sur une ancienne version après un déploiement.
-    location = /index.html        { add_header Cache-Control "no-cache"; }
-    location = /service-worker.js { add_header Cache-Control "no-cache"; }
+    # L'appli n'a pas d'étape de build : les URL des modules ne changent jamais
+    # d'un déploiement au suivant. Sans revalidation obligatoire, Safari applique
+    # sa fraîcheur heuristique et peut resservir un ancien module — l'appli
+    # démarre alors avec un mélange de versions et l'import échoue.
+    # `add_header` ne s'additionne pas à celui du serveur : il le REMPLACE. On
+    # répète donc les en-têtes de sécurité dans chaque bloc qui en pose un.
+    location ~* ^/(js|css)/ {
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header Cache-Control "no-cache" always;
+    }
+    location = /index.html {
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header Cache-Control "no-cache" always;
+    }
+    location = /service-worker.js {
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header Cache-Control "no-cache" always;
+    }
 
     location / {
         try_files $uri $uri/ /index.html;

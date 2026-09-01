@@ -46,6 +46,26 @@ export function sheet({ title, body, dismissible = true } = {}) {
   return { close, panel };
 }
 
+// ── Sélecteur d'interface ────────────────────────────────────
+// Présent dans la feuille « Plus » du téléphone ET dans les Réglages (⚙), qui
+// sont la seule porte d'entrée côté iPad : sans ça, passer en mode iPad
+// depuis un téléphone serait irréversible.
+const UI_MODES = [
+  ['auto',  'Auto',      'selon la taille de l\'écran'],
+  ['phone', 'Téléphone', 'une colonne, onglets en bas'],
+  ['pad',   'iPad',      'deux colonnes, plan de salle'],
+];
+
+export function uiModeSelector() {
+  const row = h('div', { class: 'm-seg' });
+  UI_MODES.forEach(([v, label]) => row.append(h('button', {
+    class: `chip ${uiPref() === v ? 'active' : ''}`,
+    title: UI_MODES.find((m) => m[0] === v)[2],
+    onclick: () => { setUiPref(v); location.reload(); },
+  }, label)));
+  return row;
+}
+
 // ── Barre d'onglets du bas ───────────────────────────────────
 // 5 entrées maximum : au-delà les cibles deviennent trop étroites au pouce.
 // Produits, Tableau de bord et Réglages passent par « Plus ».
@@ -97,10 +117,5 @@ function openMore({ navigate, openSettings }) {
     h('span', { class: 'm-more-ico' }, '⚙'), h('span', {}, 'Réglages'), h('span', { class: 'm-more-chev' }, '›')));
 
   body.append(h('div', { class: 'm-more-sep' }, 'Interface'));
-  const modes = [['auto', 'Auto'], ['phone', 'Téléphone'], ['pad', 'iPad']];
-  body.append(h('div', { class: 'm-seg' }, modes.map(([v, label]) =>
-    h('button', {
-      class: `chip ${uiPref() === v ? 'active' : ''}`,
-      onclick: () => { setUiPref(v); location.reload(); },
-    }, label))));
+  body.append(uiModeSelector());
 }
