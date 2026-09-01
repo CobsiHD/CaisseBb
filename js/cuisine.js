@@ -95,6 +95,7 @@ function card(t, container) {
     h('div', { class: 'k-head' },
       h('span', { class: 'k-num' }, `#${t.num}`),
       h('span', { class: 'k-place' }, t.place),
+      t.from ? h('span', { class: 'k-from' }, t.from) : null,
       h('span', { class: 'spacer' }),
       h('span', { class: 'k-age' }, ageLabel(t.createdAt)),
     ),

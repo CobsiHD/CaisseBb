@@ -7,6 +7,8 @@ import { state, money, lineUnit, lineTotal, tableLabel } from '../state.js';
 import { h, clear, toast } from '../ui.js';
 import { catColor } from '../pos.js';
 import { makeItem, pickVariant, pickTable, saveOrder } from '../note.js';
+import { pendingCount, sendSelectionToKitchen } from '../kitchen.js';
+import { visibleCategories } from '../profile.js';
 
 let selection = [];
 let nav = { level: 'cats', catId: null, sub: null };
@@ -110,7 +112,7 @@ function renderGrid() {
     h('div', { class: 'tt' }, t.label || 'Tuile'),
     h('div', { class: 'ts' }, t.productId ? 'Produit' : t.categoryId ? 'Famille' : ''))));
 
-  const cats = state.categories.filter((c) => state.products.some((p) => p.categoryId === c.id));
+  const cats = visibleCategories().filter((c) => state.products.some((p) => p.categoryId === c.id));
   cats.forEach((c) => {
     const count = state.products.filter((p) => p.categoryId === c.id && p.available !== false).length;
     gridEl.append(h('button', {
@@ -196,7 +198,12 @@ function renderTick() {
   }
   tickEl.append(lines);
 
+  // `pendingCount` raisonne sur une note ; une sélection de comptoir en a la forme.
+  const toSend = pendingCount({ items: selection });
   tickEl.append(h('div', { class: 'm-tick-foot' },
+    toSend > 0
+      ? h('button', { class: 'btn btn-send', onclick: sendKitchenBon }, `🖨 Bon de cuisine · ${toSend}`)
+      : null,
     h('div', { class: 'total-row' }, h('span', { class: 'lbl' }, 'Total'), h('span', { class: 'val' }, money(total))),
     h('div', { class: 'row' },
       h('button', { class: 'btn btn-primary', style: 'flex:2', disabled: !selection.length, onclick: sendToTable }, 'Envoyer vers une table'),
@@ -206,6 +213,14 @@ function renderTick() {
 function bump(item, d) {
   item.qty = Math.max(0, item.qty + d);
   if (item.qty === 0) selection = selection.filter((x) => x !== item);
+  renderTick();
+}
+
+// Envoie la bouffe du comptoir en cuisine sans passer par une table (voir home.js).
+async function sendKitchenBon() {
+  const ticket = await sendSelectionToKitchen(selection, 'Comptoir');
+  if (!ticket) { toast('Rien à envoyer en cuisine'); return; }
+  toast(`Bon #${ticket.num} envoyé en cuisine`);
   renderTick();
 }
 

@@ -10,6 +10,7 @@ import {
   changeQty, addProduct, editLine, cuisineMark, sendOrder, pendingCount,
   payOrder, toggleToPay, deleteOrder, moveOrder, noteMenu,
 } from './note.js';
+import { visibleCategories } from './profile.js';
 
 let activeTableId = null;
 let activeOrderId = null;
@@ -143,7 +144,7 @@ function renderCats() {
   const grid = h('div', { class: 'tile-grid' });
   rightEl.append(grid);
 
-  const cats = state.categories.filter((c) => state.products.some((p) => p.categoryId === c.id));
+  const cats = visibleCategories().filter((c) => state.products.some((p) => p.categoryId === c.id));
   const tiles = cats.map((c) => {
     const count = state.products.filter((p) => p.categoryId === c.id && p.available !== false).length;
     return h('button', { class: 'tile cat-tile', style: `--c:${catColor(c.id)}`, onclick: () => { nav = { level: 'products', catId: c.id, sub: null, page: 0 }; renderRight(); } },

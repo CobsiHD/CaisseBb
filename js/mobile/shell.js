@@ -4,6 +4,7 @@
 // interface à part : barre d'onglets en bas (à portée du pouce), une seule
 // colonne, et les listes/tuiles qui défilent au lieu d'être paginées.
 import { h, clear } from '../ui.js';
+import { tabAllowed } from '../profile.js';
 
 const UI_KEY = 'bb.ui';   // 'auto' | 'phone' | 'pad'
 
@@ -82,6 +83,9 @@ const MORE = [
   { view: 'dashboard', label: 'Tableau de bord', icon: '📊' },
 ];
 
+/** Les entrées de « Plus » que le profil de cet appareil autorise. */
+const moreAllowed = () => MORE.filter((m) => tabAllowed(m.view));
+
 // `navigate` et `openSettings` sont injectés par app.js : la coque ne connaît
 // pas le routeur, elle ne fait que l'appeler (pas d'import circulaire).
 export function mountMobileShell({ navigate, openSettings }) {
@@ -91,7 +95,9 @@ export function mountMobileShell({ navigate, openSettings }) {
   clear(nav);
   nav.hidden = false;
 
-  NAV.forEach((n) => {
+  // Le profil de l'appareil peut masquer des onglets ; « Plus » reste toujours
+  // là, c'est le seul chemin vers les Réglages (donc vers le changement de profil).
+  NAV.filter((n) => n.view === '__more' || tabAllowed(n.view)).forEach((n) => {
     // Classe `tab` + data-view : navigate() et la pastille Cuisine de app.js
     // marquent l'onglet actif sans rien savoir de cette barre.
     const btn = h('button', {
@@ -109,7 +115,7 @@ function openMore({ navigate, openSettings }) {
   const body = h('div', { class: 'm-more' });
   const s = sheet({ title: 'Plus', body });
 
-  MORE.forEach((m) => body.append(
+  moreAllowed().forEach((m) => body.append(
     h('button', { class: 'm-more-row', onclick: () => { s.close(); navigate(m.view); } },
       h('span', { class: 'm-more-ico' }, m.icon), h('span', {}, m.label), h('span', { class: 'm-more-chev' }, '›'))));
 

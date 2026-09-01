@@ -5,6 +5,8 @@ import { h, clear, toast, modal, field, confirmDialog } from './ui.js';
 import * as store from './store.js';
 import { isTableType } from './elements.js';
 import { catColor, colorPicker, paginate } from './pos.js';
+import { pendingCount, sendSelectionToKitchen } from './kitchen.js';
+import { visibleCategories } from './profile.js';
 
 const slug = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'x';
 
@@ -34,7 +36,12 @@ function renderSelection() {
   leftEl.append(lines);
 
   const total = selection.reduce((s, it) => s + lineTotal(it), 0);
+  // `pendingCount` raisonne sur une note ; une sélection de comptoir en a la forme.
+  const toSend = pendingCount({ items: selection });
   leftEl.append(h('div', { class: 'ticket-foot' },
+    toSend > 0
+      ? h('button', { class: 'btn btn-send', onclick: sendKitchenBon }, `🖨 Bon de cuisine · ${toSend}`)
+      : null,
     h('div', { class: 'total-row' }, h('span', { class: 'lbl' }, 'Total'), h('span', { class: 'val' }, money(total))),
     h('div', { class: 'row' },
       h('button', { class: 'btn btn-primary', style: 'flex:2', disabled: selection.length === 0, onclick: sendToTable }, 'Envoyer vers une table'),
@@ -79,7 +86,7 @@ function renderCats() {
   rightEl.append(grid);
 
   const tiles = [];
-  for (const c of state.categories) {
+  for (const c of visibleCategories()) {
     const has = state.products.some((p) => p.categoryId === c.id);
     if (!has && !editMode) continue; // en service : on masque les familles vides
     const count = state.products.filter((p) => p.categoryId === c.id && p.available !== false).length;
@@ -217,6 +224,16 @@ async function persistTileOrder() {
 }
 
 // ── Envoi vers une table ─────────────────────────────────────
+// Envoie la bouffe du comptoir en cuisine sans passer par une table. Les lignes
+// restent dans la sélection (on encaisse toujours), mais marquées comme parties :
+// un « Envoyer vers une table » ensuite ne les renverra pas une seconde fois.
+async function sendKitchenBon() {
+  const ticket = await sendSelectionToKitchen(selection, 'Comptoir');
+  if (!ticket) { toast('Rien à envoyer en cuisine'); return; }
+  toast(`Bon #${ticket.num} envoyé en cuisine`);
+  renderSelection();
+}
+
 async function sendToTable() {
   if (selection.length === 0) return;
   const tables = state.layout.filter((e) => isTableType(e.type)).sort((a, b) => (parseInt(a.number) || 0) - (parseInt(b.number) || 0));
@@ -243,11 +260,14 @@ async function editCategory(cat) {
   const picker = colorPicker(cat.color || catColor(cat.id));
 
   const cuisine = h('input', { type: 'checkbox', checked: !!cat.cuisine });
+  const au22 = h('input', { type: 'checkbox', checked: !!cat.au22 });
   const body = h('div', { class: 'modal-body', style: 'padding:0' },
     field('Nom de la famille', name),
     field('Couleur', picker.el),
     h('label', { class: 'switch' }, cuisine, h('span', { class: 'track' }),
-      h('span', { class: 'muted' }, 'Bouffe — envoyer les commandes en cuisine')));
+      h('span', { class: 'muted' }, 'Bouffe — envoyer les commandes en cuisine')),
+    h('label', { class: 'switch' }, au22, h('span', { class: 'track' }),
+      h('span', { class: 'muted' }, 'Disponible au 22 — visible sur les iPads en profil « Le 22 »')));
 
   const actions = [{ label: 'Annuler', value: null }, { label: isNew ? 'Créer' : 'Enregistrer', kind: 'primary', value: 'save' }];
   if (!isNew) actions.unshift({ label: 'Supprimer', kind: 'danger', value: 'del' });
@@ -268,9 +288,9 @@ async function editCategory(cat) {
   if (isNew) {
     newId = slug(name.value); // id unique
     while (state.categories.some((c) => c.id === newId)) newId += '-2';
-    await store.put('categories', { id: newId, name: name.value.trim(), color: picker.get(), cuisine: cuisine.checked, order: state.categories.length });
+    await store.put('categories', { id: newId, name: name.value.trim(), color: picker.get(), cuisine: cuisine.checked, au22: au22.checked, order: state.categories.length });
   } else {
-    await store.put('categories', { ...cat, name: name.value.trim(), color: picker.get(), cuisine: cuisine.checked });
+    await store.put('categories', { ...cat, name: name.value.trim(), color: picker.get(), cuisine: cuisine.checked, au22: au22.checked });
   }
   await reloadCatalog();
   if (newId) nav = { level: 'products', catId: newId, sub: null, page: 0 }; // on entre dans la famille pour y ajouter des touches
@@ -374,7 +394,7 @@ async function editTile(tile) {
       h('button', { class: 'chip', onclick: () => choose(null) }, 'Sans raccourci'),
       h('button', { class: 'chip', onclick: closePicker }, '‹ Retour')));
     const grid = pickerGrid();
-    for (const c of state.categories) {
+    for (const c of visibleCategories()) {
       const count = state.products.filter((p) => p.categoryId === c.id).length;
       if (!count) continue;
       grid.append(h('button', { class: 'tile cat-tile', style: `--c:${catColor(c.id)}`, onclick: () => pickerProds(c.id) },

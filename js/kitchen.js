@@ -5,6 +5,7 @@
 // sur la même note ne réimprime pas ce qui est déjà en train de cuire.
 import { state, emit, productById } from './state.js';
 import * as store from './store.js';
+import { senderLabel } from './profile.js';
 
 export const STATUS = {
   nouveau:  { label: 'Nouveau',  next: 'en-cours', nextLabel: 'Je prends' },
@@ -28,6 +29,14 @@ export function isCuisineProduct(product) {
   if (!product) return false;
   if (typeof product.cuisine === 'boolean') return product.cuisine;
   return !!state.categories.find((c) => c.id === product.categoryId)?.cuisine;
+}
+
+// Les produits qui partent en cuisine, dans l'ordre de la carte : c'est le pavé
+// de touches de l'écran Cuisine.
+export function cuisineProducts() {
+  return state.products
+    .filter((p) => p.available !== false && isCuisineProduct(p))
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 }
 
 // `item.cuisine` est figé à l'ajout : un ticket déjà parti ne doit pas changer
@@ -101,28 +110,34 @@ export async function setTicketStatus(ticket, status) {
   return saveTicket(ticket);
 }
 
-// Construit et enregistre le bon. `place` est le libellé lisible en cuisine
-// (« Table 12 »), calculé par l'appelant qui connaît le plan de salle.
-export async function sendToKitchen(order, place) {
-  const pending = pendingItems(order);
-  if (!pending.length) return null;
+// Une ligne de bon, telle qu'elle sera lue en cuisine et imprimée.
+function lineOf(item, qty) {
+  return {
+    name: item.name,
+    variantLabel: item.variantLabel || '',
+    qty,
+    options: (item.options || []).map((o) => o.label),
+    note: item.note || '',
+  };
+}
 
+// Construit et enregistre le bon. `place` est le libellé lisible en cuisine
+// (« Table 12 », « Comptoir »), calculé par l'appelant qui connaît le contexte.
+async function createTicket(lines, meta = {}) {
+  if (!lines.length) return null;
   const ticket = {
     // Numéro de service, court et lisible sur le bon papier. Deux iPads qui
     // envoient dans la même seconde peuvent tomber sur le même numéro : c'est
     // cosmétique, l'identité réelle du bon est son id unique.
     num: ticketsOfDay().length + 1,
-    orderId: order.id ?? null,
-    tableId: order.tableId ?? null,
-    place: place || 'Sur place',
-    area: order.area || null,
-    items: pending.map(({ item, qty }) => ({
-      name: item.name,
-      variantLabel: item.variantLabel || '',
-      qty,
-      options: (item.options || []).map((o) => o.label),
-      note: item.note || '',
-    })),
+    orderId: meta.orderId ?? null,
+    tableId: meta.tableId ?? null,
+    place: meta.place || 'Sur place',
+    area: meta.area || null,
+    // Qui a envoyé : la cuisine doit savoir à qui rendre le plat, et le bon
+    // papier le portera. C'est le profil de l'appareil (Bluebird ou Le 22).
+    from: senderLabel(),
+    items: lines,
     createdAt: Date.now(),
     status: 'nouveau',
     statusAt: Date.now(),
@@ -130,13 +145,41 @@ export async function sendToKitchen(order, place) {
     printedAt: null,
     printError: null,
   };
-
   await saveTicket(ticket);
+  return ticket;
+}
+
+// Envoi depuis une note ouverte : seules les quantités pas encore parties.
+export async function sendToKitchen(order, place) {
+  const pending = pendingItems(order);
+  if (!pending.length) return null;
+
+  const ticket = await createTicket(
+    pending.map(({ item, qty }) => lineOf(item, qty)),
+    { orderId: order.id ?? null, tableId: order.tableId ?? null, place, area: order.area || null },
+  );
 
   // On ne marque les lignes comme envoyées qu'après l'enregistrement du bon :
   // si l'écriture échoue, rien n'est perdu et le serveur peut renvoyer.
-  for (const { item } of pending) item.sent = item.qty;
+  if (ticket) for (const { item } of pending) item.sent = item.qty;
 
+  return ticket;
+}
+
+// Envoi d'une sélection libre — comptoir, ou pavé de touches de l'écran Cuisine.
+// Il n'y a ni note ni table derrière : le bon part tel quel.
+export async function sendSelectionToKitchen(selection, place = 'Comptoir') {
+  const pending = (selection || [])
+    .filter(isCuisineItem)
+    .map((item) => ({ item, qty: (item.qty || 0) - (item.sent || 0) }))
+    .filter((x) => x.qty > 0);
+  if (!pending.length) return null;
+
+  const ticket = await createTicket(
+    pending.map(({ item, qty }) => lineOf(item, qty)),
+    { place },
+  );
+  if (ticket) for (const { item } of pending) item.sent = item.qty;
   return ticket;
 }
 

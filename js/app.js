@@ -10,6 +10,7 @@ import { renderHome } from './home.js';
 import { renderCuisine } from './cuisine.js';
 import { notifyNewTickets, newTicketCount } from './kitchen.js';
 import { initCloud, syncActive, disconnectCloud, cloudEnabled } from './cloud.js';
+import { PROFILES, profile, profileId, setProfile, tabAllowed } from './profile.js';
 import { isMobileUI, mountMobileShell, uiModeSelector } from './mobile/shell.js';
 import { MOBILE_VIEWS, MOBILE_HOME_VIEW } from './mobile/views.js';
 import { isListMode } from './mobile/mfloor.js';
@@ -30,7 +31,23 @@ const VIEWS = MOBILE ? MOBILE_VIEWS : PAD_VIEWS;
 
 let current = MOBILE ? MOBILE_HOME_VIEW : 'home';
 
+// Masque les onglets que le profil de cet appareil n'autorise pas. Le profil
+// est local (localStorage) : chaque iPad a le sien, rien ne se synchronise.
+function applyProfile() {
+  document.querySelectorAll('.tab').forEach((t) => {
+    t.hidden = !tabAllowed(t.dataset.view);
+  });
+}
+
+/** Le premier onglet autorisé — filet quand la vue courante vient d'être masquée. */
+function firstAllowedView() {
+  const home = MOBILE ? MOBILE_HOME_VIEW : 'home';
+  if (tabAllowed(home)) return home;
+  return Object.keys(VIEWS).find(tabAllowed) || home;
+}
+
 function navigate(view) {
+  if (!tabAllowed(view)) view = firstAllowedView();
   current = view;
   document.querySelectorAll('.tab').forEach((t) =>
     t.classList.toggle('active', t.dataset.view === view));
@@ -98,6 +115,21 @@ export async function openSettings() {
         h('div', { class: 'row', style: 'margin-top:10px' },
           field('De', hhFrom), field('À', hhTo)),
       )),
+    field('Profil de cet appareil',
+      h('div', {},
+        h('div', { class: 'row' }, PROFILES.map((pr) => h('button', {
+          class: `btn btn-sm ${pr.id === profileId() ? 'btn-blue' : 'btn-ghost'}`,
+          onclick: async () => {
+            if (pr.id === profileId()) return;
+            if (!(await confirmDialog(`Passer cet appareil en profil « ${pr.label} » ? ${pr.hint}`, { okLabel: 'Changer' }))) return;
+            setProfile(pr.id);
+            toast(`Profil « ${pr.label} »`);
+            location.reload();   // le plus simple pour réappliquer onglets et pavés
+          },
+        }, pr.label))),
+        h('div', { class: 'faint', style: 'font-size:12px; margin-top:6px' }, profile().hint),
+        h('div', { class: 'faint', style: 'font-size:12px; margin-top:4px' },
+          'Propre à cet iPad : ce choix ne se synchronise pas. Il signe aussi les bons envoyés en cuisine.'))),
     field('Synchronisation entre iPads',
       h('div', {},
         h('div', { class: 'muted' }, cloudEnabled()
@@ -182,6 +214,7 @@ export async function requirePin(reason = 'Accès protégé') {
 async function boot() {
   await loadAll();
   bindNav();
+  applyProfile();
   if (MOBILE) mountMobileShell({ navigate, openSettings });
   navigate(current);
   refreshCuisineBadge();

@@ -12,6 +12,7 @@ import {
   changeQty, addProduct, editLine, cuisineMark, sendOrder, pendingCount,
   payOrder, toggleToPay, deleteOrder, moveOrder, noteMenu,
 } from '../note.js';
+import { visibleCategories } from '../profile.js';
 
 let tableId = null;
 let activeOrderId = null;
@@ -125,7 +126,7 @@ function renderSearchResults() {
 }
 
 function renderCatTiles() {
-  const cats = state.categories.filter((c) => state.products.some((p) => p.categoryId === c.id));
+  const cats = visibleCategories().filter((c) => state.products.some((p) => p.categoryId === c.id));
   cats.forEach((c) => {
     const count = state.products.filter((p) => p.categoryId === c.id && p.available !== false).length;
     gridEl.append(h('button', {
