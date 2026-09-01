@@ -107,62 +107,26 @@ connectés le restent ; seuls les nouveaux devront saisir le nouveau mot de pass
 
 ---
 
-## L'agent d'impression (Raspberry Pi en cuisine)
+## L'impression des bons (Raspberry Pi en cuisine)
 
-Les bons s'affichent sur l'écran Cuisine **sans lui** : l'agent n'ajoute que le
-papier. Si le Pi tombe, le service continue.
+L'agent d'impression vit dans son **propre dépôt** : `~/WebstormProjects/bluebird-impression`
+(Python, sans dépendance). Voir son README pour l'installation sur le Pi.
 
-### Installation
+Les bons s'affichent sur l'écran Cuisine **sans lui** : il n'ajoute que le papier.
+Si le Pi tombe, le service continue.
 
-**1. Créer le mot de passe de l'agent, sur le VPS.** Il doit être *différent* de
-celui du bar : l'agent tourne sans surveillance dans un local technique, et son
-rôle ne lui donne accès qu'aux bons de cuisine — ni la carte, ni les notes, ni le
-chiffre d'affaires. Depuis l'app Terminal :
+Ce que la caisse lui fournit de son côté :
 
-```
-ssh -t ubuntu@IP-DU-VPS 'sudo caisse-agent-motdepasse'
-```
-
-**2. Installer l'agent sur le Pi.** Depuis le Mac :
+- la table `tickets` en lecture, la table `prints` en écriture, via un rôle
+  « agent » cloisonné (`server/server.js`) qui ne donne accès ni à la carte, ni
+  aux notes, ni au chiffre d'affaires ;
+- un mot de passe dédié, distinct de celui du bar. Pour le relire :
 
 ```bash
-scp -r agent pi@IP-DU-PI:/tmp/agent
-ssh -t pi@IP-DU-PI 'sudo bash /tmp/agent/setup-pi.sh'
+ssh ubuntu@IP-DU-VPS 'sudo grep AGENT_PASSWORD /etc/caisse-bluebird.env'
 ```
 
-Le script installe Node, crée le service, détecte une imprimante USB branchée,
-puis demande l'adresse de la caisse, le mot de passe agent et la largeur du papier.
-
-### Imprimantes reconnues
-
-| Branchement | À saisir |
-|---|---|
-| USB (Epson TM-T20 et compatibles ESC/POS) | `usb:/dev/usb/lp0` |
-| Réseau / Ethernet | `tcp:192.168.1.50:9100` |
-| Test sans imprimante | `file:/tmp/bon.bin` |
-
-Largeur : `42` colonnes pour du 80 mm, `32` pour du 58 mm. Si l'imprimante n'a pas
-de massicot, mettre `CUT=non` dans `/etc/caisse-print.env`.
-
-### Ce qu'il garantit
-
-- **Panne d'imprimante** : les tentatives se réespacent (2 s, 4 s, 8 s… plafonné à
-  1 min) et le bon ressort tout seul au rallumage, sans redémarrer quoi que ce soit.
-- **Coupure de courant du Pi** : les bons non imprimés sont conservés sur disque et
-  sortent au redémarrage.
-- **Première mise en route** : le service déjà écoulé n'est pas déversé sur le
-  papier. Un bon ancien se réclame au coup par coup avec le bouton 🖨 de l'écran
-  Cuisine.
-- **Retour vers les iPads** : chaque bon affiche « imprimé à 21:34 », ou l'erreur
-  exacte si ça a échoué.
-
-### Exploitation
-
-```bash
-systemctl status caisse-print      # état
-journalctl -u caisse-print -f      # journal en direct
-systemctl restart caisse-print     # redémarrage
-```
+  à reporter dans `/etc/bluebird-impression.env` sur le Pi.
 
 
 ## Comment ça marche
