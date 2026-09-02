@@ -6,7 +6,7 @@
 // qui existait déjà — pour que le calcul du prix, le ticket et le bon de cuisine
 // n'aient rien de nouveau à apprendre.
 import { h, modal, field, toast } from './ui.js';
-import { money } from './state.js';
+import { state, money } from './state.js';
 
 // ── Modèle ───────────────────────────────────────────────────
 // product.optionGroups = [{ name, multi, required, choices: [{ label, delta }] }]
@@ -125,16 +125,62 @@ export async function pickOptions(product, preselected = []) {
   }
 }
 
+// ── Réutilisation ────────────────────────────────────────────
+// Les sous-familles déjà posées ailleurs dans la carte, pour les reprendre au
+// lieu de retaper six sauces à chaque produit. Deux sous-familles de même nom
+// mais de choix différents restent distinctes : « Options » vaut « Diluant »
+// sur un whisky et six sauces sur des frites, les confondre serait un piège.
+export function catalogGroups(exceptId = null) {
+  const byKey = new Map();
+  for (const p of state.products || []) {
+    if (exceptId && p.id === exceptId) continue;
+    for (const g of productGroups(p)) {
+      const key = `${g.name}|${g.choices.map((c) => c.label).join(',')}`;
+      if (byKey.has(key)) byKey.get(key).count++;
+      else byKey.set(key, { group: g, count: 1 });
+    }
+  }
+  return [...byKey.values()].sort((a, b) => b.count - a.count || a.group.name.localeCompare(b.group.name));
+}
+
+// Intitulé d'une sous-famille dans la liste déroulante : le nom seul ne suffit
+// pas — les 34 produits venus de la carte d'origine s'appellent tous
+// « Options » et n'ont pas du tout les mêmes choix.
+function apercu(group, count) {
+  const noms = group.choices.slice(0, 3).map((c) => c.label).join(', ');
+  const reste = group.choices.length > 3 ? `… (${group.choices.length})` : '';
+  return `${group.name} · ${noms}${reste}` + (count > 1 ? ` — ${count} produits` : '');
+}
+
 // ── Éditeur (écrans d'édition du catalogue) ──────────────────
 // Renvoie { el, get() } : une boîte par sous-famille, avec ses choix.
 export function groupsEditor(product) {
   const box = h('div', { class: 'optgroups-edit' });
   productGroups(product).forEach((g) => box.append(groupBox(g)));
 
+  // Reprise d'une sous-famille existante. Une liste déroulante native plutôt
+  // qu'un second dialogue : l'éditeur de produit EST déjà un dialogue, et il
+  // n'y en a qu'un seul à l'écran à la fois.
+  const dispo = catalogGroups(product?.id);
+  const reprise = dispo.length ? h('select', { class: 'input', onchange: () => {
+    const i = Number(reprise.value);
+    reprise.value = '';
+    if (!Number.isInteger(i) || !dispo[i]) return;
+    // Une copie : la modifier ici ne touche pas les autres produits.
+    const g = dispo[i].group;
+    box.append(groupBox({ ...g, choices: g.choices.map((c) => ({ ...c })) }));
+  } },
+    h('option', { value: '' }, '↺ Reprendre une sous-famille de la carte…'),
+    dispo.map(({ group, count }, i) => h('option', { value: String(i) }, apercu(group, count))),
+  ) : null;
+
   const el = h('div', {}, box,
-    h('button', { class: 'btn btn-sm btn-ghost', onclick: () => box.append(groupBox()) }, '＋ Sous-famille'),
+    h('div', { class: 'row' },
+      h('button', { class: 'btn btn-sm btn-ghost', onclick: () => box.append(groupBox()) }, '＋ Sous-famille')),
+    reprise,
     h('div', { class: 'faint', style: 'font-size:12px; margin-top:6px' },
-      'Ex. « Sauce » sur les frites : les choix sont demandés à l\'ajout du produit sur une note.'));
+      'Ex. « Sauce » sur les frites : les choix sont demandés à l\'ajout du produit sur une note. '
+      + 'Une sous-famille reprise est copiée — la modifier ici ne change pas les autres produits.'));
 
   return {
     el,
