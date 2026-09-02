@@ -73,6 +73,63 @@ function bump(item, d) {
   renderSelection();
 }
 
+// ── Disposition libre des tuiles d'accueil ───────────────────
+// Chaque tuile — famille comme tuile perso — occupe une case précise de la
+// grille, et les cases vides restent vides : c'est le patron qui décide où se
+// trouve quoi, pas l'ordre d'ajout. La place est enregistrée dans les réglages,
+// donc partagée par tous les iPads, comme les tuiles elles-mêmes.
+//
+// Une place est un simple rang dans l'ordre de lecture : la grille n'a pas le
+// même nombre de colonnes sur tous les écrans, mais l'agencement se relit
+// pareil, trous compris.
+export const slotKey = (kind, id) => `${kind}:${id}`;
+const savedSlots = () => state.settings.homeSlots || {};
+
+// Range les clés dans une grille à trous : chacune à sa place enregistrée, les
+// nouvelles venues (famille créée depuis un autre iPad) aux premières places
+// libres — jamais par-dessus une tuile déjà posée.
+// La grille renvoyée est pleine : une case vide vaut `null`, jamais un trou de
+// tableau — `map` et `forEach` sautent les trous, et les cases vides ne se
+// dessineraient pas.
+export function placeTiles(keys, slots = {}) {
+  const pris = new Map();
+  const reste = [];
+  let max = -1;
+  for (const k of keys) {
+    const i = slots[k];
+    if (Number.isInteger(i) && i >= 0 && !pris.has(i)) { pris.set(i, k); if (i > max) max = i; }
+    else reste.push(k);
+  }
+  let i = 0;
+  for (const k of reste) { while (pris.has(i)) i++; pris.set(i, k); if (i > max) max = i; }
+  const grid = [];
+  for (let j = 0; j <= max; j++) grid.push(pris.get(j) ?? null);
+  return grid;
+}
+
+// Échanger deux cases : la règle la plus lisible au doigt. Déposer sur une case
+// vide déplace, déposer sur une tuile intervertit — jamais de cascade.
+export function swapSlots(grid, a, b) {
+  const g = grid.slice();
+  const n = Math.max(a, b);
+  while (g.length <= n) g.push(null);          // on peut viser plus loin que la grille
+  const t = g[a] ?? null; g[a] = g[b] ?? null; g[b] = t;
+  while (g.length && g[g.length - 1] == null) g.pop();
+  return g;
+}
+
+export function slotsOf(grid) {
+  const m = {};
+  grid.forEach((k, i) => { if (k) m[k] = i; });
+  return m;
+}
+
+async function saveGrid(grid) {
+  const slots = slotsOf(grid);
+  state.settings.homeSlots = slots;
+  await store.setSetting('homeSlots', slots);
+}
+
 // ── Dashboard / produits (droite) ────────────────────────────
 function renderRight() {
   clear(rightEl);
@@ -83,35 +140,61 @@ function renderCats() {
   rightEl.append(h('div', { class: 'pos-bar' },
     h('h3', {}, 'Familles'),
     h('div', { class: 'spacer' }),
+    editMode ? h('div', { class: 'faint', style: 'font-size:12px' }, 'Glisse une tuile pour la déplacer') : null,
     h('button', { class: `chip ${editMode ? 'active' : ''}`, onclick: () => { editMode = !editMode; renderRight(); } }, editMode ? '✓ Terminer' : '✎ Édition')));
 
   const grid = h('div', { class: 'tile-grid' });
   rightEl.append(grid);
 
-  const tiles = [];
+  // Ce qui a droit à une case, et comment le dessiner.
+  const rendus = new Map();
   for (const c of visibleCategories()) {
     const has = state.products.some((p) => p.categoryId === c.id);
-    if (!has && !editMode) continue; // en service : on masque les familles vides
+    if (!has && !editMode) continue;   // en service : on masque les familles vides
     const count = state.products.filter((p) => p.categoryId === c.id && p.available !== false).length;
-    tiles.push(h('button', { class: 'tile cat-tile', style: `--c:${catColor(c.id)}`,
-      onclick: () => { nav = { level: 'products', catId: c.id, sub: null, page: 0 }; renderRight(); } },
+    rendus.set(slotKey('cat', c.id), () => h('button', { class: 'tile cat-tile', style: `--c:${catColor(c.id)}`,
+      onclick: editMode ? null : () => { nav = { level: 'products', catId: c.id, sub: null, page: 0 }; renderRight(); } },
+      editMode ? h('span', { class: 'tedit' }, '⠿') : null,
       h('span', { class: 'tcount' }, `${count}`), h('div', { class: 'tt' }, c.name)));
   }
-  if (editMode) tiles.push(h('button', { class: 'tile add-tile', onclick: () => editCategory(null) },
-    h('div', { class: 'plus' }, '＋'), h('div', { class: 'ts' }, 'Nouvelle famille')));
-  // tuiles personnalisées (triées par ordre ; réordonnables au doigt en édition)
-  for (const t of [...state.tiles].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))) {
-    const btn = h('button', { class: 'tile custom-tile', style: `--c:${t.color || '#4FA3C7'}`, dataset: { tileid: t.id },
+  for (const t of state.tiles) {
+    rendus.set(slotKey('tile', t.id), () => h('button', { class: 'tile custom-tile', style: `--c:${t.color || '#4FA3C7'}`,
       onclick: editMode ? null : () => tapCustom(t) },
       editMode ? h('span', { class: 'tedit' }, '⠿') : null,
       h('div', { class: 'tt' }, t.label || 'Tuile'),
-      t.productId ? h('div', { class: 'ts' }, 'Produit') : t.categoryId ? h('div', { class: 'ts' }, 'Famille') : null);
-    if (editMode) enableTileDrag(btn, t);
-    tiles.push(btn);
+      t.productId ? h('div', { class: 'ts' }, 'Produit') : t.categoryId ? h('div', { class: 'ts' }, 'Famille') : null));
   }
-  if (editMode) tiles.push(h('button', { class: 'tile add-tile', onclick: () => editTile(null) }, h('div', { class: 'plus' }, '＋'), h('div', { class: 'ts' }, 'Nouvelle tuile')));
 
-  paginate(grid, tiles, null, nav);
+  // Les cases vides restent vides en service : l'agencement du patron est le
+  // même qu'à l'écran d'édition, sinon poser une tuile à un endroit précis ne
+  // voudrait rien dire. Elles y sont juste invisibles.
+  const cases = placeTiles([...rendus.keys()], savedSlots());
+
+  const cells = cases.map((key, i) => {
+    if (!key) return trou(i, editMode);
+    const el = rendus.get(key)();
+    el.dataset.slot = String(i);
+    if (editMode) enableSlotDrag(el, key, i, cases);
+    return el;
+  });
+
+  // Les touches de création restent en fin de grille : elles ne se déplacent pas.
+  if (editMode) {
+    cells.push(h('button', { class: 'tile add-tile', onclick: () => editCategory(null) },
+      h('div', { class: 'plus' }, '＋'), h('div', { class: 'ts' }, 'Nouvelle famille')));
+    cells.push(h('button', { class: 'tile add-tile', onclick: () => editTile(null) },
+      h('div', { class: 'plus' }, '＋'), h('div', { class: 'ts' }, 'Nouvelle tuile')));
+    // Une case libre en plus : sans elle, impossible de pousser une tuile hors
+    // du bloc déjà rempli.
+    cells.splice(cases.length, 0, trou(cases.length, true));
+  }
+
+  paginate(grid, cells, null, nav);
+}
+
+// Case vide : une cible de dépôt en édition, un simple espace en service.
+function trou(i, visible) {
+  return h('div', { class: `tile tile-vide ${visible ? '' : 'muet'}`, dataset: { slot: String(i) } });
 }
 
 function renderProducts() {
@@ -159,15 +242,24 @@ function tapCustom(t) {
   else if (t.categoryId) { nav = { level: 'products', catId: t.categoryId, sub: null, page: 0 }; renderRight(); }
 }
 
-// ── Réordonnancement des tuiles au doigt (Pointer Events) ─────
-// Tap = éditer la tuile ; glisser = la déplacer parmi les autres tuiles perso.
-function enableTileDrag(btn, tile) {
+// ── Déplacement des tuiles au doigt (Pointer Events) ─────────
+// Tap = ouvrir la tuile (ou l'éditer) ; glisser = la poser sur une autre case.
+// Déposer sur une case vide déplace, déposer sur une tuile intervertit les
+// deux : une règle qui se comprend sans explication et n'entraîne jamais de
+// cascade de décalages.
+function enableSlotDrag(btn, key, index, cases) {
   btn.style.touchAction = 'none';
   btn.addEventListener('pointerdown', (e) => {
     if (!e.isPrimary) return;
     const startX = e.clientX, startY = e.clientY;
-    let started = false, moved = false, clone = null, grabX = 0, grabY = 0;
+    let started = false, moved = false, clone = null, grabX = 0, grabY = 0, cible = null;
     try { btn.setPointerCapture(e.pointerId); } catch {}
+
+    const viser = (el) => {
+      rightEl.querySelectorAll('.drop-cible').forEach((x) => x.classList.remove('drop-cible'));
+      cible = el && el !== btn ? el : null;
+      if (cible) cible.classList.add('drop-cible');
+    };
 
     const onMove = (ev) => {
       if (!started) {
@@ -176,45 +268,51 @@ function enableTileDrag(btn, tile) {
         const r = btn.getBoundingClientRect();
         grabX = startX - r.left; grabY = startY - r.top;
         clone = btn.cloneNode(true);
-        Object.assign(clone.style, { position: 'fixed', left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px', margin: '0', zIndex: '9999', pointerEvents: 'none', opacity: '.92', transform: 'scale(1.04)', boxShadow: '0 12px 32px rgba(0,0,0,.5)' });
+        Object.assign(clone.style, { position: 'fixed', left: r.left + 'px', top: r.top + 'px',
+          width: r.width + 'px', height: r.height + 'px', margin: '0', zIndex: '9999',
+          pointerEvents: 'none', opacity: '.92', transform: 'scale(1.04)', boxShadow: '0 12px 32px rgba(0,0,0,.5)' });
         document.body.append(clone);
         btn.classList.add('drag-src');
       }
       clone.style.left = (ev.clientX - grabX) + 'px';
       clone.style.top = (ev.clientY - grabY) + 'px';
-      const under = document.elementFromPoint(ev.clientX, ev.clientY);
-      const target = under && under.closest('.custom-tile');
-      if (target && target !== btn && target.parentNode) {
-        const rect = target.getBoundingClientRect();
-        const midX = rect.left + rect.width / 2, midY = rect.top + rect.height / 2;
-        const before = ev.clientY < midY - 2 || (Math.abs(ev.clientY - midY) <= rect.height / 2 && ev.clientX < midX);
-        target.parentNode.insertBefore(btn, before ? target : target.nextSibling);
-      }
+      const sous = document.elementFromPoint(ev.clientX, ev.clientY);
+      viser(sous && sous.closest('[data-slot]'));
     };
-    const onUp = () => {
+
+    const onUp = async () => {
       btn.removeEventListener('pointermove', onMove);
       btn.removeEventListener('pointerup', onUp);
       btn.removeEventListener('pointercancel', onUp);
       if (clone) clone.remove();
       btn.classList.remove('drag-src');
-      if (!moved) { editTile(tile); return; }
-      persistTileOrder();
+      rightEl.querySelectorAll('.drop-cible').forEach((x) => x.classList.remove('drop-cible'));
+
+      if (!moved) { tapEnEdition(key); return; }
+      if (!cible) return;
+      const vers = Number(cible.dataset.slot);
+      if (!Number.isInteger(vers) || vers === index) return;
+      await saveGrid(swapSlots(cases, index, vers));
+      renderRight();
     };
+
     btn.addEventListener('pointermove', onMove);
     btn.addEventListener('pointerup', onUp);
     btn.addEventListener('pointercancel', onUp);
   });
 }
 
-async function persistTileOrder() {
-  const ids = [...rightEl.querySelectorAll('.custom-tile')].map((el) => el.dataset.tileid);
-  const byId = new Map(state.tiles.map((t) => [String(t.id), t]));
-  const seen = new Set(ids);
-  const ordered = [...ids.map((id) => byId.get(id)).filter(Boolean), ...state.tiles.filter((t) => !seen.has(String(t.id)))];
-  ordered.forEach((t, i) => { t.order = i; });
-  await store.bulkPut('tiles', ordered);
-  await reloadTiles();
-  toast('Ordre des tuiles enregistré');
+// En édition, toucher une tuile l'ouvre pour la modifier : la famille par son
+// formulaire, la tuile perso par le sien.
+function tapEnEdition(key) {
+  const [kind, id] = [key.slice(0, key.indexOf(':')), key.slice(key.indexOf(':') + 1)];
+  if (kind === 'tile') {
+    const t = state.tiles.find((x) => String(x.id) === id);
+    if (t) editTile(t);
+    return;
+  }
+  const c = state.categories.find((x) => x.id === id);
+  if (c) editCategory(c);
 }
 
 // ── Impression / envoi de la sélection ───────────────────────
