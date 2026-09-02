@@ -33,6 +33,18 @@ server {
         add_header Referrer-Policy "strict-origin-when-cross-origin" always;
         add_header Cache-Control "no-cache" always;
     }
+    # Chrome ne remplace l'icône d'une PWA installée que s'il voit le manifeste
+    # changer. Servi depuis un cache heuristique, il ne le voit jamais, et
+    # l'ancienne icône reste gravée dans le lanceur Android.
+    # nginx ne connaît pas l'extension .webmanifest et servait le fichier en
+    # application/octet-stream : avec le nosniff ci-dessous, le navigateur a le
+    # droit de refuser de le lire, et l'appli s'installe sans son manifeste.
+    location = /manifest.webmanifest {
+        types { } default_type application/manifest+json;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header Cache-Control "no-cache" always;
+    }
 
     location / {
         try_files $uri $uri/ /index.html;
