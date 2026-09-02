@@ -124,8 +124,11 @@ export function slotsOf(grid) {
   return m;
 }
 
+// Une même carte de places sert à l'accueil et à chaque famille : elles ne se
+// croisent pas (les clés sont préfixées), mais il faut FUSIONNER — enregistrer
+// la seule grille qu'on vient de ranger effacerait toutes les autres.
 async function saveGrid(grid) {
-  const slots = slotsOf(grid);
+  const slots = { ...savedSlots(), ...slotsOf(grid) };
   state.settings.homeSlots = slots;
   await store.setSetting('homeSlots', slots);
 }
@@ -216,14 +219,37 @@ function renderProducts() {
 
   const grid = h('div', { class: 'tile-grid' });
   rightEl.append(grid);
-  const list = nav.sub ? all.filter((p) => p.sub === nav.sub) : all;
-  const tiles = list.map((p) => h('button', { class: `tile prod-tile ${p.available === false ? 'unavail' : ''}`, style: `--c:${p.color || catColor(nav.catId)}`,
-    onclick: () => editMode ? editTouch(p) : (p.available !== false && addProduct(p)) },
-    editMode ? h('span', { class: 'tedit' }, '✎') : null,
-    h('div', { class: 'tt' }, p.name),
-    h('div', { class: 'tp' }, p.variants.map((v) => `${v.label ? v.label + ' ' : ''}${money(v.price)}`).join(' · '))));
-  if (editMode) tiles.push(h('button', { class: 'tile add-tile', onclick: () => editTouch(null) },
-    h('div', { class: 'plus' }, '＋'), h('div', { class: 'ts' }, 'Nouvelle touche')));
+
+  // Les places valent pour la famille entière, jamais pour la vue filtrée : une
+  // sous-famille ne montre qu'une partie des touches, et si on enregistrait
+  // d'après elle, les places des touches masquées seraient écrasées.
+  const parCle = new Map(all.map((p) => [slotKey('prod', p.id), p]));
+  const cases = placeTiles([...parCle.keys()], savedSlots());
+  // Vue filtrée : on resserre, il n'y a pas de case vide où viser.
+  const visibles = nav.sub ? new Set(all.filter((p) => p.sub === nav.sub).map((p) => slotKey('prod', p.id))) : null;
+
+  const tiles = [];
+  cases.forEach((key, i) => {
+    if (!key) { if (!visibles) tiles.push(trou(i, editMode)); return; }
+    if (visibles && !visibles.has(key)) return;
+    const p = parCle.get(key);
+    const el = h('button', { class: `tile prod-tile ${p.available === false ? 'unavail' : ''}`,
+      style: `--c:${p.color || catColor(nav.catId)}`, dataset: { slot: String(i) },
+      onclick: editMode ? null : () => p.available !== false && addProduct(p) },
+      editMode ? h('span', { class: 'tedit' }, '⠿') : null,
+      h('div', { class: 'tt' }, p.name),
+      h('div', { class: 'tp' }, p.variants.map((v) => `${v.label ? v.label + ' ' : ''}${money(v.price)}`).join(' · ')));
+    if (editMode) enableSlotDrag(el, key, i, cases);
+    tiles.push(el);
+  });
+
+  if (editMode) {
+    // Une case libre en plus, seulement quand la grille est entière : sur une
+    // vue filtrée elle désignerait une place qui n'est pas celle qu'on voit.
+    if (!visibles) tiles.splice(cases.length, 0, trou(cases.length, true));
+    tiles.push(h('button', { class: 'tile add-tile', onclick: () => editTouch(null) },
+      h('div', { class: 'plus' }, '＋'), h('div', { class: 'ts' }, 'Nouvelle touche')));
+  }
   paginate(grid, tiles, pager, nav);
 }
 
@@ -305,14 +331,21 @@ function enableSlotDrag(btn, key, index, cases) {
 // En édition, toucher une tuile l'ouvre pour la modifier : la famille par son
 // formulaire, la tuile perso par le sien.
 function tapEnEdition(key) {
-  const [kind, id] = [key.slice(0, key.indexOf(':')), key.slice(key.indexOf(':') + 1)];
+  const i = key.indexOf(':');
+  const kind = key.slice(0, i), id = key.slice(i + 1);
   if (kind === 'tile') {
     const t = state.tiles.find((x) => String(x.id) === id);
     if (t) editTile(t);
-    return;
+  } else if (kind === 'prod') {
+    const p = state.products.find((x) => x.id === id);
+    if (p) editTouch(p);
+  } else {
+    // Toucher une famille y entre, en édition comme en service : c'est le seul
+    // chemin pour aller ranger ses touches. Son formulaire reste sur la
+    // pastille « ✎ Famille » de la barre du dessus.
+    nav = { level: 'products', catId: id, sub: null, page: 0 };
+    renderRight();
   }
-  const c = state.categories.find((x) => x.id === id);
-  if (c) editCategory(c);
 }
 
 // ── Impression / envoi de la sélection ───────────────────────
