@@ -99,7 +99,9 @@ export async function openSettings() {
     const f = fileInput.files[0]; if (!f) return;
     try {
       const dump = JSON.parse(await f.text());
-      if (!(await confirmDialog('Remplacer toutes les données actuelles par cette sauvegarde ?', { okLabel: 'Importer', danger: true }))) return;
+      // Un import efface puis réécrit toutes les tables, et la synchro propage
+      // l'effacement : ça ne restaure pas cet iPad, ça restaure le bar entier.
+      if (!(await confirmDialog('Remplacer toutes les données par cette sauvegarde ? Avec la synchro, cela remplace aussi celles des autres appareils.', { okLabel: 'Importer', danger: true }))) return;
       await store.importAll(dump);
       await loadAll();
       reloadCatalog(); reloadLayout(); reloadOrders(); reloadTickets();
@@ -151,23 +153,11 @@ export async function openSettings() {
         h('button', { class: 'btn btn-sm', onclick: () => fileInput.click() }, '⤒ Importer'),
         fileInput,
       )),
-    field('Catalogue',
-      h('button', { class: 'btn btn-sm btn-ghost', onclick: async () => {
-        if (await confirmDialog('Réinitialiser le catalogue avec la carte officielle ? (les notes ne sont pas touchées)', { okLabel: 'Réinitialiser' })) {
-          await store.resetCatalog(); await reloadCatalog(); toast('Catalogue réinitialisé');
-        }
-      } }, '↻ Recharger la carte officielle')),
-    field('Configuration par défaut',
-      h('div', {},
-        h('button', { class: 'btn btn-sm', onclick: async () => {
-          if (await confirmDialog('Recharger le PLAN et la CARTE par défaut sur cet appareil ? Cela remplace le plan de salle, les tables, la carte et les tuiles, et efface les notes en cours. (Tes réglages PIN/Happy Hour sont conservés.)', { okLabel: 'Recharger', danger: true })) {
-            await store.loadDefaults();
-            await loadAll();
-            reloadCatalog(); reloadLayout(); reloadOrders(); reloadTiles(); reloadTickets();
-            toast('Configuration par défaut rechargée');
-          }
-        } }, '↺ Recharger plan + carte par défaut'),
-        h('div', { class: 'faint', style: 'font-size:12px; margin-top:6px' }, 'Réaffiche le plan officiel du Bluebird (utile sur un appareil qui a encore l\'ancienne version).'))),
+    // Pas de bouton « recharger la carte / le plan par défaut » : avec la
+    // synchro, il n'efface pas cet appareil mais TOUS les autres — la remise à
+    // zéro se propage comme n'importe quelle écriture. Un appareil en retard se
+    // remet à jour tout seul en se connectant. Le seul filet restant est
+    // l'import d'une sauvegarde, qui porte le même avertissement.
   );
 
   const v = await modal({

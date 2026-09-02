@@ -1,6 +1,6 @@
 // store.js — persistance locale (IndexedDB), sans dépendance.
 // Stores : settings, categories, products, layout, orders.
-import { CATEGORIES, PRODUCTS, DEMO_LAYOUT, SETTINGS_DEFAULTS, TILES } from './seed.js';
+import { CATEGORIES, PRODUCTS, DEMO_LAYOUT, SETTINGS_DEFAULTS } from './seed.js';
 
 const DB_NAME = 'bluebird-caisse';
 const DB_VERSION = 4;
@@ -142,22 +142,6 @@ export async function importAll(dump) {
   }
 }
 
-// Réinitialise le catalogue/plan aux valeurs de la carte officielle
-// (ne touche pas aux notes en cours).
-export async function resetCatalog() {
-  await clear('categories');
-  await clear('products');
-  await bulkPut('categories', CATEGORIES.map((c, i) => ({ ...c, order: i })));
-  await bulkPut('products', PRODUCTS.map((p, i) => ({ ...p, order: i })));
-}
-
-// Recharge TOUTE la configuration par défaut (plan + carte + tuiles) sur cet appareil.
-// Efface aussi les notes en cours (sinon elles pointeraient vers d'anciennes tables).
-// Ne touche pas aux réglages (PIN, happy hour).
-export async function loadDefaults() {
-  for (const s of ['categories', 'products', 'layout', 'tiles', 'orders', 'tickets', 'prints']) await clear(s);
-  await bulkPut('categories', CATEGORIES.map((c, i) => ({ ...c, order: i })));
-  await bulkPut('products', PRODUCTS.map((p, i) => ({ ...p, order: i })));
-  await bulkPut('layout', DEMO_LAYOUT);
-  if (TILES && TILES.length) await bulkPut('tiles', TILES);
-}
+// Il n'y a volontairement pas de « remise à la carte par défaut » : avec la
+// synchro, un `clear` part sur le serveur et efface tous les autres appareils.
+// Le seed ci-dessus ne joue qu'au tout premier lancement, base vide.
