@@ -202,9 +202,8 @@ function renderTick() {
     h('div', { class: 'row' },
       h('button', { class: 'btn btn-primary', style: 'flex:2', disabled: !selection.length, onclick: sendToTable }, 'Envoyer vers une table'),
       h('button', {
-        class: `btn ${toPrint > 0 ? 'btn-send-inline' : ''}`, style: 'flex:1', disabled: !selection.length,
-        onclick: () => printBon(toPrint === 0),
-      }, toPrint > 0 ? `🖨 Imprimer · ${toPrint}` : '🖨 Réimprimer'),
+        class: 'btn btn-send-inline', style: 'flex:1', disabled: !selection.length, onclick: printBon,
+      }, `🖨 Imprimer · ${toPrint}`),
       h('button', { class: 'btn btn-ghost', style: 'flex:0 0 88px', disabled: !selection.length, onclick: () => { selection = []; renderTick(); } }, 'Vider'))));
 }
 
@@ -214,11 +213,13 @@ function bump(item, d) {
   renderTick();
 }
 
-// Imprime la sélection sans la vider (voir home.js).
-async function printBon(reprint) {
-  const ticket = await printTicket(selection, { place: 'Comptoir' }, { reprint });
+// Imprimer clôt la commande et vide l'écran pour le client suivant (voir home.js).
+async function printBon() {
+  const ticket = await printTicket(selection, { place: 'Comptoir' });
   if (!ticket) { toast('Rien à imprimer'); return; }
   toast(`Bon #${ticket.num} imprimé${hasCuisineLines(ticket) ? ' · cuisine prévenue' : ''}`);
+  selection = [];
+  tickOpen = false;
   renderTick();
 }
 

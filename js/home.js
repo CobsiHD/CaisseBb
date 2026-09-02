@@ -44,9 +44,8 @@ function renderSelection() {
     h('div', { class: 'row' },
       h('button', { class: 'btn btn-primary', style: 'flex:2', disabled: selection.length === 0, onclick: sendToTable }, 'Envoyer vers une table'),
       h('button', {
-        class: `btn ${toPrint > 0 ? 'btn-send-inline' : ''}`, style: 'flex:1', disabled: selection.length === 0,
-        onclick: () => printBon(toPrint === 0),
-      }, toPrint > 0 ? `🖨 Imprimer · ${toPrint}` : '🖨 Réimprimer'),
+        class: 'btn btn-send-inline', style: 'flex:1', disabled: selection.length === 0, onclick: printBon,
+      }, `🖨 Imprimer · ${toPrint}`),
       h('button', { class: 'btn btn-ghost', disabled: selection.length === 0, onclick: () => { selection = []; renderSelection(); } }, 'Vider')),
   ));
 }
@@ -219,13 +218,14 @@ async function persistTileOrder() {
 }
 
 // ── Impression / envoi de la sélection ───────────────────────
-// Imprime la sélection sans la vider : au comptoir on encaisse derrière. Les
-// lignes imprimées sont marquées comme parties et suivent la sélection si on
-// l'envoie ensuite vers une table — elles ne repartiront pas une seconde fois.
-async function printBon(reprint) {
-  const ticket = await printTicket(selection, { place: 'Comptoir' }, { reprint });
+// Imprimer clôt la commande : au comptoir on enchaîne les clients, l'écran doit
+// être vide pour le suivant. Une réimpression se fait depuis l'écran Cuisine,
+// onglet « Tous les bons », où chaque bon garde son bouton 🖨.
+async function printBon() {
+  const ticket = await printTicket(selection, { place: 'Comptoir' });
   if (!ticket) { toast('Rien à imprimer'); return; }
   toast(`Bon #${ticket.num} imprimé${hasCuisineLines(ticket) ? ' · cuisine prévenue' : ''}`);
+  selection = [];
   renderSelection();
 }
 
