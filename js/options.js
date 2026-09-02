@@ -5,8 +5,9 @@
 // note, et les choix retenus atterrissent dans `item.options` — la liste plate
 // qui existait déjà — pour que le calcul du prix, le ticket et le bon de cuisine
 // n'aient rien de nouveau à apprendre.
-import { h, modal, field, toast } from './ui.js';
-import { state, money } from './state.js';
+import { h, clear, modal, field, toast } from './ui.js';
+import { state, money, reloadCatalog } from './state.js';
+import * as store from './store.js';
 
 // ── Modèle ───────────────────────────────────────────────────
 // product.optionGroups = [{ name, multi, required, choices: [{ label, delta }] }]
@@ -24,23 +25,51 @@ const cleanChoices = (list) => (list || [])
   .filter((c) => c && String(c.label || '').trim())
   .map((c) => ({ label: String(c.label).trim(), delta: Number(c.delta) || 0 }));
 
+// ── Bibliothèque partagée ────────────────────────────────────
+// Une sous-famille peut vivre dans la table `optiongroups` et être référencée
+// par plusieurs produits : { ref: 'sauces' }. La modifier une fois la modifie
+// partout — c'est tout l'intérêt, six sauces sur quatre snacks ne se corrigent
+// pas quatre fois. Un produit peut aussi garder une sous-famille à lui, écrite
+// en clair dans son propre enregistrement.
+export function library() {
+  return [...(state.optionGroups || [])].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+}
+
+export function libraryGroup(id) {
+  return (state.optionGroups || []).find((g) => g.id === id) || null;
+}
+
+const normalize = (g, ref = null) => ({
+  ref,
+  name: (g?.name || '').trim(),
+  multi: !!g?.multi,
+  required: !!g?.required,
+  choices: cleanChoices(g?.choices),
+});
+
 export function productGroups(product) {
-  const groups = (product?.optionGroups || [])
-    .map((g) => ({
-      name: (g?.name || '').trim(),
-      multi: !!g?.multi,
-      required: !!g?.required,
-      choices: cleanChoices(g?.choices),
-    }))
-    .filter((g) => g.name && g.choices.length);
+  const groups = [];
+  for (const g of product?.optionGroups || []) {
+    // Un lien vers une sous-famille supprimée depuis disparaît sans bruit :
+    // mieux vaut une pastille en moins qu'un dialogue vide en plein service.
+    if (g?.ref) { const lib = libraryGroup(g.ref); if (lib) groups.push(normalize(lib, g.ref)); continue; }
+    groups.push(normalize(g));
+  }
 
   const flat = cleanChoices(product?.options);
   if (flat.length && !groups.some((g) => g.name === LEGACY_GROUP)) {
     // Ces choix se cochaient librement et n'ont jamais été obligatoires :
     // on garde exactement ce comportement.
-    groups.push({ name: LEGACY_GROUP, multi: true, required: false, choices: flat });
+    groups.push({ ref: null, name: LEGACY_GROUP, multi: true, required: false, choices: flat });
   }
-  return groups;
+  return groups.filter((g) => g.name && g.choices.length);
+}
+
+// Combien de produits portent cette sous-famille partagée ? Sert à prévenir
+// avant de la modifier ou de la supprimer.
+export function libraryUsage(id) {
+  return (state.products || []).filter((p) =>
+    (p.optionGroups || []).some((g) => g?.ref === id)).length;
 }
 
 export function hasGroups(product) { return productGroups(product).length > 0; }
@@ -125,67 +154,91 @@ export async function pickOptions(product, preselected = []) {
   }
 }
 
-// ── Réutilisation ────────────────────────────────────────────
-// Les sous-familles déjà posées ailleurs dans la carte, pour les reprendre au
-// lieu de retaper six sauces à chaque produit. Deux sous-familles de même nom
-// mais de choix différents restent distinctes : « Options » vaut « Diluant »
-// sur un whisky et six sauces sur des frites, les confondre serait un piège.
-export function catalogGroups(exceptId = null) {
-  const byKey = new Map();
-  for (const p of state.products || []) {
-    if (exceptId && p.id === exceptId) continue;
-    for (const g of productGroups(p)) {
-      const key = `${g.name}|${g.choices.map((c) => c.label).join(',')}`;
-      if (byKey.has(key)) byKey.get(key).count++;
-      else byKey.set(key, { group: g, count: 1 });
-    }
-  }
-  return [...byKey.values()].sort((a, b) => b.count - a.count || a.group.name.localeCompare(b.group.name));
-}
-
-// Intitulé d'une sous-famille dans la liste déroulante : le nom seul ne suffit
-// pas — les 34 produits venus de la carte d'origine s'appellent tous
-// « Options » et n'ont pas du tout les mêmes choix.
-function apercu(group, count) {
-  const noms = group.choices.slice(0, 3).map((c) => c.label).join(', ');
-  const reste = group.choices.length > 3 ? `… (${group.choices.length})` : '';
-  return `${group.name} · ${noms}${reste}` + (count > 1 ? ` — ${count} produits` : '');
-}
-
 // ── Éditeur (écrans d'édition du catalogue) ──────────────────
-// Renvoie { el, get() } : une boîte par sous-famille, avec ses choix.
+// Renvoie { el, get() }. Deux sortes de boîtes :
+//   • liée      — un lien vers la bibliothèque, non modifiable ici ;
+//   • propre    — une sous-famille écrite dans le produit, modifiable ici.
 export function groupsEditor(product) {
   const box = h('div', { class: 'optgroups-edit' });
-  productGroups(product).forEach((g) => box.append(groupBox(g)));
+  for (const g of productGroups(product)) {
+    box.append(g.ref ? linkBox(g.ref) : groupBox(g));
+  }
 
-  // Reprise d'une sous-famille existante. Une liste déroulante native plutôt
-  // qu'un second dialogue : l'éditeur de produit EST déjà un dialogue, et il
-  // n'y en a qu'un seul à l'écran à la fois.
-  const dispo = catalogGroups(product?.id);
-  const reprise = dispo.length ? h('select', { class: 'input', onchange: () => {
-    const i = Number(reprise.value);
-    reprise.value = '';
-    if (!Number.isInteger(i) || !dispo[i]) return;
-    // Une copie : la modifier ici ne touche pas les autres produits.
-    const g = dispo[i].group;
-    box.append(groupBox({ ...g, choices: g.choices.map((c) => ({ ...c })) }));
-  } },
-    h('option', { value: '' }, '↺ Reprendre une sous-famille de la carte…'),
-    dispo.map(({ group, count }, i) => h('option', { value: String(i) }, apercu(group, count))),
-  ) : null;
+  // Les liens déjà posés, pour ne pas proposer deux fois la même.
+  const linked = () => [...box.children].map((b) => b._get()).filter((g) => g?.ref).map((g) => g.ref);
+
+  // Une liste déroulante native plutôt qu'un second dialogue : l'éditeur de
+  // produit EST déjà une modale, et l'appli n'en tient qu'une à l'écran.
+  const choisir = h('select', { class: 'input', onchange: () => {
+    const id = choisir.value;
+    choisir.value = '';
+    if (id) box.append(linkBox(id));
+    refresh();
+  } });
+
+  function refresh() {
+    clear(choisir);
+    const dejaLa = new Set(linked());
+    const dispo = library().filter((g) => !dejaLa.has(g.id));
+    choisir.append(h('option', { value: '' }, dispo.length
+      ? '🔗 Utiliser une sous-famille partagée…'
+      : 'Toutes les sous-familles partagées sont déjà là'));
+    for (const g of dispo) {
+      choisir.append(h('option', { value: g.id }, apercu(g)));
+    }
+    choisir.disabled = !dispo.length;
+  }
+  refresh();
+
+  // Une boîte « liée » : on montre ce qu'elle contient sans permettre de la
+  // retoucher ici — elle appartient à la bibliothèque, pas à ce produit.
+  function linkBox(id) {
+    const g = libraryGroup(id);
+    const wrap = h('div', { class: 'optgroup-box lie' });
+    wrap._get = () => ({ ref: id });
+    if (!g) { wrap._get = () => null; return wrap; }
+
+    wrap.append(
+      h('div', { class: 'row', style: 'align-items:center' },
+        h('div', { style: 'flex:1; min-width:0' },
+          h('div', { style: 'font-weight:700' }, '🔗 ', g.name,
+            h('span', { class: 'faint', style: 'font-weight:600' },
+              `  ·  ${g.multi ? 'plusieurs choix' : 'un seul choix'}${g.required ? ' · obligatoire' : ''}`)),
+          h('div', { class: 'faint', style: 'font-size:12px; margin-top:2px' },
+            (g.choices || []).map((c) => c.label).join(', '))),
+        h('button', { class: 'btn btn-sm btn-ghost', style: 'flex:0 0 44px', title: 'Retirer de ce produit',
+          onclick: () => { wrap.remove(); refresh(); } }, '✕')),
+      h('div', { class: 'faint', style: 'font-size:12px' },
+        `Partagée avec ${Math.max(0, libraryUsage(id) - 1)} autre(s) produit(s) — modifiable dans « Sous-familles partagées ».`),
+      h('button', { class: 'btn btn-sm btn-ghost', style: 'align-self:flex-start',
+        title: 'En faire une sous-famille propre à ce produit',
+        onclick: () => { wrap.replaceWith(groupBox({ ...g, choices: g.choices.map((c) => ({ ...c })) })); refresh(); } },
+        '⛓ Détacher (copie propre à ce produit)'),
+    );
+    return wrap;
+  }
 
   const el = h('div', {}, box,
-    h('div', { class: 'row' },
-      h('button', { class: 'btn btn-sm btn-ghost', onclick: () => box.append(groupBox()) }, '＋ Sous-famille')),
-    reprise,
+    choisir,
+    h('button', { class: 'btn btn-sm btn-ghost', style: 'margin-top:8px', onclick: () => { box.append(groupBox()); refresh(); } },
+      '＋ Sous-famille propre à ce produit'),
     h('div', { class: 'faint', style: 'font-size:12px; margin-top:6px' },
-      'Ex. « Sauce » sur les frites : les choix sont demandés à l\'ajout du produit sur une note. '
-      + 'Une sous-famille reprise est copiée — la modifier ici ne change pas les autres produits.'));
+      'Une sous-famille partagée (les sauces, le diluant) se modifie une fois pour tous les produits qui l\'utilisent. '
+      + 'Une sous-famille propre n\'existe que sur ce produit.'));
 
   return {
     el,
-    get: () => [...box.children].map((b) => b._get()).filter((g) => g.name && g.choices.length),
+    get: () => [...box.children].map((b) => b._get()).filter((g) =>
+      g && (g.ref || (g.name && g.choices.length))),
   };
+}
+
+// Intitulé d'une sous-famille dans une liste : le nom seul ne suffit pas — les
+// produits venus de la carte d'origine ont tous des choix nommés « Options ».
+export function apercu(group) {
+  const noms = (group.choices || []).slice(0, 3).map((c) => c.label).join(', ');
+  const reste = (group.choices || []).length > 3 ? `… (${group.choices.length})` : '';
+  return `${group.name} · ${noms}${reste}`;
 }
 
 function groupBox(g = { name: '', multi: false, required: false, choices: [{ label: '', delta: 0 }] }) {
@@ -222,4 +275,173 @@ function choiceRow(c = { label: '', delta: 0 }) {
     h('button', { class: 'btn btn-sm btn-ghost', style: 'flex:0 0 44px', onclick: () => row.remove() }, '✕'));
   row._get = () => ({ label: label.value.trim(), delta: Number(delta.value) || 0 });
   return row;
+}
+
+// ── Bibliothèque : écran de gestion ──────────────────────────
+// Un seul dialogue à l'écran dans cette appli : la liste et le formulaire
+// s'échangent donc à l'intérieur de la même modale, comme l'éditeur de tuiles.
+const slug = (x) => (x || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'sous-famille';
+
+// Les sous-familles écrites en clair dans les produits (ou héritées de la
+// liste plate d'origine), regroupées par contenu identique. Ce sont elles
+// qu'on propose de verser dans la bibliothèque.
+export function adoptables() {
+  const byKey = new Map();
+  for (const p of state.products || []) {
+    for (const g of productGroups(p)) {
+      if (g.ref) continue;                       // déjà partagée
+      const key = `${g.name}|${g.choices.map((c) => c.label).join(',')}`;
+      if (!byKey.has(key)) byKey.set(key, { group: g, products: [] });
+      byKey.get(key).products.push(p.id);
+    }
+  }
+  return [...byKey.values()].sort((a, b) => b.products.length - a.products.length);
+}
+
+// Verse une sous-famille dans la bibliothèque et relie tous les produits qui
+// la portaient : c'est le geste qui fait passer la carte d'origine au partage.
+// `nom` permet de la rebaptiser au passage : les sous-familles héritées de la
+// carte s'appellent toutes « Options », ce qui ne veut rien dire une fois
+// qu'elles vivent côte à côte dans une bibliothèque.
+export async function adopt({ group, products }, nom = null) {
+  const name = (nom || group.name).trim() || group.name;
+  let id = slug(name);
+  while (libraryGroup(id)) id += '-2';
+  await store.put('optiongroups', {
+    id, name, multi: group.multi, required: group.required,
+    choices: group.choices.map((c) => ({ ...c })), order: (state.optionGroups || []).length,
+  });
+
+  const key = `${group.name}|${group.choices.map((c) => c.label).join(',')}`;
+  const touches = [];
+  for (const p of state.products || []) {
+    if (!products.includes(p.id)) continue;
+    // On retire la version en clair (et l'ancienne liste plate si c'est d'elle
+    // qu'elle venait) puis on pose le lien à sa place.
+    const restants = (p.optionGroups || []).filter((g) => {
+      if (g?.ref) return true;
+      const n = normalize(g);
+      return `${n.name}|${n.choices.map((c) => c.label).join(',')}` !== key;
+    });
+    const venaitDuPlat = group.name === LEGACY_GROUP
+      && `${LEGACY_GROUP}|${cleanChoices(p.options).map((c) => c.label).join(',')}` === key;
+    touches.push({ ...p, options: venaitDuPlat ? [] : p.options, optionGroups: [...restants, { ref: id }] });
+  }
+  if (touches.length) await store.bulkPut('products', touches);
+  await reloadCatalog();
+  return id;
+}
+
+// Formulaire d'une sous-famille de la bibliothèque.
+function libForm(entry) {
+  const name = h('input', { class: 'input', value: entry?.name || '', placeholder: 'Nom (ex. Sauce)' });
+  const multi = h('input', { type: 'checkbox', checked: !!entry?.multi });
+  const required = h('input', { type: 'checkbox', checked: !!entry?.required });
+  const choices = h('div', { class: 'field' }, (entry?.choices || [{ label: '', delta: 0 }]).map(choiceRow));
+  const el = h('div', {},
+    field('Nom', name),
+    field('Choix', h('div', {}, choices,
+      h('button', { class: 'btn btn-sm btn-ghost', onclick: () => choices.append(choiceRow()) }, '＋ Choix'))),
+    h('div', { class: 'row' },
+      h('label', { class: 'switch' }, multi, h('span', { class: 'track' }), h('span', { class: 'muted' }, 'Plusieurs choix')),
+      h('label', { class: 'switch' }, required, h('span', { class: 'track' }), h('span', { class: 'muted' }, 'Obligatoire'))));
+  return { el, get: () => ({
+    name: name.value.trim(), multi: multi.checked, required: required.checked,
+    choices: [...choices.children].map((r) => r._get()).filter((c) => c.label),
+  }) };
+}
+
+export async function manageLibrary() {
+  const liste = h('div');
+  const edition = h('div', { hidden: true });
+  const body = h('div', { class: 'modal-body', style: 'padding:0' }, liste, edition);
+
+  function ouvrirListe() { edition.hidden = true; clear(edition); liste.hidden = false; renderListe(); }
+
+  function renderListe() {
+    clear(liste);
+
+    const lib = library();
+    liste.append(h('div', { class: 'eyebrow' }, 'Partagées'));
+    if (!lib.length) {
+      liste.append(h('div', { class: 'faint', style: 'font-size:13px; margin:4px 0 10px' },
+        'Aucune pour l\'instant. Verse celles de la carte ci-dessous, ou crée-en une.'));
+    }
+    for (const g of lib) {
+      const n = libraryUsage(g.id);
+      liste.append(h('div', { class: 'optgroup-box' },
+        h('div', { class: 'row', style: 'align-items:center' },
+          h('div', { style: 'flex:1; min-width:0' },
+            h('div', { style: 'font-weight:700' }, g.name),
+            h('div', { class: 'faint', style: 'font-size:12px' }, (g.choices || []).map((c) => c.label).join(', ')),
+            h('div', { class: 'faint', style: 'font-size:12px' },
+              n ? `utilisée sur ${n} produit(s)` : 'utilisée nulle part')),
+          h('button', { class: 'btn btn-sm', style: 'flex:0 0 auto', onclick: () => ouvrirEdition(g) }, 'Modifier'),
+          h('button', { class: 'btn btn-sm btn-danger', style: 'flex:0 0 auto', onclick: () => supprimer(g) }, 'Supprimer'))));
+    }
+    liste.append(h('button', { class: 'btn btn-sm', style: 'margin-top:6px', onclick: () => ouvrirEdition(null) }, '＋ Nouvelle sous-famille partagée'));
+
+    const dispo = adoptables();
+    if (dispo.length) {
+      liste.append(h('div', { class: 'eyebrow', style: 'margin-top:18px' }, 'À verser depuis la carte'));
+      liste.append(h('div', { class: 'faint', style: 'font-size:12px; margin-bottom:8px' },
+        'Ces sous-familles sont recopiées produit par produit. Les partager les relie : une seule modification ensuite.'));
+      for (const a of dispo) {
+        // Nom proposé : celui du groupe, à corriger avant de partager.
+        const nom = h('input', { class: 'input', value: a.group.name, placeholder: 'Nom (ex. Sauce)' });
+        liste.append(h('div', { class: 'optgroup-box' },
+          h('div', { style: 'font-weight:700' }, a.group.choices.map((c) => c.label).join(', ')),
+          h('div', { class: 'faint', style: 'font-size:12px' }, `sur ${a.products.length} produit(s)`),
+          h('div', { class: 'row', style: 'align-items:center' },
+            nom,
+            h('button', { class: 'btn btn-sm btn-primary', style: 'flex:0 0 auto', onclick: () => verser(a, nom.value) }, 'Partager'))));
+      }
+    }
+  }
+
+  function ouvrirEdition(entry) {
+    liste.hidden = true;
+    clear(edition); edition.hidden = false;
+    const form = libForm(entry);
+    edition.append(
+      h('div', { class: 'eyebrow' }, entry ? 'Modifier' : 'Nouvelle sous-famille'),
+      form.el,
+      entry && libraryUsage(entry.id)
+        ? h('div', { class: 'faint', style: 'font-size:12px' },
+            `Ce changement s'appliquera aux ${libraryUsage(entry.id)} produit(s) qui l'utilisent.`)
+        : null,
+      h('div', { class: 'row', style: 'margin-top:12px' },
+        h('button', { class: 'btn btn-sm btn-ghost', onclick: ouvrirListe }, 'Annuler'),
+        h('button', { class: 'btn btn-sm btn-primary', onclick: async () => {
+          const v = form.get();
+          if (!v.name) { toast('Le nom est requis'); return; }
+          if (!v.choices.length) { toast('Au moins un choix'); return; }
+          let id = entry?.id;
+          if (!id) { id = slug(v.name); while (libraryGroup(id)) id += '-2'; }
+          await store.put('optiongroups', { ...(entry || {}), id, ...v, order: entry?.order ?? (state.optionGroups || []).length });
+          await reloadCatalog();
+          toast(entry ? 'Sous-famille enregistrée' : 'Sous-famille créée');
+          ouvrirListe();
+        } }, 'Enregistrer')));
+  }
+
+  async function supprimer(g) {
+    const n = libraryUsage(g.id);
+    if (n) { toast(`Utilisée sur ${n} produit(s) — détache-la d'abord`); return; }
+    await store.del('optiongroups', g.id);
+    await reloadCatalog();
+    toast('Sous-famille supprimée');
+    renderListe();
+  }
+
+  async function verser(a, nom) {
+    const n = (nom || '').trim() || a.group.name;
+    await adopt(a, n);
+    toast(`« ${n} » partagée sur ${a.products.length} produit(s)`);
+    renderListe();
+  }
+
+  renderListe();
+  await modal({ title: 'Sous-familles partagées', body, actions: [{ label: 'Fermer', value: null }] });
 }

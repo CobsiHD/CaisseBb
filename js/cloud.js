@@ -9,7 +9,7 @@ import * as store from './store.js';
 import { h, modal, field, toast } from './ui.js';
 
 // Tables synchronisées → nom de leur clé primaire.
-const SYNCED = { categories: 'id', products: 'id', layout: 'id', tiles: 'id', orders: 'id', tickets: 'id', prints: 'id', settings: 'key' };
+const SYNCED = { categories: 'id', products: 'id', optiongroups: 'id', layout: 'id', tiles: 'id', orders: 'id', tickets: 'id', prints: 'id', settings: 'key' };
 // Réglages qui restent propres à chaque appareil.
 const LOCAL_SETTINGS = new Set(['activeArea']);
 

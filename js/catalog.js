@@ -5,7 +5,7 @@ import * as store from './store.js';
 import { requirePin } from './app.js';
 import { colorPicker } from './pos.js';
 import { isCuisineProduct } from './kitchen.js';
-import { groupsEditor } from './options.js';
+import { groupsEditor, manageLibrary } from './options.js';
 
 const slug = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
@@ -21,6 +21,7 @@ export async function renderCatalog(container) {
   container.append(h('div', { class: 'viewbar' },
     h('h2', {}, 'Produits'),
     h('div', { class: 'spacer' }),
+    h('button', { class: 'btn', onclick: async () => { await manageLibrary(); renderCatalog(container); } }, '🔗 Sous-familles'),
     h('button', { class: 'btn btn-primary', onclick: () => editProduct(null, container) }, '＋ Nouveau produit'),
   ));
 

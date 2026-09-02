@@ -210,7 +210,7 @@ async function boot() {
   refreshCuisineBadge();
   // Synchro (si configurée) : répercute en direct ce que font les autres iPads.
   initCloud(async (tables) => {
-    if (tables.has('categories') || tables.has('products')) await reloadCatalog();
+    if (tables.has('categories') || tables.has('products') || tables.has('optiongroups')) await reloadCatalog();
     if (tables.has('layout')) await reloadLayout();
     if (tables.has('orders')) await reloadOrders();
     if (tables.has('tickets')) await reloadTickets();

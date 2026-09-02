@@ -334,6 +334,8 @@ body {
   display: flex; flex-direction: column; gap: 8px;
   border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: var(--ink-1);
 }
+/* Sous-famille partagée : elle appartient à la bibliothèque, pas au produit. */
+.optgroup-box.lie { border-left: 3px solid var(--bluebird); }
 .switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; }
 .switch input { width: 0; height: 0; opacity: 0; }
 .switch .track { width: 50px; height: 30px; border-radius: 999px; background: var(--ink-3); position: relative; transition: background .15s; }

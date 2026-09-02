@@ -3,8 +3,8 @@
 import { CATEGORIES, PRODUCTS, DEMO_LAYOUT, SETTINGS_DEFAULTS } from './seed.js';
 
 const DB_NAME = 'bluebird-caisse';
-const DB_VERSION = 4;
-const STORES = ['settings', 'categories', 'products', 'layout', 'orders', 'tiles', 'tickets', 'prints'];
+const DB_VERSION = 5;
+const STORES = ['settings', 'categories', 'products', 'layout', 'orders', 'tiles', 'tickets', 'prints', 'optiongroups'];
 
 let dbPromise = null;
 
@@ -42,6 +42,10 @@ function openDB() {
       // Bons de commande cuisine (envoyés du 22 vers le Bluebird).
       if (!db.objectStoreNames.contains('tickets'))
         db.createObjectStore('tickets', { keyPath: 'id' });
+      // Bibliothèque des sous-familles partagées (sauces, parfums, diluant) :
+      // un produit les référence par id, on ne les recopie plus.
+      if (!db.objectStoreNames.contains('optiongroups'))
+        db.createObjectStore('optiongroups', { keyPath: 'id' });
       // Accusés d'impression, écrits UNIQUEMENT par l'agent du Raspberry Pi.
       // Table séparée des bons : la synchro applique le dernier-écrit-gagne par
       // ligne, donc l'agent et la cuisine ne doivent jamais viser la même.
@@ -124,12 +128,12 @@ export async function init() {
 
 // ── Sauvegarde / restauration JSON ───────────────────────────
 export async function exportAll() {
-  const [settings, categories, products, layout, orders, tiles, tickets, prints] = await Promise.all(
+  const [settings, categories, products, layout, orders, tiles, tickets, prints, optiongroups] = await Promise.all(
     STORES.map((s) => getAll(s))
   );
   return {
     app: 'bluebird-caisse', version: DB_VERSION,
-    data: { settings, categories, products, layout, orders, tiles, tickets, prints },
+    data: { settings, categories, products, layout, orders, tiles, tickets, prints, optiongroups },
   };
 }
 

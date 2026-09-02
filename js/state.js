@@ -5,6 +5,7 @@ export const state = {
   settings: { ...{} },
   categories: [],
   products: [],
+  optionGroups: [],     // bibliothèque des sous-familles partagées
   layout: [],
   orders: [],
   tiles: [],
@@ -27,10 +28,11 @@ export function emit(evt, payload) {
 
 export async function loadAll() {
   await store.init();
-  const [settings, categories, products, layout, orders, tiles, tickets, prints] = await Promise.all([
+  const [settings, categories, products, optionGroups, layout, orders, tiles, tickets, prints] = await Promise.all([
     store.getSettings(),
     store.getAll('categories'),
     store.getAll('products'),
+    store.getAll('optiongroups'),
     store.getAll('layout'),
     store.getAll('orders'),
     store.getAll('tiles'),
@@ -40,6 +42,7 @@ export async function loadAll() {
   state.settings = settings;
   state.categories = categories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   state.products = products.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  state.optionGroups = optionGroups.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   state.layout = layout;
   state.orders = orders;
   state.tiles = tiles;
@@ -74,6 +77,7 @@ export async function reloadLayout() {
 export async function reloadCatalog() {
   state.categories = (await store.getAll('categories')).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   state.products = (await store.getAll('products')).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  state.optionGroups = (await store.getAll('optiongroups')).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   emit('catalog');
 }
 

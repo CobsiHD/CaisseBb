@@ -35,6 +35,7 @@ const TOKEN_TTL_MS = 180 * 24 * 3600 * 1000;
 const TABLES = {
   categories: 'id',
   products: 'id',
+  optiongroups: 'id',
   layout: 'id',
   tiles: 'id',
   orders: 'id',
