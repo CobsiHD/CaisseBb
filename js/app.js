@@ -10,6 +10,7 @@ import { renderHome } from './home.js';
 import { renderCuisine } from './cuisine.js';
 import { notifyNewTickets, newTicketCount } from './kitchen.js';
 import { initCloud, syncActive, disconnectCloud, cloudEnabled } from './cloud.js';
+import { runMigrations } from './migrations.js';
 import { PROFILES, profile, profileId, setProfile, tabAllowed } from './profile.js';
 import { mountMobileShell, uiModeSelector } from './mobile/shell.js';
 import { isMobileUI } from './uimode.js';
@@ -218,7 +219,12 @@ async function boot() {
     if (tables.has('prints')) await reloadPrints();
     if (tables.has('tiles')) await reloadTiles();
     if (tables.has('settings')) state.settings = await store.getSettings();
-  }).catch(() => {});
+  }).catch(() => {})
+    // Retouches de la carte, une fois la synchro tentée : elles partent alors
+    // au serveur et retombent d'elles-mêmes sur les autres iPads.
+    .then(() => runMigrations())
+    .then((faites) => { if (faites) toast('Carte mise à jour'); })
+    .catch((e) => console.warn('[carte] mise à jour impossible', e));
   if ('serviceWorker' in navigator) {
     // Recharge automatiquement la page quand une nouvelle version prend le relais.
     let reloaded = false;
