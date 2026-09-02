@@ -27,6 +27,9 @@ body.mobile .icon-btn { width: 40px; height: 40px; font-size: 17px; }
 
 body.mobile .view {
   inset: calc(var(--mtop) + env(safe-area-inset-top, 0px)) 0 calc(var(--mnav) + var(--safe-b)) 0;
+  /* On ne défile jamais latéralement sur téléphone : ce qui dépasse est un
+     bug de mise en page, pas une seconde colonne à aller chercher au doigt. */
+  overflow-x: hidden;
 }
 
 /* ── Barre d'onglets du bas ────────────────────────────────── */
@@ -99,15 +102,18 @@ body.mobile .view {
 .m-floorsum { font-size: 13px; color: var(--muted); text-align: right; }
 .m-floorsum .n { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; }
 
-/* Les rangées de chips défilent horizontalement plutôt que de passer à la ligne :
-   la hauteur de la barre reste stable quand on change de zone. */
+/* Les rangées de chips passent à la ligne : rien ne défile latéralement sur
+   téléphone, donc rien ne se cache hors de l'écran. La barre grandit d'une
+   ligne quand il y a beaucoup de zones ou de sous-familles — c'est le prix,
+   et il est plus lisible qu'une demi-pastille coupée au bord droit. */
 .m-chips {
-  display: flex; align-items: center; gap: 8px;
-  overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+  max-width: 100%;
 }
-.m-chips::-webkit-scrollbar { display: none; }
-.m-chips > * { flex: 0 0 auto; }
+.m-chips > * { flex: 0 1 auto; min-width: 0; }
 .m-chips .spacer { flex: 1 0 auto; }
+/* Un nom de sous-famille à rallonge se coupe plutôt que d'élargir la page. */
+.m-chips .chip { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .m-crumb { font-weight: 700; color: var(--muted); font-size: 14px; }
 
 .m-tables { padding: 12px 14px calc(14px + var(--safe-b)); display: grid; gap: 8px; }
@@ -173,6 +179,7 @@ body.mobile .floor-bar { gap: 8px; padding: 10px 12px; }
   padding: 12px;
   /* la feuille de note flotte au-dessus : on lui réserve sa place */
   padding-bottom: calc(var(--peek) + 16px);
+  overflow-x: hidden;
 }
 .m-grid .tile { padding: 12px; border-radius: var(--r); gap: 4px; }
 .m-grid .tile .tt { font-size: 16px; }
@@ -213,9 +220,8 @@ body.mobile .floor-bar { gap: 8px; padding: 10px 12px; }
 .m-tick-bar.pulse .m-tick-total { animation: tickpulse .35s ease; }
 @keyframes tickpulse { 0% { transform: scale(1) } 40% { transform: scale(1.12); color: var(--brass) } 100% { transform: scale(1) } }
 
-.m-tick-notes { display: flex; gap: 6px; padding: 0 14px 10px; overflow-x: auto; scrollbar-width: none; }
-.m-tick-notes::-webkit-scrollbar { display: none; }
-.m-tick-notes > * { flex: 0 0 auto; }
+.m-tick-notes { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 14px 10px; }
+.m-tick-notes > * { flex: 0 1 auto; min-width: 0; }
 
 .m-tick-lines { flex: 1; min-height: 0; overflow: auto; -webkit-overflow-scrolling: touch; border-top: 1px solid var(--line); }
 .m-tick-foot {
@@ -249,6 +255,10 @@ body.mobile .viewbar h2 { font-size: 26px; }
 body.mobile .catalog { padding: 12px 14px calc(14px + var(--safe-b)); }
 body.mobile .prod-row { grid-template-columns: 1fr auto; gap: 4px 10px; padding: 12px; }
 body.mobile .prod-row .badge { grid-column: 2; }
+/* Une enfilade de prix (« Simple 11,00 € · Double 16,00 € ») passe à la ligne
+   au lieu de pousser la page hors de l'écran sur les petits téléphones. */
+body.mobile .prod-row .prices,
+body.mobile .menu-item .mi-price { white-space: normal; }
 
 body.mobile .dash { padding: 14px; }
 body.mobile .cards { grid-template-columns: 1fr 1fr; gap: 10px; }

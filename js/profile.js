@@ -5,11 +5,13 @@
 // Même principe que la bascule téléphone/iPad (voir mobile/shell.js).
 //
 // Ce que le profil change :
-//   • les onglets visibles sur cet appareil ;
+//   • les onglets visibles sur cet appareil (téléphone et iPad peuvent
+//     différer : le 22 fait sa salle sur iPad, pas sur téléphone) ;
 //   • les familles proposées sur les pavés de touches.
 // Tout ce qui reste visible est envoyable et imprimable : les droits découlent
 // de ce qu'on voit, il n'y a pas de seconde règle cachée.
 import { state } from './state.js';
+import { isMobileUI } from './uimode.js';
 
 const KEY = 'bb-profile';
 
@@ -25,8 +27,12 @@ export const PROFILES = [
   {
     id: '22',
     label: 'Le 22',
-    hint: 'Comptoir, Salle et Cuisine. Seules les familles cochées « Disponible au 22 ».',
+    hint: 'Comptoir, Salle (iPad seulement) et Cuisine. Seules les familles cochées « Disponible au 22 ».',
     tabs: ['home', 'floor', 'cuisine'],
+    // Au 22 le téléphone sert au comptoir : on compose, on imprime, on envoie
+    // en cuisine. La salle — plan et tables — reste sur l'iPad, où elle est
+    // lisible ; sur un écran de 5 pouces elle ne faisait qu'encombrer.
+    phoneTabs: ['home', 'cuisine'],
     allCategories: false,
   },
 ];
@@ -49,7 +55,8 @@ export function senderLabel() {
 }
 
 export function tabAllowed(view) {
-  const tabs = profile().tabs;
+  const p = profile();
+  const tabs = (isMobileUI() && p.phoneTabs) || p.tabs;
   return !tabs || tabs.includes(view);
 }
 

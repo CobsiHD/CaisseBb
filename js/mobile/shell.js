@@ -5,25 +5,7 @@
 // colonne, et les listes/tuiles qui défilent au lieu d'être paginées.
 import { h, clear } from '../ui.js';
 import { tabAllowed } from '../profile.js';
-
-const UI_KEY = 'bb.ui';   // 'auto' | 'phone' | 'pad'
-
-export function uiPref() {
-  try { return localStorage.getItem(UI_KEY) || 'auto'; } catch { return 'auto'; }
-}
-export function setUiPref(v) {
-  try { localStorage.setItem(UI_KEY, v); } catch {}
-}
-
-// Un téléphone, c'est ≤ 560 px de large en portrait. Les pads 9/16 (≥ 700 px)
-// restent sur l'interface iPad par défaut ; le réglage manuel permet de les
-// basculer ici si le personnel préfère.
-export function isMobileUI() {
-  const p = uiPref();
-  if (p === 'phone') return true;
-  if (p === 'pad') return false;
-  return window.matchMedia('(max-width: 560px)').matches;
-}
+import { uiPref, setUiPref } from '../uimode.js';
 
 // ── Feuille du bas générique ─────────────────────────────────
 // Utilisée pour les menus secondaires. Renvoie { close }.

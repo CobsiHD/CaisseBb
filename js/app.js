@@ -11,7 +11,8 @@ import { renderCuisine } from './cuisine.js';
 import { notifyNewTickets, newTicketCount } from './kitchen.js';
 import { initCloud, syncActive, disconnectCloud, cloudEnabled } from './cloud.js';
 import { PROFILES, profile, profileId, setProfile, tabAllowed } from './profile.js';
-import { isMobileUI, mountMobileShell, uiModeSelector } from './mobile/shell.js';
+import { mountMobileShell, uiModeSelector } from './mobile/shell.js';
+import { isMobileUI } from './uimode.js';
 import { MOBILE_VIEWS, MOBILE_HOME_VIEW } from './mobile/views.js';
 import { isListMode } from './mobile/mfloor.js';
 

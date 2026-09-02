@@ -3,7 +3,7 @@
 // Le plan de salle et le tableau de bord n'ont pas à savoir sur quel appareil
 // ils tournent : ils demandent « ouvre la note de cette table », et c'est ici
 // qu'on choisit l'écran iPad (deux colonnes) ou l'écran téléphone (une colonne).
-import { isMobileUI } from './mobile/shell.js';
+import { isMobileUI } from './uimode.js';
 import { openNote as openPadNote } from './order.js';
 import { openMOrder } from './mobile/morder.js';
 

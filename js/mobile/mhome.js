@@ -8,7 +8,7 @@ import { h, clear, toast } from '../ui.js';
 import { catColor } from '../pos.js';
 import { addProductToItems, pickTable, saveOrder } from '../note.js';
 import { unsentCount, hasCuisineLines, printTicket } from '../kitchen.js';
-import { visibleCategories } from '../profile.js';
+import { visibleCategories, tabAllowed } from '../profile.js';
 
 let selection = [];
 let nav = { level: 'cats', catId: null, sub: null };
@@ -34,7 +34,9 @@ function renderTop() {
   clear(topEl).append(
     h('div', { class: 'm-order-ttl' },
       h('div', { class: 'm-order-name' }, 'Comptoir'),
-      h('div', { class: 'm-order-sub2' }, 'Compose puis envoie vers une table')),
+      h('div', { class: 'm-order-sub2' }, tabAllowed('floor')
+        ? 'Compose puis envoie vers une table'
+        : 'Compose puis imprime le bon')),
     h('button', { class: `m-iconbtn ${searchOn ? 'on' : ''}`, onclick: toggleSearch, 'aria-label': 'Rechercher' }, '🔍'),
   );
 }
@@ -197,12 +199,15 @@ function renderTick() {
   tickEl.append(lines);
 
   const toPrint = unsentCount(selection);
+  // Sans onglet Salle sur cet appareil (le téléphone du 22), une note envoyée
+  // vers une table ne serait plus consultable d'ici : on ne propose que le bon.
+  const toTable = tabAllowed('floor');
   tickEl.append(h('div', { class: 'm-tick-foot' },
     h('div', { class: 'total-row' }, h('span', { class: 'lbl' }, 'Total'), h('span', { class: 'val' }, money(total))),
     h('div', { class: 'row' },
-      h('button', { class: 'btn btn-primary', style: 'flex:2', disabled: !selection.length, onclick: sendToTable }, 'Envoyer vers une table'),
+      toTable ? h('button', { class: 'btn btn-primary', style: 'flex:2', disabled: !selection.length, onclick: sendToTable }, 'Envoyer vers une table') : null,
       h('button', {
-        class: 'btn btn-send-inline', style: 'flex:1', disabled: !selection.length, onclick: printBon,
+        class: 'btn btn-send-inline', style: toTable ? 'flex:1' : 'flex:2', disabled: !selection.length, onclick: printBon,
       }, `🖨 Imprimer · ${toPrint}`),
       h('button', { class: 'btn btn-ghost', style: 'flex:0 0 88px', disabled: !selection.length, onclick: () => { selection = []; renderTick(); } }, 'Vider'))));
 }

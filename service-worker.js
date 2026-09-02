@@ -1,5 +1,5 @@
 // service-worker.js — cache applicatif pour fonctionnement hors-ligne.
-const CACHE = 'bluebird-v27';
+const CACHE = 'bluebird-v28';
 const ASSETS_EXT = [
   'arche_pierre', 'caniveau', 'chaise_noire', 'chaise_verte', 'deck_tile',
   'enseigne_bluebird', 'enseigne_neon_b', 'guirlande_lumineuse', 'jardiniere',
@@ -23,7 +23,7 @@ const CORE = [
   'js/kitchen.js', 'js/cuisine.js', 'js/note.js', 'js/openorder.js', 'js/options.js',
   'js/mobile/shell.js', 'js/mobile/views.js', 'js/mobile/mfloor.js',
   'js/mobile/morder.js', 'js/mobile/mhome.js',
-  'js/cloud.js', 'js/cloud-config.js', 'js/profile.js',
+  'js/cloud.js', 'js/cloud-config.js', 'js/profile.js', 'js/uimode.js',
   'manifest.webmanifest',
   'assets/icons/icon-192.png', 'assets/icons/icon-512.png',
   'assets/icons/icon-maskable-512.png', 'assets/icons/apple-touch-icon.png',
