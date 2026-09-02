@@ -104,15 +104,16 @@ body.mobile .view {
 
 /* Les rangées de chips passent à la ligne : rien ne défile latéralement sur
    téléphone, donc rien ne se cache hors de l'écran. La barre grandit d'une
-   ligne quand il y a beaucoup de zones ou de sous-familles — c'est le prix,
-   et il est plus lisible qu'une demi-pastille coupée au bord droit. */
+   ligne quand il y a beaucoup de zones — c'est le prix, et il est plus lisible
+   qu'une demi-pastille coupée au bord droit. (Il ne reste que les zones du
+   plan : dans une famille, l'en-tête a remplacé la barre de sous-familles.) */
 .m-chips {
   display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
   max-width: 100%;
 }
 .m-chips > * { flex: 0 1 auto; min-width: 0; }
 .m-chips .spacer { flex: 1 0 auto; }
-/* Un nom de sous-famille à rallonge se coupe plutôt que d'élargir la page. */
+/* Un nom de zone à rallonge se coupe plutôt que d'élargir la page. */
 .m-chips .chip { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .m-crumb { font-weight: 700; color: var(--muted); font-size: 14px; }
 

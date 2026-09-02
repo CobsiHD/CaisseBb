@@ -11,7 +11,7 @@ import { unsentCount, hasCuisineLines, printTicket } from '../kitchen.js';
 import { visibleCategories, tabAllowed } from '../profile.js';
 
 let selection = [];
-let nav = { level: 'cats', catId: null, sub: null };
+let nav = { level: 'cats', catId: null };
 let query = '';
 let searchOn = false;
 let tickOpen = false;
@@ -31,14 +31,25 @@ export function renderMHome(container) {
 
 // ── En-tête ──────────────────────────────────────────────────
 function renderTop() {
+  // Dans une famille, l'en-tête porte tout : la flèche de retour à gauche du
+  // titre, et la famille en sous-titre. Plus de seconde barre en dessous —
+  // sur un écran de téléphone, chaque rangée gagnée est une rangée de touches.
+  const cat = nav.level === 'products'
+    ? state.categories.find((c) => c.id === nav.catId) : null;
   clear(topEl).append(
+    cat ? h('button', { class: 'm-iconbtn', onclick: retourFamilles, 'aria-label': 'Retour aux familles' }, '‹') : null,
     h('div', { class: 'm-order-ttl' },
       h('div', { class: 'm-order-name' }, 'Comptoir'),
-      h('div', { class: 'm-order-sub2' }, tabAllowed('floor')
+      h('div', { class: 'm-order-sub2' }, cat ? cat.name : tabAllowed('floor')
         ? 'Compose puis envoie vers une table'
         : 'Compose puis imprime le bon')),
     h('button', { class: `m-iconbtn ${searchOn ? 'on' : ''}`, onclick: toggleSearch, 'aria-label': 'Rechercher' }, '🔍'),
   );
+}
+
+function retourFamilles() {
+  nav = { level: 'cats', catId: null };
+  renderTop(); renderSub(); renderGrid();
 }
 
 function toggleSearch() {
@@ -50,6 +61,7 @@ function toggleSearch() {
 // ── Barre secondaire ─────────────────────────────────────────
 function renderSub() {
   clear(subEl);
+  subEl.hidden = false;
 
   if (searchOn) {
     const input = h('input', {
@@ -66,17 +78,9 @@ function renderSub() {
     return;
   }
 
-  const cat = state.categories.find((c) => c.id === nav.catId);
-  const all = state.products.filter((p) => p.categoryId === nav.catId);
-  const subs = [...new Set(all.map((p) => p.sub).filter(Boolean))];
-
-  subEl.append(h('div', { class: 'm-chips' },
-    h('button', { class: 'chip', onclick: () => { nav = { level: 'cats', catId: null, sub: null }; renderSub(); renderGrid(); } }, '‹ Retour'),
-    subs.length > 1
-      ? h('button', { class: `chip ${nav.sub == null ? 'active' : ''}`, onclick: () => { nav.sub = null; renderSub(); renderGrid(); } }, cat?.name || 'Tous')
-      : h('span', { class: 'm-crumb' }, cat?.name || ''),
-    subs.length > 1 ? subs.map((s) => h('button', { class: `chip ${nav.sub === s ? 'active' : ''}`, onclick: () => { nav.sub = s; renderSub(); renderGrid(); } }, s)) : null,
-  ));
+  // Dans une famille : rien ici, l'en-tête s'en charge. La barre se retire
+  // pour de bon, sinon son padding laisserait une bande vide.
+  subEl.hidden = true;
 }
 
 // ── Grille ───────────────────────────────────────────────────
@@ -98,9 +102,8 @@ function renderGrid() {
   }
 
   if (nav.level === 'products') {
-    const all = state.products.filter((p) => p.categoryId === nav.catId);
-    const list = nav.sub ? all.filter((p) => p.sub === nav.sub) : all;
-    list.forEach((p) => gridEl.append(productTile(p)));
+    state.products.filter((p) => p.categoryId === nav.catId)
+      .forEach((p) => gridEl.append(productTile(p)));
     return;
   }
 
@@ -119,7 +122,7 @@ function renderGrid() {
     const count = state.products.filter((p) => p.categoryId === c.id && p.available !== false).length;
     gridEl.append(h('button', {
       class: 'tile cat-tile', style: `--c:${catColor(c.id)}`,
-      onclick: () => { nav = { level: 'products', catId: c.id, sub: null }; renderSub(); renderGrid(); },
+      onclick: () => { nav = { level: 'products', catId: c.id }; renderTop(); renderSub(); renderGrid(); },
     },
       h('span', { class: 'tcount' }, `${count}`),
       h('div', { class: 'tt' }, c.name)));
@@ -141,8 +144,8 @@ function tapCustom(t) {
     const p = state.products.find((x) => x.id === t.productId);
     if (p) addToSelection(p); else toast('Produit introuvable');
   } else if (t.categoryId) {
-    nav = { level: 'products', catId: t.categoryId, sub: null };
-    renderSub(); renderGrid();
+    nav = { level: 'products', catId: t.categoryId };
+    renderTop(); renderSub(); renderGrid();
   }
 }
 

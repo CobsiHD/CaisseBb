@@ -16,7 +16,7 @@ import { visibleCategories } from '../profile.js';
 
 let tableId = null;
 let activeOrderId = null;
-let nav = { level: 'cats', catId: null, sub: null };
+let nav = { level: 'cats', catId: null };
 let query = '';
 let searchOn = false;
 let tickOpen = false;
@@ -27,7 +27,7 @@ let screenEl = null, topEl = null, subEl = null, gridEl = null, tickEl = null;
 export function openMOrder(id) {
   tableId = id;
   activeOrderId = openOrdersForTable(id)[0]?.id ?? null;
-  nav = { level: 'cats', catId: null, sub: null };
+  nav = { level: 'cats', catId: null };
   query = ''; searchOn = false; tickOpen = false;
 
   topEl = h('header', { class: 'm-order-top' });
@@ -58,13 +58,25 @@ function currentOrder() {
 // ── En-tête ──────────────────────────────────────────────────
 function renderTop() {
   const el = tableEl(tableId);
+  // La flèche recule d'un cran : depuis une famille elle revient aux familles,
+  // depuis les familles elle referme la note. Un seul geste à retenir, et la
+  // famille ouverte s'annonce en sous-titre plutôt que sur une barre à elle.
+  const cat = nav.level === 'products'
+    ? state.categories.find((c) => c.id === nav.catId) : null;
   clear(topEl).append(
-    h('button', { class: 'm-iconbtn', onclick: closeMOrder, 'aria-label': 'Retour à la salle' }, '‹'),
+    h('button', { class: 'm-iconbtn', onclick: cat ? retourFamilles : closeMOrder,
+      'aria-label': cat ? 'Retour aux familles' : 'Retour à la salle' }, '‹'),
     h('div', { class: 'm-order-ttl' },
       h('div', { class: 'm-order-name' }, placeLabel(el)),
-      h('div', { class: 'm-order-sub2' }, el?.capacity ? `${el.capacity} couverts` : (el?.zone || 'Note'))),
+      h('div', { class: 'm-order-sub2' }, cat ? cat.name
+        : el?.capacity ? `${el.capacity} couverts` : (el?.zone || 'Note'))),
     h('button', { class: `m-iconbtn ${searchOn ? 'on' : ''}`, onclick: toggleSearch, 'aria-label': 'Rechercher' }, '🔍'),
   );
+}
+
+function retourFamilles() {
+  nav = { level: 'cats', catId: null };
+  renderTop(); renderSub(); renderGrid();
 }
 
 function toggleSearch() {
@@ -73,9 +85,10 @@ function toggleSearch() {
   renderTop(); renderSub(); renderGrid();
 }
 
-// ── Barre secondaire : recherche, ou familles / sous-familles ─
+// ── Barre secondaire : la recherche, ou le fil d'Ariane ──────
 function renderSub() {
   clear(subEl);
+  subEl.hidden = false;
 
   if (searchOn) {
     const input = h('input', {
@@ -92,15 +105,9 @@ function renderSub() {
     return;
   }
 
-  const cat = state.categories.find((c) => c.id === nav.catId);
-  const all = state.products.filter((p) => p.categoryId === nav.catId);
-  const subs = [...new Set(all.map((p) => p.sub).filter(Boolean))];
-
-  subEl.append(h('div', { class: 'm-chips' },
-    h('button', { class: 'chip', onclick: () => { nav = { level: 'cats', catId: null, sub: null }; renderSub(); renderGrid(); } }, '‹ Familles'),
-    subs.length > 1 ? h('button', { class: `chip ${nav.sub == null ? 'active' : ''}`, onclick: () => { nav.sub = null; renderSub(); renderGrid(); } }, cat?.name || 'Tous') : h('span', { class: 'm-crumb' }, cat?.name || ''),
-    subs.length > 1 ? subs.map((s) => h('button', { class: `chip ${nav.sub === s ? 'active' : ''}`, onclick: () => { nav.sub = s; renderSub(); renderGrid(); } }, s)) : null,
-  ));
+  // Dans une famille : rien ici, l'en-tête s'en charge. La barre se retire
+  // pour de bon, sinon son padding laisserait une bande vide.
+  subEl.hidden = true;
 }
 
 // ── Grille de tuiles (2 colonnes, défilement) ────────────────
@@ -131,7 +138,7 @@ function renderCatTiles() {
     const count = state.products.filter((p) => p.categoryId === c.id && p.available !== false).length;
     gridEl.append(h('button', {
       class: 'tile cat-tile', style: `--c:${catColor(c.id)}`,
-      onclick: () => { nav = { level: 'products', catId: c.id, sub: null }; renderSub(); renderGrid(); },
+      onclick: () => { nav = { level: 'products', catId: c.id }; renderTop(); renderSub(); renderGrid(); },
     },
       h('span', { class: 'tcount' }, `${count}`),
       h('div', { class: 'tt' }, c.name)));
@@ -139,8 +146,7 @@ function renderCatTiles() {
 }
 
 function renderProductTiles() {
-  const all = state.products.filter((p) => p.categoryId === nav.catId);
-  const list = nav.sub ? all.filter((p) => p.sub === nav.sub) : all;
+  const list = state.products.filter((p) => p.categoryId === nav.catId);
   if (!list.length) {
     gridEl.append(h('div', { class: 'm-empty' }, h('div', { class: 'big' }, 'Famille vide')));
     return;
