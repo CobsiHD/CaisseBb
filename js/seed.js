@@ -1,6 +1,12 @@
 // Catalogue & plan par défaut — généré depuis la sauvegarde du Bluebird.
 // Carte dans lordre dorigine, tables numérotées par zone (Int 1XX / Arcade 2XX / Terrasse 3XX).
 
+// Numéro de la carte. Une base neuve part directement à ce niveau ; les iPads
+// déjà en service y montent par les retouches de migrations.js. Ce numéro vit
+// ici et pas dans migrations.js pour que store.js puisse le lire sans importer
+// migrations.js, qui importe déjà store.js.
+export const CATALOG_REV = 2;
+
 export const CATEGORIES = [
   {
     "id": "cocktails",
@@ -34,10 +40,48 @@ export const CATEGORIES = [
   },
   {
     "id": "snack",
-    "name": "Snack salé",
+    "name": "Cuisine",
     "cuisine": true,
     "au22": true,
     "order": 6
+  }
+];
+
+// Sous-familles partagées : un produit les référence par id ({ ref: 'sauces' }),
+// on ne recopie plus six sauces sur chaque snack.
+export const OPTION_GROUPS = [
+  {
+    "id": "sauces",
+    "name": "Sauces",
+    "multi": true,
+    "required": false,
+    "choices": [
+      {
+        "label": "Ketchup",
+        "delta": 0
+      },
+      {
+        "label": "Mayonnaise",
+        "delta": 0
+      },
+      {
+        "label": "Barbecue",
+        "delta": 0
+      },
+      {
+        "label": "Algérienne",
+        "delta": 0
+      },
+      {
+        "label": "Samouraï",
+        "delta": 0
+      },
+      {
+        "label": "Burger",
+        "delta": 0
+      }
+    ],
+    "order": 0
   }
 ];
 
@@ -2069,40 +2113,20 @@ export const PRODUCTS = [
     "order": 103
   },
   {
-    "id": "snack-frites-maison",
+    "id": "snack-tenders-3-pieces",
     "categoryId": "snack",
-    "sub": "À grignoter",
-    "name": "Frites maison",
+    "sub": "The Tapas",
+    "name": "Tenders (3 pièces)",
     "variants": [
       {
         "label": "",
-        "price": 5
+        "price": 7
       }
     ],
-    "options": [
+    "options": [],
+    "optionGroups": [
       {
-        "label": "Ketchup",
-        "delta": 0
-      },
-      {
-        "label": "Mayonnaise",
-        "delta": 0
-      },
-      {
-        "label": "Barbecue",
-        "delta": 0
-      },
-      {
-        "label": "Algérienne",
-        "delta": 0
-      },
-      {
-        "label": "Samouraï",
-        "delta": 0
-      },
-      {
-        "label": "Burger",
-        "delta": 0
+        "ref": "sauces"
       }
     ],
     "happyHour": false,
@@ -2111,40 +2135,20 @@ export const PRODUCTS = [
     "order": 104
   },
   {
-    "id": "snack-frites-maison-xxl",
+    "id": "snack-nuggets-de-poulet-6-pieces",
     "categoryId": "snack",
-    "sub": "À grignoter",
-    "name": "Frites maison XXL",
+    "sub": "The Tapas",
+    "name": "Nuggets de Poulet (6 pièces)",
     "variants": [
       {
         "label": "",
-        "price": 10
+        "price": 7
       }
     ],
-    "options": [
+    "options": [],
+    "optionGroups": [
       {
-        "label": "Ketchup",
-        "delta": 0
-      },
-      {
-        "label": "Mayonnaise",
-        "delta": 0
-      },
-      {
-        "label": "Barbecue",
-        "delta": 0
-      },
-      {
-        "label": "Algérienne",
-        "delta": 0
-      },
-      {
-        "label": "Samouraï",
-        "delta": 0
-      },
-      {
-        "label": "Burger",
-        "delta": 0
+        "ref": "sauces"
       }
     ],
     "happyHour": false,
@@ -2153,32 +2157,20 @@ export const PRODUCTS = [
     "order": 105
   },
   {
-    "id": "snack-chilli-cheese-6-pieces",
+    "id": "snack-sticks-mozza-6-pieces",
     "categoryId": "snack",
-    "sub": "À grignoter",
-    "name": "Chilli Cheese (6 pièces)",
+    "sub": "The Tapas",
+    "name": "Sticks Mozza (6 pièces)",
     "variants": [
       {
         "label": "",
         "price": 7
       }
     ],
-    "options": [
+    "options": [],
+    "optionGroups": [
       {
-        "label": "Mayonnaise",
-        "delta": 0
-      },
-      {
-        "label": "Mayonnaise Spicy",
-        "delta": 0
-      },
-      {
-        "label": "Barbecue",
-        "delta": 0
-      },
-      {
-        "label": "Curry Mango",
-        "delta": 0
+        "ref": "sauces"
       }
     ],
     "happyHour": false,
@@ -2187,32 +2179,20 @@ export const PRODUCTS = [
     "order": 106
   },
   {
-    "id": "snack-tenders-de-poulet-4-pieces",
+    "id": "snack-oignons-rings-8-pieces",
     "categoryId": "snack",
-    "sub": "À grignoter",
-    "name": "Tenders de poulet (4 pièces)",
+    "sub": "The Tapas",
+    "name": "Oignons Rings (8 pièces)",
     "variants": [
       {
         "label": "",
         "price": 7
       }
     ],
-    "options": [
+    "options": [],
+    "optionGroups": [
       {
-        "label": "Mayonnaise",
-        "delta": 0
-      },
-      {
-        "label": "Mayonnaise Spicy",
-        "delta": 0
-      },
-      {
-        "label": "Barbecue",
-        "delta": 0
-      },
-      {
-        "label": "Curry Mango",
-        "delta": 0
+        "ref": "sauces"
       }
     ],
     "happyHour": false,
@@ -2221,25 +2201,172 @@ export const PRODUCTS = [
     "order": 107
   },
   {
-    "id": "snack-plateau-charcuterie-fromage",
+    "id": "snack-camemberts-panes-6-pieces",
     "categoryId": "snack",
-    "sub": "À grignoter",
-    "name": "Plateau Charcuterie & Fromage",
+    "sub": "The Tapas",
+    "name": "Camemberts Panés (6 pièces)",
     "variants": [
       {
-        "label": "Petite",
-        "price": 14.5
-      },
-      {
-        "label": "Grande",
-        "price": 20.5
+        "label": "",
+        "price": 7
       }
     ],
     "options": [],
+    "optionGroups": [
+      {
+        "ref": "sauces"
+      }
+    ],
     "happyHour": false,
     "desc": "",
     "available": true,
     "order": 108
+  },
+  {
+    "id": "snack-chili-cheese-6-pieces",
+    "categoryId": "snack",
+    "sub": "The Tapas",
+    "name": "Chili Cheese (6 pièces)",
+    "variants": [
+      {
+        "label": "",
+        "price": 7
+      }
+    ],
+    "options": [],
+    "optionGroups": [
+      {
+        "ref": "sauces"
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 109
+  },
+  {
+    "id": "snack-sticks-chevre-6-pieces",
+    "categoryId": "snack",
+    "sub": "The Tapas",
+    "name": "Sticks Chèvre (6 pièces)",
+    "variants": [
+      {
+        "label": "",
+        "price": 7
+      }
+    ],
+    "options": [],
+    "optionGroups": [
+      {
+        "ref": "sauces"
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 110
+  },
+  {
+    "id": "snack-la-barquette",
+    "categoryId": "snack",
+    "sub": "The Frites",
+    "name": "La Barquette",
+    "variants": [
+      {
+        "label": "",
+        "price": 5
+      }
+    ],
+    "options": [],
+    "optionGroups": [
+      {
+        "ref": "sauces"
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 111
+  },
+  {
+    "id": "snack-frites-xxl",
+    "categoryId": "snack",
+    "sub": "The Frites",
+    "name": "Frites XXL",
+    "variants": [
+      {
+        "label": "",
+        "price": 10
+      }
+    ],
+    "options": [],
+    "optionGroups": [
+      {
+        "ref": "sauces"
+      }
+    ],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 112
+  },
+  {
+    "id": "snack-planche-tapas",
+    "categoryId": "snack",
+    "sub": "Pas Mal",
+    "name": "Planche Tapas",
+    "variants": [
+      {
+        "label": "",
+        "price": 17
+      }
+    ],
+    "options": [],
+    "optionGroups": [
+      {
+        "name": "Tapas au choix",
+        "multi": true,
+        "required": true,
+        "count": 3,
+        "choices": [
+          {
+            "label": "Tenders (2 pièces)",
+            "delta": 0
+          },
+          {
+            "label": "Nuggets de Poulet",
+            "delta": 0
+          },
+          {
+            "label": "Sticks Mozza",
+            "delta": 0
+          },
+          {
+            "label": "Oignons Rings",
+            "delta": 0
+          },
+          {
+            "label": "Camemberts Panés",
+            "delta": 0
+          },
+          {
+            "label": "Chili Cheese",
+            "delta": 0
+          },
+          {
+            "label": "Sticks Chèvre",
+            "delta": 0
+          }
+        ]
+      },
+      {
+        "ref": "sauces"
+      }
+    ],
+    "happyHour": false,
+    "desc": "Frites + 3 tapas de 4 pièces au choix, sauf les tenders (2 pièces)",
+    "available": true,
+    "order": 113
   }
 ];
 

@@ -1,6 +1,6 @@
 // store.js — persistance locale (IndexedDB), sans dépendance.
 // Stores : settings, categories, products, layout, orders.
-import { CATEGORIES, PRODUCTS, DEMO_LAYOUT, SETTINGS_DEFAULTS } from './seed.js';
+import { CATEGORIES, PRODUCTS, OPTION_GROUPS, DEMO_LAYOUT, SETTINGS_DEFAULTS, CATALOG_REV } from './seed.js';
 
 const DB_NAME = 'bluebird-caisse';
 const DB_VERSION = 5;
@@ -119,10 +119,16 @@ export async function init() {
   if (cats.length === 0) {
     await bulkPut('categories', CATEGORIES.map((c, i) => ({ ...c, order: i })));
     await bulkPut('products', PRODUCTS.map((p, i) => ({ ...p, order: i })));
+    await bulkPut('optiongroups', OPTION_GROUPS.map((g, i) => ({ ...g, order: i })));
     await bulkPut('layout', DEMO_LAYOUT);
     for (const [key, value] of Object.entries(SETTINGS_DEFAULTS)) {
       await setSetting(key, value);
     }
+    // La carte semée est la dernière : les retouches de migrations.js n'ont
+    // rien à rattraper ici. (Hors SETTINGS_DEFAULTS à dessein — une valeur par
+    // défaut se lirait aussi sur les bases anciennes, qui doivent, elles,
+    // rejouer les retouches.)
+    await setSetting('catalogRev', CATALOG_REV);
   }
 }
 
