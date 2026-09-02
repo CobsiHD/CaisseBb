@@ -71,16 +71,6 @@ function variantRow(v = { label: '', price: 0 }) {
   return row;
 }
 
-function optionRow(o = { label: '', delta: 0 }) {
-  const label = h('input', { class: 'input', value: o.label, placeholder: 'Option (ex. Diluant)' });
-  const delta = h('input', { class: 'input', type: 'number', step: '0.5', value: o.delta, placeholder: '+€' });
-  const row = h('div', { class: 'row', style: 'align-items:center' },
-    label, delta,
-    h('button', { class: 'btn btn-sm btn-ghost', style: 'flex:0 0 44px', onclick: () => row.remove() }, '✕'));
-  row._get = () => ({ label: label.value.trim(), delta: Number(delta.value) || 0 });
-  return row;
-}
-
 async function editProduct(p, container) {
   const isNew = !p;
   p = p || { name: '', categoryId: state.categories[0]?.id || '__new__', sub: '', variants: [{ label: '', price: 0 }], options: [], happyHour: false, available: true, desc: '' };
@@ -98,9 +88,8 @@ async function editProduct(p, container) {
 
   const variantsBox = h('div', { class: 'field' }, p.variants.map(variantRow));
   const addVariant = h('button', { class: 'btn btn-sm btn-ghost', onclick: () => variantsBox.append(variantRow()) }, '＋ Format');
-  const optionsBox = h('div', { class: 'field' }, (p.options || []).map(optionRow));
-  const addOption = h('button', { class: 'btn btn-sm btn-ghost', onclick: () => optionsBox.append(optionRow()) }, '＋ Option');
   // Sous-familles de choix (Sauce, Cuisson…), demandées à l'ajout du produit.
+  // L'éditeur récupère aussi l'ancienne liste plate du produit, s'il en a une.
   const groups = groupsEditor(p);
 
   const hh = h('input', { type: 'checkbox', checked: !!p.happyHour });
@@ -114,8 +103,7 @@ async function editProduct(p, container) {
     newCatWrap,
     field('Description', desc),
     field('Formats & prix', h('div', {}, variantsBox, addVariant)),
-    field('Options (+ prix)', h('div', {}, optionsBox, addOption)),
-    field('Sous-choix (sauces, cuisson…)', groups.el),
+    field('Sous-choix demandés à l\'ajout (sauce, parfum, cuisson…)', groups.el),
     h('label', { class: 'switch' }, hh, h('span', { class: 'track' }), h('span', { class: 'muted' }, 'Éligible Bluebird\'s Hour (1+1)')),
     h('label', { class: 'switch' }, avail, h('span', { class: 'track' }), h('span', { class: 'muted' }, 'Disponible')),
     h('label', { class: 'switch' }, cuisine, h('span', { class: 'track' }), h('span', { class: 'muted' }, 'Bon de cuisine (part au Bluebird)')),
@@ -147,12 +135,14 @@ async function editProduct(p, container) {
 
   const variants = [...variantsBox.children].map((r) => r._get()).filter((x) => x.label !== '' || x.price > 0);
   if (!variants.length) variants.push({ label: '', price: 0 });
-  const options = [...optionsBox.children].map((r) => r._get()).filter((x) => x.label);
 
   const obj = {
     ...p,
     name: name.value.trim(), categoryId, sub: sub.value.trim(), desc: desc.value.trim(),
-    variants, options, optionGroups: groups.get(),
+    variants,
+    // L'éditeur a repris l'ancienne liste plate dans ses sous-familles : on la
+    // vide ici, sinon les choix apparaîtraient en double.
+    options: [], optionGroups: groups.get(),
     happyHour: hh.checked, available: avail.checked,
     cuisine: cuisine.checked,
   };

@@ -331,7 +331,10 @@ async function editTouch(product) {
   if (!variants.length) variants.push({ label: '', price: 0 });
   variants[0].price = Number(price.value) || 0;
 
-  const obj = { ...product, name: name.value.trim(), categoryId: catId, variants, color: picker.get(), optionGroups: groups.get() };
+  // `options: []` : l'éditeur a repris l'ancienne liste plate dans ses
+  // sous-familles, la garder ferait apparaître les choix en double.
+  const obj = { ...product, name: name.value.trim(), categoryId: catId, variants, color: picker.get(),
+    options: [], optionGroups: groups.get() };
   if (isNew) { obj.id = `${catId}-${slug(name.value)}-${state.products.length}`; obj.order = state.products.length; }
   await store.put('products', obj);
   await reloadCatalog(); renderRight();

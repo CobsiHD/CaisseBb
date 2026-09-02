@@ -101,14 +101,13 @@ export async function addProductToItems(items, product) {
     if (options === null) return null;
   }
 
+  // Même produit, même format, mêmes choix et pas de commentaire : on empile.
+  // Deux sauces différentes font deux lignes.
   const key = optionsKey(options);
   const existing = items.find((it) =>
     it.productId === product.id && it.variantLabel === variant.label &&
     optionsKey(it.options) === key && !it.note);
-
-  // Les options « libres » (l'ancienne liste plate) se règlent ligne par ligne :
-  // pour ces produits-là on n'empile jamais, sinon on perdrait le réglage.
-  if (existing && !(product.options || []).length) { existing.qty += 1; return existing; }
+  if (existing) { existing.qty += 1; return existing; }
 
   const item = makeItem(product, variant, options);
   items.push(item);
@@ -135,22 +134,12 @@ export async function editLine(order, item) {
   // Sous-choix du produit (sauces, cuisson…) : mêmes pastilles qu'à l'ajout.
   const picker = hasGroups(product) ? groupsPicker(product, item.options || []) : null;
 
-  const optWrap = h('div', { class: 'opt-toggle' });
-  const optState = new Map();
-  (product?.options || []).forEach((o) => {
-    const on = (item.options || []).some((x) => x.label === o.label);
-    optState.set(o.label, on);
-    const chip = h('button', { class: `chip ${on ? 'active' : ''}`, onclick: () => { const v = !optState.get(o.label); optState.set(o.label, v); chip.classList.toggle('active', v); } },
-      o.delta ? `${o.label} (+${money(o.delta)})` : o.label);
-    optWrap.append(chip);
-  });
   const noteInput = h('input', { class: 'input', value: item.note || '', placeholder: 'ex. sans glace, bien frais' });
   const hhToggle = h('input', { type: 'checkbox', checked: !!item.hh });
 
   const body = h('div', { class: 'modal-body', style: 'padding:0' },
     variantSel ? field('Format', variantSel) : null,
     picker ? picker.el : null,
-    (product?.options?.length) ? field('Options', optWrap) : null,
     field('Commentaire', noteInput),
     product?.happyHour ? h('label', { class: 'switch' }, hhToggle, h('span', { class: 'track' }), h('span', { class: 'muted' }, 'Bluebird\'s Hour (1+1 offert)')) : null,
   );
@@ -169,10 +158,9 @@ export async function editLine(order, item) {
   if (v === 'del') { order.items = order.items.filter((x) => x !== item); await saveOrder(order); return 'del'; }
   if (v !== 'save') return null;
   if (variantSel) { const vv = product.variants.find((x) => x.label === variantSel.value); item.variantLabel = vv.label; item.price = vv.price; }
-  item.options = [
-    ...(picker ? picker.get() : []),
-    ...(product?.options || []).filter((o) => optState.get(o.label)).map((o) => ({ label: o.label, delta: o.delta })),
-  ];
+  // Sans sélecteur (produit sans sous-choix), on laisse la ligne telle quelle :
+  // effacer ses options parce que la carte a changé serait une perte silencieuse.
+  if (picker) item.options = picker.get();
   item.note = noteInput.value.trim();
   if (product?.happyHour) item.hh = hhToggle.checked;
   await saveOrder(order);

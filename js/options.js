@@ -12,17 +12,35 @@ import { money } from './state.js';
 // product.optionGroups = [{ name, multi, required, choices: [{ label, delta }] }]
 // Un groupe sans nom ou sans choix n'existe pas : on l'ignore partout plutôt
 // que d'ouvrir un dialogue vide au serveur en plein coup de feu.
+//
+// La carte d'origine rangeait ces choix dans une liste plate `product.options`
+// (les sauces des frites, les parfums du sirop, le diluant des whiskies). On la
+// relit comme une sous-famille : une seule notion dans toute l'appli, et ces
+// produits se mettent à demander leur choix sans qu'on ait à ressaisir la carte.
+// Le champ se vide de lui-même dès qu'on enregistre le produit depuis l'éditeur.
+export const LEGACY_GROUP = 'Options';
+
+const cleanChoices = (list) => (list || [])
+  .filter((c) => c && String(c.label || '').trim())
+  .map((c) => ({ label: String(c.label).trim(), delta: Number(c.delta) || 0 }));
+
 export function productGroups(product) {
-  return (product?.optionGroups || [])
+  const groups = (product?.optionGroups || [])
     .map((g) => ({
       name: (g?.name || '').trim(),
       multi: !!g?.multi,
       required: !!g?.required,
-      choices: (g?.choices || [])
-        .filter((c) => c && String(c.label || '').trim())
-        .map((c) => ({ label: String(c.label).trim(), delta: Number(c.delta) || 0 })),
+      choices: cleanChoices(g?.choices),
     }))
     .filter((g) => g.name && g.choices.length);
+
+  const flat = cleanChoices(product?.options);
+  if (flat.length && !groups.some((g) => g.name === LEGACY_GROUP)) {
+    // Ces choix se cochaient librement et n'ont jamais été obligatoires :
+    // on garde exactement ce comportement.
+    groups.push({ name: LEGACY_GROUP, multi: true, required: false, choices: flat });
+  }
+  return groups;
 }
 
 export function hasGroups(product) { return productGroups(product).length > 0; }
