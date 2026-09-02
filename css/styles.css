@@ -63,9 +63,15 @@ body {
   position: relative;
   z-index: 30;
 }
-.brand { display: flex; align-items: center; gap: 9px; }
-.brand-mark { width: 26px; height: 26px; fill: var(--bluebird); filter: drop-shadow(0 0 8px rgba(79,163,199,.4)); }
-.brand-name { font-family: var(--display); font-size: 26px; font-weight: 600; letter-spacing: .3px; }
+.brand { display: flex; align-items: center; }
+/* Le logo est rouge : il est posé sur une pastille claire pour rester lisible
+   sur le fond bleu nuit de la barre. */
+.brand-logo {
+  display: block; height: 20px; width: auto;
+  padding: 8px 14px; border-radius: 999px;
+  background: #FFF;
+  box-shadow: 0 6px 18px -10px rgba(0,0,0,.8);
+}
 
 .tabs { display: flex; justify-content: center; gap: 4px; }
 .tab {
@@ -416,7 +422,7 @@ body {
 @media (max-width: 840px) { .home-screen { grid-template-columns: minmax(260px, 38%) 1fr; } }
 
 @media (max-width: 720px) {
-  .brand-name { display: none; }
+  .brand-logo { height: 16px; padding: 6px 10px; }
   .tab { padding: 9px 11px; font-size: 14px; }
   .topbar { grid-template-columns: auto 1fr auto; gap: 8px; padding: 0 12px; }
 }
