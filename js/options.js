@@ -10,7 +10,10 @@ import { state, money, reloadCatalog } from './state.js';
 import * as store from './store.js';
 
 // ── Modèle ───────────────────────────────────────────────────
-// product.optionGroups = [{ name, multi, required, choices: [{ label, delta }] }]
+// product.optionGroups = [{ name, multi, required, count, choices: [{ label, delta }] }]
+// `count` (groupes à choix multiple) : nombre EXACT de choix attendus — 3 tapas
+// sur la planche, ni 2 ni 4. 0 = libre. Un groupe compté est obligatoire de fait :
+// on ne peut pas en cocher 3 et n'en vouloir aucun.
 // Un groupe sans nom ou sans choix n'existe pas : on l'ignore partout plutôt
 // que d'ouvrir un dialogue vide au serveur en plein coup de feu.
 //
@@ -39,13 +42,20 @@ export function libraryGroup(id) {
   return (state.optionGroups || []).find((g) => g.id === id) || null;
 }
 
-const normalize = (g, ref = null) => ({
-  ref,
-  name: (g?.name || '').trim(),
-  multi: !!g?.multi,
-  required: !!g?.required,
-  choices: cleanChoices(g?.choices),
-});
+const normalize = (g, ref = null) => {
+  const multi = !!g?.multi;
+  // Un compte ne veut rien dire sur un choix unique : on l'ignore plutôt que
+  // d'exiger 3 sauces dans un groupe où l'on n'en coche qu'une.
+  const count = multi ? Math.max(0, Math.trunc(Number(g?.count) || 0)) : 0;
+  return {
+    ref,
+    name: (g?.name || '').trim(),
+    multi,
+    required: !!g?.required || count > 0,
+    count,
+    choices: cleanChoices(g?.choices),
+  };
+};
 
 export function productGroups(product) {
   const groups = [];
@@ -60,7 +70,7 @@ export function productGroups(product) {
   if (flat.length && !groups.some((g) => g.name === LEGACY_GROUP)) {
     // Ces choix se cochaient librement et n'ont jamais été obligatoires :
     // on garde exactement ce comportement.
-    groups.push({ ref: null, name: LEGACY_GROUP, multi: true, required: false, choices: flat });
+    groups.push({ ref: null, name: LEGACY_GROUP, multi: true, required: false, count: 0, choices: flat });
   }
   return groups.filter((g) => g.name && g.choices.length);
 }
@@ -82,6 +92,11 @@ export function optionsKey(options) {
 
 const choiceLabel = (c) => (c.delta ? `${c.label} (+${money(c.delta)})` : c.label);
 
+// Ce qu'on annonce sous le nom d'une sous-famille.
+const hintFor = (g) => (g.count ? `${g.count} au choix`
+  : g.required ? (g.multi ? 'au moins un' : 'obligatoire')
+  : (g.multi ? 'plusieurs possibles' : 'facultatif'));
+
 // ── Sélecteur (pastilles) ────────────────────────────────────
 // Réutilisé à l'ajout d'un produit et dans l'édition d'une ligne.
 // Renvoie { el, get(), missing() }.
@@ -97,23 +112,35 @@ export function groupsPicker(product, preselected = []) {
   for (const g of groups) {
     const set = chosen.get(g.name);
     const row = h('div', { class: 'opt-toggle' });
-    const paint = () => row.querySelectorAll('.chip').forEach((ch) =>
-      ch.classList.toggle('active', set.has(ch.dataset.label)));
+    const hintEl = h('span', { class: 'faint', style: 'font-weight:600' });
+    // Un groupe compté affiche où il en est (2/3) : le serveur voit d'un coup
+    // d'œil ce qu'il reste à cocher, sans avoir à compter les pastilles.
+    const paint = () => {
+      row.querySelectorAll('.chip').forEach((ch) => {
+        const on = set.has(ch.dataset.label);
+        ch.classList.toggle('active', on);
+        // Quand le compte est atteint, les pastilles restantes s'éteignent :
+        // on ne propose pas un geste qu'on refusera juste après.
+        ch.classList.toggle('opt-full', !on && g.count > 0 && set.size >= g.count);
+      });
+      hintEl.textContent = ` · ${g.count ? `${set.size}/${g.count}` : hintFor(g)}`;
+    };
 
     for (const c of g.choices) {
       row.append(h('button', {
-        class: `chip ${set.has(c.label) ? 'active' : ''}`,
+        class: 'chip',
         dataset: { label: c.label },
         onclick: () => {
           if (set.has(c.label)) set.delete(c.label);
+          else if (g.count && set.size >= g.count) { toast(`${g.name} : ${g.count} au maximum`); return; }
           else { if (!g.multi) set.clear(); set.add(c.label); }
           paint();
         },
       }, choiceLabel(c)));
     }
 
-    const hint = g.required ? (g.multi ? 'au moins un' : 'obligatoire') : (g.multi ? 'plusieurs possibles' : 'facultatif');
-    el.append(field(h('span', {}, g.name, h('span', { class: 'faint', style: 'font-weight:600' }, ` · ${hint}`)), row));
+    paint();
+    el.append(field(h('span', {}, g.name, hintEl), row));
   }
 
   return {
@@ -128,10 +155,15 @@ export function groupsPicker(product, preselected = []) {
       }
       return out;
     },
-    // Nom du premier groupe obligatoire laissé vide, sinon null.
+    // Message du premier groupe mal rempli, sinon null. Un groupe compté n'est
+    // pas seulement « vide ou plein » : 2 tapas sur 3, c'est encore incomplet.
     missing() {
-      const g = groups.find((x) => x.required && chosen.get(x.name).size === 0);
-      return g ? g.name : null;
+      for (const g of groups) {
+        const n = chosen.get(g.name).size;
+        if (g.count) { if (n !== g.count) return `${g.name} : ${g.count} choix (${n} coché${n > 1 ? 's' : ''})`; continue; }
+        if (g.required && n === 0) return `Choisis : ${g.name}`;
+      }
+      return null;
     },
   };
 }
@@ -150,7 +182,7 @@ export async function pickOptions(product, preselected = []) {
     if (v !== 'ok') return null;
     const missing = picker.missing();
     if (!missing) return picker.get();
-    toast(`Choisis : ${missing}`);
+    toast(missing);
   }
 }
 
@@ -203,7 +235,8 @@ export function groupsEditor(product) {
         h('div', { style: 'flex:1; min-width:0' },
           h('div', { style: 'font-weight:700' }, '🔗 ', g.name,
             h('span', { class: 'faint', style: 'font-weight:600' },
-              `  ·  ${g.multi ? 'plusieurs choix' : 'un seul choix'}${g.required ? ' · obligatoire' : ''}`)),
+              `  ·  ${g.count ? `${g.count} au choix` : g.multi ? 'plusieurs choix' : 'un seul choix'}`
+              + `${g.required && !g.count ? ' · obligatoire' : ''}`)),
           h('div', { class: 'faint', style: 'font-size:12px; margin-top:2px' },
             (g.choices || []).map((c) => c.label).join(', '))),
         h('button', { class: 'btn btn-sm btn-ghost', style: 'flex:0 0 44px', title: 'Retirer de ce produit',
@@ -241,11 +274,13 @@ export function apercu(group) {
   return `${group.name} · ${noms}${reste}`;
 }
 
-function groupBox(g = { name: '', multi: false, required: false, choices: [{ label: '', delta: 0 }] }) {
+function groupBox(g = { name: '', multi: false, required: false, count: 0, choices: [{ label: '', delta: 0 }] }) {
   const name = h('input', { class: 'input', value: g.name || '', placeholder: 'Nom du sous-choix (ex. Sauce)' });
-  const multi = h('input', { type: 'checkbox', checked: !!g.multi });
+  const multi = h('input', { type: 'checkbox', checked: !!g.multi, onchange: () => syncCount() });
   const required = h('input', { type: 'checkbox', checked: !!g.required });
+  const count = countRow(g);
   const choices = h('div', { class: 'field' }, (g.choices || []).map(choiceRow));
+  const syncCount = () => { count.el.hidden = !multi.checked; };
 
   const box = h('div', { class: 'optgroup-box' },
     h('div', { class: 'row', style: 'align-items:center' },
@@ -256,15 +291,30 @@ function groupBox(g = { name: '', multi: false, required: false, choices: [{ lab
     h('div', { class: 'row', style: 'margin-top:8px' },
       h('label', { class: 'switch' }, multi, h('span', { class: 'track' }), h('span', { class: 'muted' }, 'Plusieurs choix')),
       h('label', { class: 'switch' }, required, h('span', { class: 'track' }), h('span', { class: 'muted' }, 'Obligatoire'))),
+    count.el,
   );
+  syncCount();
 
   box._get = () => ({
     name: name.value.trim(),
     multi: multi.checked,
     required: required.checked,
+    count: multi.checked ? count.get() : 0,
     choices: [...choices.children].map((r) => r._get()).filter((c) => c.label),
   });
   return box;
+}
+
+// Le nombre exact de choix attendus. Séparé de « Obligatoire » : un groupe
+// compté l'est déjà, et l'inverse n'est pas vrai (les sauces, autant qu'on veut).
+function countRow(g) {
+  const input = h('input', { class: 'input', type: 'number', min: 0, step: 1, value: g?.count || 0 });
+  const el = h('div', { class: 'field' },
+    h('label', { class: 'muted' }, 'Nombre exact de choix'),
+    input,
+    h('div', { class: 'faint', style: 'font-size:12px' },
+      '0 = libre. À 3, le serveur ne peut en cocher ni 2 ni 4.'));
+  return { el, get: () => Math.max(0, Math.trunc(Number(input.value) || 0)) };
 }
 
 function choiceRow(c = { label: '', delta: 0 }) {
@@ -309,7 +359,7 @@ export async function adopt({ group, products }, nom = null) {
   let id = slug(name);
   while (libraryGroup(id)) id += '-2';
   await store.put('optiongroups', {
-    id, name, multi: group.multi, required: group.required,
+    id, name, multi: group.multi, required: group.required, count: group.count || 0,
     choices: group.choices.map((c) => ({ ...c })), order: (state.optionGroups || []).length,
   });
 
@@ -336,8 +386,10 @@ export async function adopt({ group, products }, nom = null) {
 // Formulaire d'une sous-famille de la bibliothèque.
 function libForm(entry) {
   const name = h('input', { class: 'input', value: entry?.name || '', placeholder: 'Nom (ex. Sauce)' });
-  const multi = h('input', { type: 'checkbox', checked: !!entry?.multi });
+  const multi = h('input', { type: 'checkbox', checked: !!entry?.multi, onchange: () => syncCount() });
   const required = h('input', { type: 'checkbox', checked: !!entry?.required });
+  const count = countRow(entry);
+  const syncCount = () => { count.el.hidden = !multi.checked; };
   const choices = h('div', { class: 'field' }, (entry?.choices || [{ label: '', delta: 0 }]).map(choiceRow));
   const el = h('div', {},
     field('Nom', name),
@@ -345,9 +397,12 @@ function libForm(entry) {
       h('button', { class: 'btn btn-sm btn-ghost', onclick: () => choices.append(choiceRow()) }, '＋ Choix'))),
     h('div', { class: 'row' },
       h('label', { class: 'switch' }, multi, h('span', { class: 'track' }), h('span', { class: 'muted' }, 'Plusieurs choix')),
-      h('label', { class: 'switch' }, required, h('span', { class: 'track' }), h('span', { class: 'muted' }, 'Obligatoire'))));
+      h('label', { class: 'switch' }, required, h('span', { class: 'track' }), h('span', { class: 'muted' }, 'Obligatoire'))),
+    count.el);
+  syncCount();
   return { el, get: () => ({
     name: name.value.trim(), multi: multi.checked, required: required.checked,
+    count: multi.checked ? count.get() : 0,
     choices: [...choices.children].map((r) => r._get()).filter((c) => c.label),
   }) };
 }

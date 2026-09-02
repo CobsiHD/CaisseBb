@@ -117,6 +117,9 @@ body {
   border: 1px solid var(--line-2); background: transparent; color: var(--muted);
 }
 .chip.active { background: var(--ink-3); color: var(--text); border-color: var(--line-2); }
+/* Sous-famille comptée (3 tapas au choix) : une fois le compte atteint, les
+   pastilles restantes s'effacent — on ne propose pas un geste qu'on refuse. */
+.chip.opt-full { opacity: .35; }
 
 /* ── Vue ───────────────────────────────────────────────────── */
 .view { position: absolute; inset: 64px 0 0 0; overflow: auto; -webkit-overflow-scrolling: touch; }

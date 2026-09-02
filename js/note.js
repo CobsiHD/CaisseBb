@@ -151,8 +151,9 @@ export async function editLine(order, item) {
       title: item.name, body,
       actions: [{ label: 'Retirer', kind: 'danger', value: 'del' }, { label: 'Fermer', value: null }, { label: 'Enregistrer', kind: 'primary', value: 'save' }],
     });
-    if (v !== 'save' || !picker?.missing()) break;
-    toast(`Choisis : ${picker.missing()}`);
+    const manque = v === 'save' ? picker?.missing() : null;
+    if (!manque) break;
+    toast(manque);
   }
 
   if (v === 'del') { order.items = order.items.filter((x) => x !== item); await saveOrder(order); return 'del'; }
