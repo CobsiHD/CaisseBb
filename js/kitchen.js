@@ -3,7 +3,7 @@
 // Une ligne part en cuisine quand le serveur touche « Envoyer » : on ne transmet
 // que les quantités pas encore envoyées (item.sent), pour qu'un ajout ultérieur
 // sur la même note ne réimprime pas ce qui est déjà en train de cuire.
-import { state, emit, productById } from './state.js';
+import { state, emit, productById, lineTotal, lineUnit } from './state.js';
 import * as store from './store.js';
 import { senderLabel } from './profile.js';
 
@@ -60,17 +60,32 @@ export function pendingCount(order) {
 }
 
 // ── Tickets ─────────────────────────────────────────────────────────────────
+// Deux natures de bons vivent dans la même table, parce que l'agent du Pi
+// imprime tout ce qui s'y trouve :
+//   • 'cuisine'  — ce qui part cuire, suivi de statut en cuisine ;
+//   • 'commande' — la note imprimée telle quelle, juste une impression.
+// Les anciens bons n'ont pas de champ `kind` : ce sont des bons de cuisine.
+export const kindOf = (t) => t?.kind || 'cuisine';
+
 export function ticketsOfDay(now = Date.now()) {
   const from = serviceDayStart(now);
   return state.tickets
     .filter((t) => t.createdAt >= from)
     .sort((a, b) => a.createdAt - b.createdAt);
 }
+// Les bons que la cuisine doit cuisiner — les bons de commande imprimés
+// n'encombrent ni la liste, ni la pastille, ni la sonnerie.
+export function kitchenTicketsOfDay(now = Date.now()) {
+  return ticketsOfDay(now).filter((t) => kindOf(t) === 'cuisine');
+}
+export function printTicketsOfDay(now = Date.now()) {
+  return ticketsOfDay(now).filter((t) => kindOf(t) === 'commande');
+}
 export function openTickets() {
-  return ticketsOfDay().filter((t) => t.status !== 'servi');
+  return kitchenTicketsOfDay().filter((t) => t.status !== 'servi');
 }
 export function newTicketCount() {
-  return ticketsOfDay().filter((t) => t.status === 'nouveau').length;
+  return kitchenTicketsOfDay().filter((t) => t.status === 'nouveau').length;
 }
 
 async function saveTicket(ticket) {
@@ -111,14 +126,17 @@ export async function setTicketStatus(ticket, status) {
 }
 
 // Une ligne de bon, telle qu'elle sera lue en cuisine et imprimée.
-function lineOf(item, qty) {
-  return {
+// `withPrice` : seuls les bons de commande portent les prix.
+function lineOf(item, qty, withPrice = false) {
+  const line = {
     name: item.name,
     variantLabel: item.variantLabel || '',
     qty,
     options: (item.options || []).map((o) => o.label),
     note: item.note || '',
   };
+  if (withPrice) { line.unit = lineUnit(item); line.total = lineTotal(item); }
+  return line;
 }
 
 // Construit et enregistre le bon. `place` est le libellé lisible en cuisine
@@ -134,6 +152,11 @@ async function createTicket(lines, meta = {}) {
     tableId: meta.tableId ?? null,
     place: meta.place || 'Sur place',
     area: meta.area || null,
+    kind: meta.kind || 'cuisine',
+    // Titre imprimé en tête du bon papier ; l'agent retombe sur « BON n » s'il
+    // ne le connaît pas encore.
+    title: meta.title || null,
+    total: meta.total ?? null,
     // Qui a envoyé : la cuisine doit savoir à qui rendre le plat, et le bon
     // papier le portera. C'est le profil de l'appareil (Bluebird ou Le 22).
     from: senderLabel(),
@@ -183,11 +206,35 @@ export async function sendSelectionToKitchen(selection, place = 'Comptoir') {
   return ticket;
 }
 
+// ── Bon de commande ─────────────────────────────────────────────────────────
+// Toute la commande imprimée telle qu'elle est à l'instant où on touche
+// « Imprimer ». Rien à voir avec l'envoi en cuisine : on ne touche pas à
+// `item.sent`, et le bon n'entre pas dans la file de la cuisine. Deux
+// impressions de suite font deux bons — c'est voulu, on réimprime en cas de
+// bourrage papier.
+//
+// Une commande mélange presque toujours boissons et bouffe, et deux métiers
+// différents la lisent. Le bon est donc coupé en deux blocs — BOISSONS puis
+// CUISINE — sur le même papier : le barman lit le haut, la cuisine le bas, et
+// personne ne cherche sa ligne au milieu des autres. Une commande qui n'a que
+// des boissons n'imprime qu'un bloc.
+export async function printTicket(items, meta = {}) {
+  const kept = (items || []).filter((it) => (it.qty || 0) > 0);
+  const lines = [
+    ...kept.filter((it) => !isCuisineItem(it)).map((it) => ({ ...lineOf(it, it.qty, true), section: 'boissons' })),
+    ...kept.filter((it) => isCuisineItem(it)).map((it) => ({ ...lineOf(it, it.qty, true), section: 'cuisine' })),
+  ];
+  if (!lines.length) return null;
+
+  const total = kept.reduce((s, it) => s + lineTotal(it), 0);
+  return createTicket(lines, { ...meta, kind: 'commande', title: 'BON DE COMMANDE', total });
+}
+
 // Alerte les nouveaux bons apparus depuis le dernier passage. Appelé à chaque
 // changement de la table `tickets`, quelle que soit la vue affichée.
 let seenNew = null;
 export function notifyNewTickets() {
-  const ids = new Set(ticketsOfDay().filter((t) => t.status === 'nouveau').map((t) => t.id));
+  const ids = new Set(kitchenTicketsOfDay().filter((t) => t.status === 'nouveau').map((t) => t.id));
   // Premier passage : on prend l'existant pour référence sans sonner.
   if (seenNew === null) { seenNew = ids; return false; }
   let fresh = false;

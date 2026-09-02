@@ -5,7 +5,9 @@ import { h, clear, toast, modal, field, confirmDialog } from './ui.js';
 import * as store from './store.js';
 import { isTableType } from './elements.js';
 import { catColor, colorPicker, paginate } from './pos.js';
-import { pendingCount, sendSelectionToKitchen } from './kitchen.js';
+import { pendingCount, sendSelectionToKitchen, printTicket } from './kitchen.js';
+import { addProductToItems } from './note.js';
+import { groupsEditor } from './options.js';
 import { visibleCategories } from './profile.js';
 
 const slug = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'x';
@@ -45,15 +47,18 @@ function renderSelection() {
     h('div', { class: 'total-row' }, h('span', { class: 'lbl' }, 'Total'), h('span', { class: 'val' }, money(total))),
     h('div', { class: 'row' },
       h('button', { class: 'btn btn-primary', style: 'flex:2', disabled: selection.length === 0, onclick: sendToTable }, 'Envoyer vers une table'),
+      h('button', { class: 'btn', style: 'flex:1', disabled: selection.length === 0, onclick: printBon }, '🖨 Imprimer'),
       h('button', { class: 'btn btn-ghost', disabled: selection.length === 0, onclick: () => { selection = []; renderSelection(); } }, 'Vider')),
   ));
 }
 
 function renderLine(item) {
+  const opts = (item.options || []).map((o) => o.label).join(' · ');
   return h('div', { class: 'tk-line' },
     h('div', { style: 'min-width:0' },
       h('span', { class: 'nm' }, item.name),
       item.variantLabel ? h('span', { class: 'vr' }, '  ' + item.variantLabel) : null,
+      opts ? h('div', { class: 'opt' }, opts) : null,
       item.hh ? h('div', { class: 'hh' }, '1+1 offert') : null),
     h('div', { class: 'price' }, money(lineTotal(item))),
     h('div', { style: 'grid-column:1/-1; display:flex; justify-content:space-between; align-items:center; margin-top:6px' },
@@ -142,20 +147,11 @@ function renderProducts() {
 }
 
 // ── Ajout produit à la sélection ─────────────────────────────
+// Format et sous-choix sont demandés exactement comme sur une note : c'est la
+// même fonction (note.js), pour que le comptoir ne dérive jamais de la salle.
 async function addProduct(product) {
-  let variant = product.variants[0];
-  if (product.variants.length > 1) {
-    const chosen = await modal({
-      title: product.name, body: h('div', { class: 'row' }, []),
-      actions: [{ label: 'Annuler', value: null }],
-      onMount: (card, close) => { const row = card.querySelector('.row'); product.variants.forEach((v) => row.append(h('button', { class: 'btn btn-blue', onclick: () => close(v) }, `${v.label} · ${money(v.price)}`))); },
-    });
-    if (!chosen) return; variant = chosen;
-  }
-  const hhOn = state.settings.happyHour?.enabled && product.happyHour;
-  const ex = selection.find((it) => it.productId === product.id && it.variantLabel === variant.label && (!it.options || !it.options.length) && !it.note);
-  if (ex && (!product.options || !product.options.length)) ex.qty += 1;
-  else selection.push({ productId: product.id, name: product.name, sub: product.sub, variantLabel: variant.label, price: variant.price, options: [], qty: 1, hh: !!hhOn, note: '' });
+  const item = await addProductToItems(selection, product);
+  if (!item) return;
   toast(`${product.name} ajouté`);
   renderSelection();
 }
@@ -223,7 +219,14 @@ async function persistTileOrder() {
   toast('Ordre des tuiles enregistré');
 }
 
-// ── Envoi vers une table ─────────────────────────────────────
+// ── Impression / envoi de la sélection ───────────────────────
+// Imprime la sélection telle quelle, sans la vider : au comptoir on encaisse
+// derrière, et le bon papier n'est qu'une trace de la commande.
+async function printBon() {
+  const ticket = await printTicket(selection, { place: 'Comptoir' });
+  toast(ticket ? `Bon de commande #${ticket.num} envoyé à l'imprimante` : 'Sélection vide');
+}
+
 // Envoie la bouffe du comptoir en cuisine sans passer par une table. Les lignes
 // restent dans la sélection (on encaisse toujours), mais marquées comme parties :
 // un « Envoyer vers une table » ensuite ne les renverra pas une seconde fois.
@@ -308,12 +311,16 @@ async function editTouch(product) {
   const name = h('input', { class: 'input', value: product.name || '', placeholder: 'ex. Mojito' });
   const price = h('input', { class: 'input', type: 'number', step: '0.1', min: 0, value: product.variants?.[0]?.price ?? 0, placeholder: 'Prix €' });
   const picker = colorPicker(product.color || catColor(catId));
+  // Sous-familles de choix (Sauce, Cuisson…) : éditables ici, au comptoir,
+  // sans passer par l'onglet Produits.
+  const groups = groupsEditor(product);
 
   const body = h('div', { class: 'modal-body', style: 'padding:0' },
     field('Nom de la touche', name),
     field(multi ? 'Prix (1er format)' : 'Prix', price),
     multi ? h('div', { class: 'faint', style: 'font-size:12px; margin:-4px 0 6px' }, 'Plusieurs formats : gérez-les dans l\'onglet Produits.') : null,
-    field('Couleur', picker.el));
+    field('Couleur', picker.el),
+    field('Sous-choix (sauces, cuisson…)', groups.el));
 
   const actions = [{ label: 'Annuler', value: null }, { label: isNew ? 'Créer' : 'Enregistrer', kind: 'primary', value: 'save' }];
   if (!isNew) actions.unshift({ label: 'Supprimer', kind: 'danger', value: 'del' });
@@ -332,7 +339,7 @@ async function editTouch(product) {
   if (!variants.length) variants.push({ label: '', price: 0 });
   variants[0].price = Number(price.value) || 0;
 
-  const obj = { ...product, name: name.value.trim(), categoryId: catId, variants, color: picker.get() };
+  const obj = { ...product, name: name.value.trim(), categoryId: catId, variants, color: picker.get(), optionGroups: groups.get() };
   if (isNew) { obj.id = `${catId}-${slug(name.value)}-${state.products.length}`; obj.order = state.products.length; }
   await store.put('products', obj);
   await reloadCatalog(); renderRight();

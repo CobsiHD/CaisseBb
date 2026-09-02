@@ -5,11 +5,13 @@
 import { state, on } from './state.js';
 import { h, clear, toast, confirmDialog } from './ui.js';
 import {
-  STATUS, ticketsOfDay, openTickets, setTicketStatus,
+  STATUS, kindOf, kitchenTicketsOfDay, printTicketsOfDay, openTickets, setTicketStatus,
   armSound, soundArmed, printState, requestReprint,
 } from './kitchen.js';
 
-let showDone = false;
+// 'ouverts' : ce qu'il reste à cuisiner — 'tous' : la journée — 'impressions' :
+// les bons de commande imprimés depuis la salle et le comptoir.
+let filter = 'ouverts';
 let tick = null;   // rafraîchit les durées sans redessiner la page
 
 export function renderCuisine(container) {
@@ -25,14 +27,18 @@ export function renderCuisine(container) {
     },
   }, soundArmed() ? '🔔 Son activé' : '🔕 Activer le son');
 
+  const seg = h('div', { class: 'segment' },
+    [['ouverts', 'À faire'], ['tous', 'Tout le service'], ['impressions', 'Bons imprimés']].map(([id, label]) =>
+      h('button', {
+        class: `chip ${filter === id ? 'active' : ''}`,
+        onclick: () => { filter = id; renderCuisine(container); },
+      }, label)));
+
   container.append(h('div', { class: 'viewbar' },
     h('h2', {}, 'Cuisine'),
     h('div', { class: 'spacer' }),
     armBtn,
-    h('button', {
-      class: `btn btn-sm ${showDone ? 'btn-blue' : 'btn-ghost'}`,
-      onclick: () => { showDone = !showDone; renderCuisine(container); },
-    }, showDone ? 'Masquer les servis' : 'Voir les servis'),
+    seg,
   ));
 
   if (!soundArmed()) {
@@ -41,13 +47,17 @@ export function renderCuisine(container) {
       h('b', {}, 'Touche « Activer le son » en début de service'), ' pour être prévenu des nouveaux bons.'));
   }
 
-  const list = showDone ? ticketsOfDay() : openTickets();
+  const list = filter === 'impressions' ? printTicketsOfDay()
+    : filter === 'tous' ? kitchenTicketsOfDay()
+    : openTickets();
   const grid = h('div', { class: 'cuisine-grid' });
 
   if (!list.length) {
     grid.append(h('div', { class: 'empty' },
-      h('div', { class: 'big' }, 'Aucun bon en cours'),
-      h('div', { class: 'muted' }, 'Les commandes envoyées depuis le 22 arrivent ici.')));
+      h('div', { class: 'big' }, filter === 'impressions' ? 'Aucun bon imprimé' : 'Aucun bon en cours'),
+      h('div', { class: 'muted' }, filter === 'impressions'
+        ? 'Les bons de commande imprimés depuis la salle et le comptoir sont listés ici.'
+        : 'Les commandes envoyées depuis le 22 arrivent ici.')));
   } else {
     // Les plus anciens d'abord : c'est l'ordre dans lequel il faut cuisiner.
     for (const t of list) grid.append(card(t, container));
@@ -59,18 +69,30 @@ export function renderCuisine(container) {
 
 function card(t, container) {
   const st = STATUS[t.status] || STATUS.nouveau;
+  const commande = kindOf(t) === 'commande';
 
-  const lines = h('div', { class: 'k-lines' },
-    (t.items || []).map((it) => h('div', { class: 'k-line' },
+  // Un bon de commande porte deux blocs (boissons puis cuisine) : on répète
+  // l'intitulé à chaque changement, comme sur le papier.
+  const lines = h('div', { class: 'k-lines' });
+  let section = null;
+  for (const it of t.items || []) {
+    if (it.section && it.section !== section) {
+      section = it.section;
+      lines.append(h('div', { class: 'k-section' }, section === 'cuisine' ? 'Cuisine' : 'Boissons'));
+    }
+    lines.append(h('div', { class: 'k-line' },
       h('span', { class: 'k-qty' }, `${it.qty}×`),
       h('div', { class: 'k-body' },
         h('div', { class: 'k-name' }, it.name, it.variantLabel ? h('span', { class: 'k-var' }, ' ' + it.variantLabel) : null),
         (it.options && it.options.length) ? h('div', { class: 'k-opt' }, it.options.join(' · ')) : null,
         it.note ? h('div', { class: 'k-note' }, '« ' + it.note + ' »') : null,
-      ))));
+      )));
+  }
 
   const actions = h('div', { class: 'k-actions' });
-  if (st.next) {
+  if (commande) {
+    // Rien à cuisiner : ce bon est une impression, il ne suit aucun statut.
+  } else if (st.next) {
     actions.append(h('button', {
       class: 'btn btn-primary', style: 'flex:2',
       onclick: async () => { await setTicketStatus(t, st.next); renderCuisine(container); },
@@ -78,7 +100,7 @@ function card(t, container) {
   } else {
     actions.append(h('div', { class: 'muted', style: 'flex:2; text-align:center' }, 'Terminé'));
   }
-  if (t.status !== 'nouveau') {
+  if (!commande && t.status !== 'nouveau') {
     actions.append(h('button', {
       class: 'btn btn-ghost', style: 'flex:0 0 60px',
       title: 'Revenir en arrière',
@@ -91,7 +113,7 @@ function card(t, container) {
 
   const prn = printState(t);
 
-  return h('div', { class: `k-card st-${t.status}`, dataset: { created: String(t.createdAt) } },
+  return h('div', { class: `k-card ${commande ? 'st-commande' : 'st-' + t.status}`, dataset: { created: String(t.createdAt) } },
     h('div', { class: 'k-head' },
       h('span', { class: 'k-num' }, `#${t.num}`),
       h('span', { class: 'k-place' }, t.place),
@@ -101,7 +123,9 @@ function card(t, container) {
     ),
     lines,
     h('div', { class: 'k-foot' },
-      h('span', { class: `k-badge ${t.status}` }, st.label),
+      commande
+        ? h('span', { class: 'k-badge commande' }, 'Bon de commande')
+        : h('span', { class: `k-badge ${t.status}` }, st.label),
       h('span', { class: `k-print ${prn.cls}` }, prn.txt),
       h('span', { class: 'spacer' }),
       h('button', {
@@ -109,7 +133,7 @@ function card(t, container) {
         onclick: async () => { await requestReprint(t); toast('Réimpression demandée'); renderCuisine(container); },
       }, '🖨'),
     ),
-    actions,
+    actions.children.length ? actions : null,
   );
 }
 
@@ -124,7 +148,8 @@ function ageLabel(ts) {
 function startTick(container) {
   tick = setInterval(() => {
     if (!container.isConnected) return stopTick();
-    container.querySelectorAll('.k-card').forEach((el) => {
+    // Les bons de commande imprimés ne vieillissent pas : rien n'attend en cuisine.
+    container.querySelectorAll('.k-card:not(.st-commande)').forEach((el) => {
       const ts = Number(el.dataset.created);
       const age = el.querySelector('.k-age');
       if (age) age.textContent = ageLabel(ts);

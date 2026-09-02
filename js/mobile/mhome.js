@@ -6,8 +6,8 @@
 import { state, money, lineUnit, lineTotal, tableLabel } from '../state.js';
 import { h, clear, toast } from '../ui.js';
 import { catColor } from '../pos.js';
-import { makeItem, pickVariant, pickTable, saveOrder } from '../note.js';
-import { pendingCount, sendSelectionToKitchen } from '../kitchen.js';
+import { addProductToItems, pickTable, saveOrder } from '../note.js';
+import { pendingCount, sendSelectionToKitchen, printTicket } from '../kitchen.js';
 import { visibleCategories } from '../profile.js';
 
 let selection = [];
@@ -145,13 +145,10 @@ function tapCustom(t) {
 }
 
 // ── Sélection ────────────────────────────────────────────────
+// Format et sous-choix : même chemin que sur une note (note.js).
 async function addToSelection(product) {
-  const variant = await pickVariant(product);
-  if (!variant) return;
-  const ex = selection.find((it) => it.productId === product.id && it.variantLabel === variant.label
-    && (!it.options || !it.options.length) && !it.note);
-  if (ex && (!product.options || !product.options.length)) ex.qty += 1;
-  else selection.push(makeItem(product, variant));
+  const item = await addProductToItems(selection, product);
+  if (!item) return;
   toast(`${product.name} ajouté`);
   renderTick();
   pulse();
@@ -187,6 +184,7 @@ function renderTick() {
     selection.forEach((item) => lines.append(h('div', { class: 'm-line' },
       h('div', { class: 'm-line-main' },
         h('div', { class: 'nm' }, item.name, item.variantLabel ? h('span', { class: 'vr' }, ' ' + item.variantLabel) : null),
+        (item.options || []).length ? h('div', { class: 'opt' }, item.options.map((o) => o.label).join(' · ')) : null,
         item.hh ? h('div', { class: 'hh' }, '1+1 offert') : null),
       h('div', { class: 'm-line-side' },
         h('div', { class: 'price' }, money(lineTotal(item))),
@@ -207,6 +205,7 @@ function renderTick() {
     h('div', { class: 'total-row' }, h('span', { class: 'lbl' }, 'Total'), h('span', { class: 'val' }, money(total))),
     h('div', { class: 'row' },
       h('button', { class: 'btn btn-primary', style: 'flex:2', disabled: !selection.length, onclick: sendToTable }, 'Envoyer vers une table'),
+      h('button', { class: 'btn', style: 'flex:1', disabled: !selection.length, onclick: printBon }, '🖨 Imprimer'),
       h('button', { class: 'btn btn-ghost', style: 'flex:0 0 88px', disabled: !selection.length, onclick: () => { selection = []; renderTick(); } }, 'Vider'))));
 }
 
@@ -214,6 +213,12 @@ function bump(item, d) {
   item.qty = Math.max(0, item.qty + d);
   if (item.qty === 0) selection = selection.filter((x) => x !== item);
   renderTick();
+}
+
+// Imprime la sélection telle quelle, sans la vider (voir home.js).
+async function printBon() {
+  const ticket = await printTicket(selection, { place: 'Comptoir' });
+  toast(ticket ? `Bon de commande #${ticket.num} envoyé à l'imprimante` : 'Sélection vide');
 }
 
 // Envoie la bouffe du comptoir en cuisine sans passer par une table (voir home.js).

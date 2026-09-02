@@ -320,6 +320,14 @@ body {
 .row { display: flex; gap: 10px; flex-wrap: wrap; }
 .row > * { flex: 1; }
 .opt-toggle { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* Sous-choix d'un produit (sauces, cuisson…) */
+.optgroups { display: flex; flex-direction: column; gap: 14px; }
+.optgroups-edit { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
+.optgroup-box {
+  display: flex; flex-direction: column; gap: 8px;
+  border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: var(--ink-1);
+}
 .switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; }
 .switch input { width: 0; height: 0; opacity: 0; }
 .switch .track { width: 50px; height: 30px; border-radius: 999px; background: var(--ink-3); position: relative; transition: background .15s; }
@@ -454,6 +462,8 @@ body {
 .k-card.st-en-cours  { border-left-color: var(--brass); }
 .k-card.st-pret      { border-left-color: var(--libre); }
 .k-card.st-servi     { opacity: .5; }
+/* Bon de commande imprimé : pas de cuisson derrière, juste une trace. */
+.k-card.st-commande  { border-left-color: var(--bluebird); }
 /* L'attente se voit de loin : un bon qui traîne change de couleur tout seul. */
 .k-card.warn .k-age  { color: var(--brass); font-weight: 800; }
 .k-card.late .k-age  { color: var(--encaisser); font-weight: 800; }
@@ -478,6 +488,12 @@ body {
 .k-var   { color: var(--muted); font-weight: 500; }
 .k-opt   { font-size: 13px; color: var(--bluebird); margin-top: 2px; }
 .k-note  { font-size: 14px; color: var(--brass); margin-top: 2px; font-style: italic; }
+/* Bon de commande : intitulé du bloc (Boissons / Cuisine). */
+.k-section {
+  font-size: 11px; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--bluebird); font-weight: 800; margin: 8px 0 2px;
+}
+.k-section:first-child { margin-top: 0; }
 
 .k-foot { display: flex; align-items: center; gap: 8px; font-size: 12px; }
 .k-foot .spacer { flex: 1; }
@@ -488,6 +504,7 @@ body {
 .k-badge.nouveau  { color: var(--encaisser); border-color: rgba(210,121,107,.45); }
 .k-badge.en-cours { color: var(--brass);     border-color: rgba(201,162,75,.45); }
 .k-badge.pret     { color: var(--libre);     border-color: rgba(94,140,106,.55); }
+.k-badge.commande { color: var(--bluebird);  border-color: rgba(79,163,199,.45); }
 
 .k-actions { display: flex; gap: 8px; margin-top: 2px; }
 .k-actions .btn { min-height: var(--tap); }

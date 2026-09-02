@@ -7,7 +7,7 @@ import { h, clear, toast } from './ui.js';
 import { catColor, paginate } from './pos.js';
 import {
   tableEl, placeLabel, orderSum, saveOrder, newOrder, ensureOrder,
-  changeQty, addProduct, editLine, cuisineMark, sendOrder, pendingCount,
+  changeQty, addProduct, editLine, cuisineMark, sendOrder, pendingCount, printOrder,
   payOrder, toggleToPay, deleteOrder, moveOrder, noteMenu,
 } from './note.js';
 import { visibleCategories } from './profile.js';
@@ -91,6 +91,7 @@ function renderTicket() {
     h('div', { class: 'total-row' }, h('span', { class: 'lbl' }, 'Total'), h('span', { class: 'val' }, money(total))),
     h('div', { class: 'row' },
       h('button', { class: 'btn btn-primary', style: 'flex:2', disabled: !order || order.items.length === 0, onclick: () => doPay(order) }, 'Encaisser'),
+      h('button', { class: 'btn', style: 'flex:1', disabled: !order || order.items.length === 0, onclick: () => doPrint(order) }, '🖨 Imprimer'),
       h('button', { class: 'btn btn-ghost', style: 'flex:0 0 52px', onclick: () => doNoteMenu(order) }, '⋯'),
     ),
   ));
@@ -126,6 +127,11 @@ async function doSend(order) {
   if (!ticket) return;
   toast(`Bon #${ticket.num} envoyé en cuisine`);
   renderTicket();
+}
+
+async function doPrint(order) {
+  const ticket = await printOrder(order);
+  toast(ticket ? `Bon de commande #${ticket.num} envoyé à l'imprimante` : 'Note vide');
 }
 
 // ── PANE DROITE : familles → produits (tuiles, pagination) ───

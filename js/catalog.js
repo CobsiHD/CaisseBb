@@ -5,6 +5,7 @@ import * as store from './store.js';
 import { requirePin } from './app.js';
 import { colorPicker } from './pos.js';
 import { isCuisineProduct } from './kitchen.js';
+import { groupsEditor } from './options.js';
 
 const slug = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
@@ -99,6 +100,8 @@ async function editProduct(p, container) {
   const addVariant = h('button', { class: 'btn btn-sm btn-ghost', onclick: () => variantsBox.append(variantRow()) }, '＋ Format');
   const optionsBox = h('div', { class: 'field' }, (p.options || []).map(optionRow));
   const addOption = h('button', { class: 'btn btn-sm btn-ghost', onclick: () => optionsBox.append(optionRow()) }, '＋ Option');
+  // Sous-familles de choix (Sauce, Cuisson…), demandées à l'ajout du produit.
+  const groups = groupsEditor(p);
 
   const hh = h('input', { type: 'checkbox', checked: !!p.happyHour });
   const avail = h('input', { type: 'checkbox', checked: p.available !== false });
@@ -112,6 +115,7 @@ async function editProduct(p, container) {
     field('Description', desc),
     field('Formats & prix', h('div', {}, variantsBox, addVariant)),
     field('Options (+ prix)', h('div', {}, optionsBox, addOption)),
+    field('Sous-choix (sauces, cuisson…)', groups.el),
     h('label', { class: 'switch' }, hh, h('span', { class: 'track' }), h('span', { class: 'muted' }, 'Éligible Bluebird\'s Hour (1+1)')),
     h('label', { class: 'switch' }, avail, h('span', { class: 'track' }), h('span', { class: 'muted' }, 'Disponible')),
     h('label', { class: 'switch' }, cuisine, h('span', { class: 'track' }), h('span', { class: 'muted' }, 'Bon de cuisine (part au Bluebird)')),
@@ -148,7 +152,8 @@ async function editProduct(p, container) {
   const obj = {
     ...p,
     name: name.value.trim(), categoryId, sub: sub.value.trim(), desc: desc.value.trim(),
-    variants, options, happyHour: hh.checked, available: avail.checked,
+    variants, options, optionGroups: groups.get(),
+    happyHour: hh.checked, available: avail.checked,
     cuisine: cuisine.checked,
   };
   if (isNew) { obj.id = `${categoryId}-${slug(obj.name)}-${Date.now().toString(36).slice(-4)}`; obj.order = state.products.length; }

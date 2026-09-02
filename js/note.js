@@ -7,10 +7,11 @@
 import {
   state, emit, money, lineTotal, openOrdersForTable, productById, tableLabel, areaName,
 } from './state.js';
-import { h, clear, modal, field, confirmDialog } from './ui.js';
+import { h, clear, modal, field, toast, confirmDialog } from './ui.js';
 import * as store from './store.js';
 import { isTableType, TYPE_MAP } from './elements.js';
-import { isCuisineProduct, isCuisineItem, pendingItems, pendingCount, sendToKitchen } from './kitchen.js';
+import { isCuisineProduct, isCuisineItem, pendingItems, pendingCount, sendToKitchen, printTicket } from './kitchen.js';
+import { hasGroups, pickOptions, groupsPicker, optionsKey } from './options.js';
 
 // ── Lecture ──────────────────────────────────────────────────
 export function tableEl(id) { return state.layout.find((e) => e.id === id); }
@@ -61,12 +62,12 @@ export async function changeQty(order, item, delta) {
 }
 
 // Fabrique une ligne de note à partir d'un produit + son format.
-export function makeItem(product, variant) {
+export function makeItem(product, variant, options = []) {
   const hhOn = state.settings.happyHour?.enabled && product.happyHour;
   return {
     productId: product.id, name: product.name, sub: product.sub,
     variantLabel: variant.label, price: variant.price,
-    options: [], qty: 1, hh: !!hhOn, note: '',
+    options, qty: 1, hh: !!hhOn, note: '',
     cuisine: isCuisineProduct(product), sent: 0,
   };
 }
@@ -86,17 +87,38 @@ export async function pickVariant(product) {
   });
 }
 
-// Ajoute un produit à la note (incrémente la ligne identique si elle existe).
-// Renvoie la ligne touchée, ou null si l'utilisateur a annulé le choix du format.
-export async function addProduct(order, product) {
+// Ajoute un produit à une liste de lignes (note ou sélection du comptoir) :
+// format, puis sous-choix si le produit en a. Deux lignes identiques fusionnent,
+// deux sauces différentes restent deux lignes.
+// Renvoie la ligne touchée, ou null si l'utilisateur a annulé en route.
+export async function addProductToItems(items, product) {
   const variant = await pickVariant(product);
   if (!variant) return null;
-  const existing = order.items.find((it) =>
+
+  let options = [];
+  if (hasGroups(product)) {
+    options = await pickOptions(product);
+    if (options === null) return null;
+  }
+
+  const key = optionsKey(options);
+  const existing = items.find((it) =>
     it.productId === product.id && it.variantLabel === variant.label &&
-    (!it.options || it.options.length === 0) && !it.note);
-  let item;
-  if (existing && (!product.options || product.options.length === 0)) { existing.qty += 1; item = existing; }
-  else { item = makeItem(product, variant); order.items.push(item); }
+    optionsKey(it.options) === key && !it.note);
+
+  // Les options « libres » (l'ancienne liste plate) se règlent ligne par ligne :
+  // pour ces produits-là on n'empile jamais, sinon on perdrait le réglage.
+  if (existing && !(product.options || []).length) { existing.qty += 1; return existing; }
+
+  const item = makeItem(product, variant, options);
+  items.push(item);
+  return item;
+}
+
+// Ajoute un produit à la note. Renvoie la ligne touchée, ou null si annulé.
+export async function addProduct(order, product) {
+  const item = await addProductToItems(order.items, product);
+  if (!item) return null;
   await saveOrder(order);
   return item;
 }
@@ -109,6 +131,9 @@ export async function editLine(order, item) {
     ? h('select', { class: 'input' }, product.variants.map((v) =>
         h('option', { value: v.label, selected: v.label === item.variantLabel }, `${v.label} · ${money(v.price)}`)))
     : null;
+
+  // Sous-choix du produit (sauces, cuisson…) : mêmes pastilles qu'à l'ajout.
+  const picker = hasGroups(product) ? groupsPicker(product, item.options || []) : null;
 
   const optWrap = h('div', { class: 'opt-toggle' });
   const optState = new Map();
@@ -124,19 +149,30 @@ export async function editLine(order, item) {
 
   const body = h('div', { class: 'modal-body', style: 'padding:0' },
     variantSel ? field('Format', variantSel) : null,
+    picker ? picker.el : null,
     (product?.options?.length) ? field('Options', optWrap) : null,
     field('Commentaire', noteInput),
     product?.happyHour ? h('label', { class: 'switch' }, hhToggle, h('span', { class: 'track' }), h('span', { class: 'muted' }, 'Bluebird\'s Hour (1+1 offert)')) : null,
   );
-  const v = await modal({
-    title: item.name, body,
-    actions: [{ label: 'Retirer', kind: 'danger', value: 'del' }, { label: 'Fermer', value: null }, { label: 'Enregistrer', kind: 'primary', value: 'save' }],
-  });
+  // On rouvre tant qu'un sous-choix obligatoire est vide : le dialogue garde son
+  // état (le commentaire déjà tapé n'est pas perdu).
+  let v;
+  for (;;) {
+    v = await modal({
+      title: item.name, body,
+      actions: [{ label: 'Retirer', kind: 'danger', value: 'del' }, { label: 'Fermer', value: null }, { label: 'Enregistrer', kind: 'primary', value: 'save' }],
+    });
+    if (v !== 'save' || !picker?.missing()) break;
+    toast(`Choisis : ${picker.missing()}`);
+  }
 
   if (v === 'del') { order.items = order.items.filter((x) => x !== item); await saveOrder(order); return 'del'; }
   if (v !== 'save') return null;
   if (variantSel) { const vv = product.variants.find((x) => x.label === variantSel.value); item.variantLabel = vv.label; item.price = vv.price; }
-  item.options = (product?.options || []).filter((o) => optState.get(o.label)).map((o) => ({ label: o.label, delta: o.delta }));
+  item.options = [
+    ...(picker ? picker.get() : []),
+    ...(product?.options || []).filter((o) => optState.get(o.label)).map((o) => ({ label: o.label, delta: o.delta })),
+  ];
   item.note = noteInput.value.trim();
   if (product?.happyHour) item.hh = hhToggle.checked;
   await saveOrder(order);
@@ -166,6 +202,19 @@ export async function sendOrder(order) {
 }
 
 export { pendingItems, pendingCount };
+
+// ── Impression du bon de commande ────────────────────────────
+// Imprime la note entière (boissons comprises), sans rien changer à son état :
+// ni encaissement, ni envoi en cuisine. Renvoie le bon créé, ou null si vide.
+export async function printOrder(order) {
+  if (!order || !order.items?.length) return null;
+  return printTicket(order.items, {
+    orderId: order.id ?? null,
+    tableId: order.tableId ?? null,
+    place: placeLabel(tableEl(order.tableId)),
+    area: order.area || null,
+  });
+}
 
 // ── Encaissement et gestion de la note ───────────────────────
 // Renvoie true si la note a été encaissée.
