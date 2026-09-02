@@ -5,7 +5,7 @@ import { h, clear, toast, modal, field, confirmDialog } from './ui.js';
 import * as store from './store.js';
 import { isTableType } from './elements.js';
 import { catColor, colorPicker, paginate } from './pos.js';
-import { pendingCount, sendSelectionToKitchen, printTicket } from './kitchen.js';
+import { unsentCount, hasCuisineLines, printTicket } from './kitchen.js';
 import { addProductToItems } from './note.js';
 import { groupsEditor } from './options.js';
 import { visibleCategories } from './profile.js';
@@ -38,16 +38,15 @@ function renderSelection() {
   leftEl.append(lines);
 
   const total = selection.reduce((s, it) => s + lineTotal(it), 0);
-  // `pendingCount` raisonne sur une note ; une sélection de comptoir en a la forme.
-  const toSend = pendingCount({ items: selection });
+  const toPrint = unsentCount(selection);
   leftEl.append(h('div', { class: 'ticket-foot' },
-    toSend > 0
-      ? h('button', { class: 'btn btn-send', onclick: sendKitchenBon }, `🖨 Bon de cuisine · ${toSend}`)
-      : null,
     h('div', { class: 'total-row' }, h('span', { class: 'lbl' }, 'Total'), h('span', { class: 'val' }, money(total))),
     h('div', { class: 'row' },
       h('button', { class: 'btn btn-primary', style: 'flex:2', disabled: selection.length === 0, onclick: sendToTable }, 'Envoyer vers une table'),
-      h('button', { class: 'btn', style: 'flex:1', disabled: selection.length === 0, onclick: printBon }, '🖨 Imprimer'),
+      h('button', {
+        class: `btn ${toPrint > 0 ? 'btn-send-inline' : ''}`, style: 'flex:1', disabled: selection.length === 0,
+        onclick: () => printBon(toPrint === 0),
+      }, toPrint > 0 ? `🖨 Imprimer · ${toPrint}` : '🖨 Réimprimer'),
       h('button', { class: 'btn btn-ghost', disabled: selection.length === 0, onclick: () => { selection = []; renderSelection(); } }, 'Vider')),
   ));
 }
@@ -220,20 +219,13 @@ async function persistTileOrder() {
 }
 
 // ── Impression / envoi de la sélection ───────────────────────
-// Imprime la sélection telle quelle, sans la vider : au comptoir on encaisse
-// derrière, et le bon papier n'est qu'une trace de la commande.
-async function printBon() {
-  const ticket = await printTicket(selection, { place: 'Comptoir' });
-  toast(ticket ? `Bon de commande #${ticket.num} envoyé à l'imprimante` : 'Sélection vide');
-}
-
-// Envoie la bouffe du comptoir en cuisine sans passer par une table. Les lignes
-// restent dans la sélection (on encaisse toujours), mais marquées comme parties :
-// un « Envoyer vers une table » ensuite ne les renverra pas une seconde fois.
-async function sendKitchenBon() {
-  const ticket = await sendSelectionToKitchen(selection, 'Comptoir');
-  if (!ticket) { toast('Rien à envoyer en cuisine'); return; }
-  toast(`Bon #${ticket.num} envoyé en cuisine`);
+// Imprime la sélection sans la vider : au comptoir on encaisse derrière. Les
+// lignes imprimées sont marquées comme parties et suivent la sélection si on
+// l'envoie ensuite vers une table — elles ne repartiront pas une seconde fois.
+async function printBon(reprint) {
+  const ticket = await printTicket(selection, { place: 'Comptoir' }, { reprint });
+  if (!ticket) { toast('Rien à imprimer'); return; }
+  toast(`Bon #${ticket.num} imprimé${hasCuisineLines(ticket) ? ' · cuisine prévenue' : ''}`);
   renderSelection();
 }
 

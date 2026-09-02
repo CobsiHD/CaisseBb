@@ -3,7 +3,7 @@
 // Une ligne part en cuisine quand le serveur touche « Envoyer » : on ne transmet
 // que les quantités pas encore envoyées (item.sent), pour qu'un ajout ultérieur
 // sur la même note ne réimprime pas ce qui est déjà en train de cuire.
-import { state, emit, productById, lineTotal, lineUnit } from './state.js';
+import { state, emit, productById, lineUnit } from './state.js';
 import * as store from './store.js';
 import { senderLabel } from './profile.js';
 
@@ -46,26 +46,29 @@ export function isCuisineItem(item) {
   return isCuisineProduct(productById(item?.productId));
 }
 
-// Lignes bouffe dont tout n'est pas encore parti. Renvoie [{ item, qty }].
-export function pendingItems(order) {
-  if (!order) return [];
-  return (order.items || [])
-    .filter(isCuisineItem)
+// Lignes pas encore imprimées, bouffe ET boissons. Renvoie [{ item, qty }].
+// `item.sent` compte ce qui est déjà parti sur un bon : réimprimer une note à
+// laquelle on vient d'ajouter un verre ne doit pas refaire toute la commande,
+// sinon le barman remonte deux cocktails et la cuisine recuit les frites.
+export function unsentItems(items) {
+  return (items || [])
     .map((item) => ({ item, qty: (item.qty || 0) - (item.sent || 0) }))
     .filter((x) => x.qty > 0);
 }
 
-export function pendingCount(order) {
-  return pendingItems(order).reduce((s, x) => s + x.qty, 0);
+export function unsentCount(items) {
+  return unsentItems(items).reduce((s, x) => s + x.qty, 0);
 }
 
 // ── Tickets ─────────────────────────────────────────────────────────────────
-// Deux natures de bons vivent dans la même table, parce que l'agent du Pi
-// imprime tout ce qui s'y trouve :
-//   • 'cuisine'  — ce qui part cuire, suivi de statut en cuisine ;
-//   • 'commande' — la note imprimée telle quelle, juste une impression.
-// Les anciens bons n'ont pas de champ `kind` : ce sont des bons de cuisine.
-export const kindOf = (t) => t?.kind || 'cuisine';
+// Un bon porte la commande telle qu'elle est partie à l'impression, coupée en
+// deux blocs : BOISSONS puis CUISINE. Il entre dans la file de la cuisine dès
+// qu'il porte une ligne à cuire ; un bon de boissons seules ne fait que sortir
+// du papier. Les bons d'avant cette version n'ont pas de blocs : c'étaient des
+// bons de cuisine, ils le restent.
+export function hasCuisineLines(t) {
+  return (t?.items || []).some((l) => (l.section || 'cuisine') === 'cuisine');
+}
 
 export function ticketsOfDay(now = Date.now()) {
   const from = serviceDayStart(now);
@@ -73,13 +76,11 @@ export function ticketsOfDay(now = Date.now()) {
     .filter((t) => t.createdAt >= from)
     .sort((a, b) => a.createdAt - b.createdAt);
 }
-// Les bons que la cuisine doit cuisiner — les bons de commande imprimés
-// n'encombrent ni la liste, ni la pastille, ni la sonnerie.
+// Ce que la cuisine doit cuisiner — un bon de boissons n'encombre ni la liste,
+// ni la pastille de l'onglet, ni la sonnerie. Une réimpression non plus : c'est
+// le même plat, sorti une seconde fois sur du papier, pas une nouvelle commande.
 export function kitchenTicketsOfDay(now = Date.now()) {
-  return ticketsOfDay(now).filter((t) => kindOf(t) === 'cuisine');
-}
-export function printTicketsOfDay(now = Date.now()) {
-  return ticketsOfDay(now).filter((t) => kindOf(t) === 'commande');
+  return ticketsOfDay(now).filter((t) => hasCuisineLines(t) && !t.reprint);
 }
 export function openTickets() {
   return kitchenTicketsOfDay().filter((t) => t.status !== 'servi');
@@ -126,17 +127,19 @@ export async function setTicketStatus(ticket, status) {
 }
 
 // Une ligne de bon, telle qu'elle sera lue en cuisine et imprimée.
-// `withPrice` : seuls les bons de commande portent les prix.
-function lineOf(item, qty, withPrice = false) {
-  const line = {
+// Le prix porte sur la quantité imprimée : sur un bon partiel, le total du
+// papier est celui de ce papier-là.
+function lineOf(item, qty, section) {
+  return {
     name: item.name,
     variantLabel: item.variantLabel || '',
     qty,
     options: (item.options || []).map((o) => o.label),
     note: item.note || '',
+    section,
+    unit: lineUnit(item),
+    total: lineUnit(item) * (item.hh ? Math.ceil(qty / 2) : qty),
   };
-  if (withPrice) { line.unit = lineUnit(item); line.total = lineTotal(item); }
-  return line;
 }
 
 // Construit et enregistre le bon. `place` est le libellé lisible en cuisine
@@ -152,11 +155,13 @@ async function createTicket(lines, meta = {}) {
     tableId: meta.tableId ?? null,
     place: meta.place || 'Sur place',
     area: meta.area || null,
-    kind: meta.kind || 'cuisine',
+    kind: 'commande',
     // Titre imprimé en tête du bon papier ; l'agent retombe sur « BON n » s'il
     // ne le connaît pas encore.
-    title: meta.title || null,
+    title: 'BON DE COMMANDE',
     total: meta.total ?? null,
+    // Une réimpression sort le même papier sans repasser commande.
+    reprint: !!meta.reprint,
     // Qui a envoyé : la cuisine doit savoir à qui rendre le plat, et le bon
     // papier le portera. C'est le profil de l'appareil (Bluebird ou Le 22).
     from: senderLabel(),
@@ -172,62 +177,38 @@ async function createTicket(lines, meta = {}) {
   return ticket;
 }
 
-// Envoi depuis une note ouverte : seules les quantités pas encore parties.
-export async function sendToKitchen(order, place) {
-  const pending = pendingItems(order);
-  if (!pending.length) return null;
-
-  const ticket = await createTicket(
-    pending.map(({ item, qty }) => lineOf(item, qty)),
-    { orderId: order.id ?? null, tableId: order.tableId ?? null, place, area: order.area || null },
-  );
-
-  // On ne marque les lignes comme envoyées qu'après l'enregistrement du bon :
-  // si l'écriture échoue, rien n'est perdu et le serveur peut renvoyer.
-  if (ticket) for (const { item } of pending) item.sent = item.qty;
-
-  return ticket;
-}
-
-// Envoi d'une sélection libre — comptoir, ou pavé de touches de l'écran Cuisine.
-// Il n'y a ni note ni table derrière : le bon part tel quel.
-export async function sendSelectionToKitchen(selection, place = 'Comptoir') {
-  const pending = (selection || [])
-    .filter(isCuisineItem)
-    .map((item) => ({ item, qty: (item.qty || 0) - (item.sent || 0) }))
-    .filter((x) => x.qty > 0);
-  if (!pending.length) return null;
-
-  const ticket = await createTicket(
-    pending.map(({ item, qty }) => lineOf(item, qty)),
-    { place },
-  );
-  if (ticket) for (const { item } of pending) item.sent = item.qty;
-  return ticket;
-}
-
 // ── Bon de commande ─────────────────────────────────────────────────────────
-// Toute la commande imprimée telle qu'elle est à l'instant où on touche
-// « Imprimer ». Rien à voir avec l'envoi en cuisine : on ne touche pas à
-// `item.sent`, et le bon n'entre pas dans la file de la cuisine. Deux
-// impressions de suite font deux bons — c'est voulu, on réimprime en cas de
-// bourrage papier.
+// Le seul geste du service : imprimer. Un bon part, et s'il porte de la bouffe
+// il entre du même coup dans la file de la cuisine — un seul papier, une seule
+// entrée, pas de double préparation.
 //
-// Une commande mélange presque toujours boissons et bouffe, et deux métiers
-// différents la lisent. Le bon est donc coupé en deux blocs — BOISSONS puis
-// CUISINE — sur le même papier : le barman lit le haut, la cuisine le bas, et
-// personne ne cherche sa ligne au milieu des autres. Une commande qui n'a que
-// des boissons n'imprime qu'un bloc.
-export async function printTicket(items, meta = {}) {
-  const kept = (items || []).filter((it) => (it.qty || 0) > 0);
-  const lines = [
-    ...kept.filter((it) => !isCuisineItem(it)).map((it) => ({ ...lineOf(it, it.qty, true), section: 'boissons' })),
-    ...kept.filter((it) => isCuisineItem(it)).map((it) => ({ ...lineOf(it, it.qty, true), section: 'cuisine' })),
-  ];
-  if (!lines.length) return null;
+// Par défaut on n'imprime que ce qui n'est pas encore parti : rajouter un verre
+// sur une note déjà imprimée n'imprime que ce verre. `reprint: true` ressort la
+// commande entière — bourrage papier, ticket perdu — sans rien marquer et sans
+// rentrer en cuisine : le plat est déjà commandé.
+//
+// Une commande mélange presque toujours boissons et bouffe, et deux métiers la
+// lisent : le bon est coupé en deux blocs — BOISSONS puis CUISINE — sur le même
+// papier. Le barman lit le haut, la cuisine le bas.
+export async function printTicket(items, meta = {}, { reprint = false } = {}) {
+  const pending = reprint
+    ? (items || []).filter((it) => (it.qty || 0) > 0).map((item) => ({ item, qty: item.qty }))
+    : unsentItems(items);
+  if (!pending.length) return null;
 
-  const total = kept.reduce((s, it) => s + lineTotal(it), 0);
-  return createTicket(lines, { ...meta, kind: 'commande', title: 'BON DE COMMANDE', total });
+  const lines = [
+    ...pending.filter(({ item }) => !isCuisineItem(item)).map(({ item, qty }) => lineOf(item, qty, 'boissons')),
+    ...pending.filter(({ item }) => isCuisineItem(item)).map(({ item, qty }) => lineOf(item, qty, 'cuisine')),
+  ];
+  const total = lines.reduce((s, l) => s + l.total, 0);
+
+  const ticket = await createTicket(lines, { ...meta, total, reprint });
+
+  // On ne marque les lignes comme parties qu'une fois le bon enregistré : si
+  // l'écriture échoue, rien n'est perdu et le serveur peut réimprimer.
+  if (ticket && !reprint) for (const { item } of pending) item.sent = item.qty;
+
+  return ticket;
 }
 
 // Alerte les nouveaux bons apparus depuis le dernier passage. Appelé à chaque

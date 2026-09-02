@@ -5,12 +5,12 @@
 import { state, on } from './state.js';
 import { h, clear, toast, confirmDialog } from './ui.js';
 import {
-  STATUS, kindOf, kitchenTicketsOfDay, printTicketsOfDay, openTickets, setTicketStatus,
+  STATUS, hasCuisineLines, ticketsOfDay, kitchenTicketsOfDay, openTickets, setTicketStatus,
   armSound, soundArmed, printState, requestReprint,
 } from './kitchen.js';
 
-// 'ouverts' : ce qu'il reste à cuisiner — 'tous' : la journée — 'impressions' :
-// les bons de commande imprimés depuis la salle et le comptoir.
+// 'ouverts' : ce qu'il reste à cuisiner — 'tous' : les bons avec de la bouffe
+// depuis 6 h — 'impressions' : tous les bons imprimés, boissons comprises.
 let filter = 'ouverts';
 let tick = null;   // rafraîchit les durées sans redessiner la page
 
@@ -28,7 +28,7 @@ export function renderCuisine(container) {
   }, soundArmed() ? '🔔 Son activé' : '🔕 Activer le son');
 
   const seg = h('div', { class: 'segment' },
-    [['ouverts', 'À faire'], ['tous', 'Tout le service'], ['impressions', 'Bons imprimés']].map(([id, label]) =>
+    [['ouverts', 'À faire'], ['tous', 'Tout le service'], ['impressions', 'Tous les bons']].map(([id, label]) =>
       h('button', {
         class: `chip ${filter === id ? 'active' : ''}`,
         onclick: () => { filter = id; renderCuisine(container); },
@@ -47,7 +47,7 @@ export function renderCuisine(container) {
       h('b', {}, 'Touche « Activer le son » en début de service'), ' pour être prévenu des nouveaux bons.'));
   }
 
-  const list = filter === 'impressions' ? printTicketsOfDay()
+  const list = filter === 'impressions' ? ticketsOfDay()
     : filter === 'tous' ? kitchenTicketsOfDay()
     : openTickets();
   const grid = h('div', { class: 'cuisine-grid' });
@@ -56,8 +56,8 @@ export function renderCuisine(container) {
     grid.append(h('div', { class: 'empty' },
       h('div', { class: 'big' }, filter === 'impressions' ? 'Aucun bon imprimé' : 'Aucun bon en cours'),
       h('div', { class: 'muted' }, filter === 'impressions'
-        ? 'Les bons de commande imprimés depuis la salle et le comptoir sont listés ici.'
-        : 'Les commandes envoyées depuis le 22 arrivent ici.')));
+        ? 'Tous les bons imprimés du service, boissons comprises, sont listés ici.'
+        : 'Les commandes imprimées depuis la salle et le comptoir arrivent ici.')));
   } else {
     // Les plus anciens d'abord : c'est l'ordre dans lequel il faut cuisiner.
     for (const t of list) grid.append(card(t, container));
@@ -69,7 +69,9 @@ export function renderCuisine(container) {
 
 function card(t, container) {
   const st = STATUS[t.status] || STATUS.nouveau;
-  const commande = kindOf(t) === 'commande';
+  // Ni un bon de boissons seules ni une réimpression ne se cuisinent : ils
+  // n'ont qu'une impression à suivre.
+  const boissonsSeules = !hasCuisineLines(t) || !!t.reprint;
 
   // Un bon de commande porte deux blocs (boissons puis cuisine) : on répète
   // l'intitulé à chaque changement, comme sur le papier.
@@ -90,8 +92,8 @@ function card(t, container) {
   }
 
   const actions = h('div', { class: 'k-actions' });
-  if (commande) {
-    // Rien à cuisiner : ce bon est une impression, il ne suit aucun statut.
+  if (boissonsSeules) {
+    // Rien à cuisiner : ce bon ne suit aucun statut.
   } else if (st.next) {
     actions.append(h('button', {
       class: 'btn btn-primary', style: 'flex:2',
@@ -100,7 +102,7 @@ function card(t, container) {
   } else {
     actions.append(h('div', { class: 'muted', style: 'flex:2; text-align:center' }, 'Terminé'));
   }
-  if (!commande && t.status !== 'nouveau') {
+  if (!boissonsSeules && t.status !== 'nouveau') {
     actions.append(h('button', {
       class: 'btn btn-ghost', style: 'flex:0 0 60px',
       title: 'Revenir en arrière',
@@ -113,7 +115,7 @@ function card(t, container) {
 
   const prn = printState(t);
 
-  return h('div', { class: `k-card ${commande ? 'st-commande' : 'st-' + t.status}`, dataset: { created: String(t.createdAt) } },
+  return h('div', { class: `k-card ${boissonsSeules ? 'st-papier' : 'st-' + t.status}`, dataset: { created: String(t.createdAt) } },
     h('div', { class: 'k-head' },
       h('span', { class: 'k-num' }, `#${t.num}`),
       h('span', { class: 'k-place' }, t.place),
@@ -123,9 +125,11 @@ function card(t, container) {
     ),
     lines,
     h('div', { class: 'k-foot' },
-      commande
-        ? h('span', { class: 'k-badge commande' }, 'Bon de commande')
-        : h('span', { class: `k-badge ${t.status}` }, st.label),
+      t.reprint
+        ? h('span', { class: 'k-badge papier' }, 'Réimpression')
+        : boissonsSeules
+          ? h('span', { class: 'k-badge papier' }, 'Boissons')
+          : h('span', { class: `k-badge ${t.status}` }, st.label),
       h('span', { class: `k-print ${prn.cls}` }, prn.txt),
       h('span', { class: 'spacer' }),
       h('button', {
@@ -148,8 +152,8 @@ function ageLabel(ts) {
 function startTick(container) {
   tick = setInterval(() => {
     if (!container.isConnected) return stopTick();
-    // Les bons de commande imprimés ne vieillissent pas : rien n'attend en cuisine.
-    container.querySelectorAll('.k-card:not(.st-commande)').forEach((el) => {
+    // Un bon de boissons ne vieillit pas : rien n'attend en cuisine.
+    container.querySelectorAll('.k-card:not(.st-papier)').forEach((el) => {
       const ts = Number(el.dataset.created);
       const age = el.querySelector('.k-age');
       if (age) age.textContent = ageLabel(ts);

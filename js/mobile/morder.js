@@ -9,7 +9,7 @@ import { h, clear, toast } from '../ui.js';
 import { catColor } from '../pos.js';
 import {
   tableEl, placeLabel, orderSum, saveOrder, newOrder, ensureOrder,
-  changeQty, addProduct, editLine, cuisineMark, sendOrder, pendingCount, printOrder,
+  changeQty, addProduct, editLine, printMark, printOrder, unsentCount, hasCuisineLines,
   payOrder, toggleToPay, deleteOrder, moveOrder, noteMenu,
 } from '../note.js';
 import { visibleCategories } from '../profile.js';
@@ -185,7 +185,9 @@ function renderTick() {
 
   const count = (order?.items || []).reduce((s, it) => s + (it.qty || 0), 0);
   const total = orderSum(order);
-  const toSend = pendingCount(order);
+  const empty = !order || order.items.length === 0;
+  // Ce qui reste à imprimer ; tout imprimé, le bouton passe en réimpression.
+  const toPrint = unsentCount(order?.items);
 
   clear(tickEl);
   tickEl.classList.toggle('open', tickOpen);
@@ -193,7 +195,7 @@ function renderTick() {
   tickEl.append(h('button', { class: 'm-tick-bar', onclick: () => { tickOpen = !tickOpen; renderTick(); } },
     h('span', { class: 'm-tick-chev' }, tickOpen ? '⌄' : '⌃'),
     h('span', { class: 'm-tick-count' }, count ? `${count} art.` : 'Note vide'),
-    toSend > 0 ? h('span', { class: 'm-tick-dot', title: 'À envoyer en cuisine' }) : null,
+    toPrint > 0 ? h('span', { class: 'm-tick-dot', title: 'À imprimer' }) : null,
     h('span', { class: 'spacer' }),
     h('span', { class: 'm-tick-total' }, money(total))));
 
@@ -217,11 +219,13 @@ function renderTick() {
   tickEl.append(lines);
 
   tickEl.append(h('div', { class: 'm-tick-foot' },
-    toSend > 0 ? h('button', { class: 'btn btn-send', onclick: () => doSend(order) }, `🍳 Envoyer en cuisine · ${toSend}`) : null,
     h('div', { class: 'total-row' }, h('span', { class: 'lbl' }, 'Total'), h('span', { class: 'val' }, money(total))),
     h('div', { class: 'row' },
-      h('button', { class: 'btn btn-primary', style: 'flex:2', disabled: !order || order.items.length === 0, onclick: () => doPay(order) }, 'Encaisser'),
-      h('button', { class: 'btn', style: 'flex:1', disabled: !order || order.items.length === 0, onclick: () => doPrint(order) }, '🖨 Imprimer'),
+      h('button', { class: 'btn btn-primary', style: 'flex:2', disabled: empty, onclick: () => doPay(order) }, 'Encaisser'),
+      h('button', {
+        class: `btn ${toPrint > 0 ? 'btn-send-inline' : ''}`, style: 'flex:1', disabled: empty,
+        onclick: () => doPrint(order, toPrint === 0),
+      }, toPrint > 0 ? `🖨 Imprimer · ${toPrint}` : '🖨 Réimprimer'),
       h('button', { class: 'btn btn-ghost', style: 'flex:0 0 56px', onclick: () => doNoteMenu(order) }, '⋯'))));
 }
 
@@ -233,7 +237,7 @@ function renderLine(order, item) {
       opts ? h('div', { class: 'opt' }, opts) : null,
       item.note ? h('div', { class: 'vr' }, '“' + item.note + '”') : null,
       item.hh ? h('div', { class: 'hh' }, '1+1 offert') : null,
-      cuisineMark(item)),
+      printMark(item)),
     h('div', { class: 'm-line-side' },
       h('div', { class: 'price' }, money(lineTotal(item))),
       h('div', { class: 'faint' }, item.hh ? `${lineBilledQty(item)} facturé(s)` : `${money(lineUnit(item))}/u`)),
@@ -254,16 +258,11 @@ async function doEditLine(order, item) {
   if (r) renderTick();
 }
 
-async function doSend(order) {
-  const ticket = await sendOrder(order);
-  if (!ticket) return;
-  toast(`Bon #${ticket.num} envoyé en cuisine`);
+async function doPrint(order, reprint) {
+  const ticket = await printOrder(order, { reprint });
+  if (!ticket) { toast('Rien à imprimer'); return; }
+  toast(`Bon #${ticket.num} imprimé${hasCuisineLines(ticket) ? ' · cuisine prévenue' : ''}`);
   renderTick();
-}
-
-async function doPrint(order) {
-  const ticket = await printOrder(order);
-  toast(ticket ? `Bon de commande #${ticket.num} envoyé à l'imprimante` : 'Note vide');
 }
 
 function addNote() {

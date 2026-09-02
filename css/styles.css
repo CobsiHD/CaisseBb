@@ -462,8 +462,8 @@ body {
 .k-card.st-en-cours  { border-left-color: var(--brass); }
 .k-card.st-pret      { border-left-color: var(--libre); }
 .k-card.st-servi     { opacity: .5; }
-/* Bon de commande imprimé : pas de cuisson derrière, juste une trace. */
-.k-card.st-commande  { border-left-color: var(--bluebird); }
+/* Bon sans cuisson derrière (boissons seules, réimpression) : juste du papier. */
+.k-card.st-papier    { border-left-color: var(--bluebird); }
 /* L'attente se voit de loin : un bon qui traîne change de couleur tout seul. */
 .k-card.warn .k-age  { color: var(--brass); font-weight: 800; }
 .k-card.late .k-age  { color: var(--encaisser); font-weight: 800; }
@@ -504,7 +504,7 @@ body {
 .k-badge.nouveau  { color: var(--encaisser); border-color: rgba(210,121,107,.45); }
 .k-badge.en-cours { color: var(--brass);     border-color: rgba(201,162,75,.45); }
 .k-badge.pret     { color: var(--libre);     border-color: rgba(94,140,106,.55); }
-.k-badge.commande { color: var(--bluebird);  border-color: rgba(79,163,199,.45); }
+.k-badge.papier   { color: var(--bluebird);  border-color: rgba(79,163,199,.45); }
 
 .k-actions { display: flex; gap: 8px; margin-top: 2px; }
 .k-actions .btn { min-height: var(--tap); }
@@ -514,12 +514,10 @@ body {
 .k-sent.partial { color: var(--brass); }
 .k-sent.todo    { color: var(--muted); }
 
-.btn-send {
-  width: 100%; min-height: var(--tap); margin-bottom: 10px;
-  background: var(--bluebird); color: #06121C;
-  font-weight: 800; border: 0; border-radius: var(--r-sm);
-}
-.btn-send:active { filter: brightness(.92); }
+
+/* « Imprimer » tant qu'il reste des lignes à envoyer : le geste du service. */
+.btn-send-inline { background: var(--bluebird); border-color: var(--bluebird); color: #06222E; font-weight: 800; }
+.btn-send-inline:hover { filter: brightness(1.06); }
 
 /* Accusé d'impression remonté par l'agent du Raspberry Pi. */
 .k-print { font-size: 11px; }

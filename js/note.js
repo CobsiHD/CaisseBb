@@ -2,15 +2,15 @@
 //
 // L'écran iPad (order.js) et l'écran téléphone (mobile/morder.js) affichent la
 // même note de deux façons très différentes, mais encaissent, transfèrent et
-// envoient en cuisine exactement pareil : tout ce qui touche aux données vit
-// ici, pour qu'une correction n'ait jamais à être faite deux fois.
+// impriment exactement pareil : tout ce qui touche aux données vit ici, pour
+// qu'une correction n'ait jamais à être faite deux fois.
 import {
   state, emit, money, lineTotal, openOrdersForTable, productById, tableLabel, areaName,
 } from './state.js';
 import { h, clear, modal, field, toast, confirmDialog } from './ui.js';
 import * as store from './store.js';
 import { isTableType, TYPE_MAP } from './elements.js';
-import { isCuisineProduct, isCuisineItem, pendingItems, pendingCount, sendToKitchen, printTicket } from './kitchen.js';
+import { isCuisineProduct, isCuisineItem, unsentItems, unsentCount, hasCuisineLines, printTicket } from './kitchen.js';
 import { hasGroups, pickOptions, groupsPicker, optionsKey } from './options.js';
 
 // ── Lecture ──────────────────────────────────────────────────
@@ -179,41 +179,35 @@ export async function editLine(order, item) {
   return 'save';
 }
 
-// ── Cuisine ──────────────────────────────────────────────────
-// Pastille d'état d'une ligne bouffe : rien, « en cuisine », ou le reste à envoyer.
-export function cuisineMark(item) {
-  if (!isCuisineItem(item)) return null;
+// ── Impression ───────────────────────────────────────────────
+// Pastille d'état d'une ligne : ce qui est déjà parti sur un bon, et ce qui
+// reste à imprimer. La bouffe le dit à sa façon — elle est en cuisine, pas
+// seulement sur du papier.
+export function printMark(item) {
   const sent = item.sent || 0;
   const rest = (item.qty || 0) - sent;
-  if (sent > 0 && rest <= 0) return h('div', { class: 'k-sent' }, '🍳 en cuisine');
-  if (sent > 0) return h('div', { class: 'k-sent partial' }, `🍳 ${sent} envoyé(s) · ${rest} à envoyer`);
-  return h('div', { class: 'k-sent todo' }, '🍳 à envoyer');
+  const cuisine = isCuisineItem(item);
+  if (sent > 0 && rest <= 0) return h('div', { class: 'k-sent' }, cuisine ? '🍳 en cuisine' : '🖨 imprimé');
+  if (sent > 0) return h('div', { class: 'k-sent partial' }, `🖨 ${sent} imprimé(s) · ${rest} à imprimer`);
+  return h('div', { class: 'k-sent todo' }, '🖨 à imprimer');
 }
 
-// Envoie les quantités bouffe pas encore parties. La note reste ouverte : le
-// serveur continue d'encaisser sur Clyo, l'envoi ne fait que prévenir la cuisine.
-// Renvoie le bon créé, ou null s'il n'y avait rien à envoyer.
-export async function sendOrder(order) {
-  if (!order) return null;
-  const ticket = await sendToKitchen(order, placeLabel(tableEl(order.tableId)));
-  if (!ticket) return null;
-  await saveOrder(order);   // enregistre les item.sent mis à jour
-  return ticket;
-}
+export { unsentItems, unsentCount, hasCuisineLines };
 
-export { pendingItems, pendingCount };
-
-// ── Impression du bon de commande ────────────────────────────
-// Imprime la note entière (boissons comprises), sans rien changer à son état :
-// ni encaissement, ni envoi en cuisine. Renvoie le bon créé, ou null si vide.
-export async function printOrder(order) {
+// Imprime la note : le bon sort, et s'il porte de la bouffe la cuisine le voit
+// arriver. Seules les lignes pas encore parties sont imprimées — `reprint`
+// ressort la commande entière sans rien changer ni repasser en cuisine.
+// Renvoie le bon créé, ou null s'il n'y avait rien à imprimer.
+export async function printOrder(order, { reprint = false } = {}) {
   if (!order || !order.items?.length) return null;
-  return printTicket(order.items, {
+  const ticket = await printTicket(order.items, {
     orderId: order.id ?? null,
     tableId: order.tableId ?? null,
     place: placeLabel(tableEl(order.tableId)),
     area: order.area || null,
-  });
+  }, { reprint });
+  if (ticket && !reprint) await saveOrder(order);   // enregistre les item.sent mis à jour
+  return ticket;
 }
 
 // ── Encaissement et gestion de la note ───────────────────────
