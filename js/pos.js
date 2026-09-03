@@ -3,7 +3,7 @@ import { h, clear } from './ui.js';
 import { state } from './state.js';
 
 export const CAT_COLORS = {
-  'cocktails': '#C9A24B', 'sans-alcool': '#5FA8A0', 'vins': '#9B5A6A',
+  'cocktails': '#C9A24B', 'shooters': '#5FA8A0', 'vins': '#9B5A6A',
   'spiritueux': '#C98A4B', 'bieres': '#D8A93F', 'softs': '#4F8AC7', 'snack': '#8AA15A',
 };
 // Palette proposée dans les sélecteurs de couleur (édition des touches).

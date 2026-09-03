@@ -72,11 +72,58 @@ async function sansNugget() {
   }
 }
 
+// ── 3 · Les tuiles du bar refaites sur la carte 6199-2 ───────
+// Six familles au lieu de sept : « Sans Alcool » disparaît en tant que tuile et
+// devient une sous-famille des cocktails, désormais rangés par alcool de base
+// (Gin, Rhum, Vodka, Tequila, Whisky & Cognac, Spritz, Sans Alcool). Une tuile
+// Shooters apparaît, les spiritueux affichent le format du verre, et bières et
+// softs se remettent à jour de la carte. La cuisine n'est pas touchée.
+const FAMILLES_REFAITES = ['cocktails', 'bieres', 'softs', 'shooters', 'spiritueux'];
+
+// Les lignes de l'ancienne carte que la nouvelle ne reprend pas : les trois
+// mocktails changent d'id en changeant de famille, la Hoegarden est une blanche
+// et non plus une rosée, et le Ballon d'orge a quitté la carte.
+const PARTIS = [
+  'sans-alcool-roll-the-dice',
+  'sans-alcool-cause-and-effect',
+  'sans-alcool-virgin-more-much-more',
+  'bieres-hoegarden-rose',
+  'bieres-la-ballon-d-orge',
+];
+
+async function tuilesDuBar() {
+  // Chaque famille garde ce qu'on lui a réglé sur place (couleur, drapeaux) :
+  // seuls le nom et le rang viennent du seed. La cuisine passe par le même
+  // chemin, mais son entrée du seed est déjà la sienne, mot pour mot.
+  for (const c of CATEGORIES) {
+    const existante = state.categories.find((x) => x.id === c.id);
+    await store.put('categories', { ...c, ...existante, name: c.name, order: c.order });
+  }
+  if (state.categories.some((c) => c.id === 'sans-alcool')) await store.del('categories', 'sans-alcool');
+
+  for (const id of PARTIS) {
+    if (state.products.some((p) => p.id === id)) await store.del('products', id);
+  }
+  // Une tuile perso qui pointait vers l'un d'eux, ou vers la famille dissoute,
+  // n'ouvrirait plus rien.
+  for (const t of state.tiles) {
+    if (PARTIS.includes(t.productId) || t.categoryId === 'sans-alcool') await store.del('tiles', t.id);
+  }
+
+  // Les autres gardent leur id : les réécrire suffit à leur poser leur nouvelle
+  // sous-famille, leur format et leur prix. Les produits ajoutés à la main sur
+  // un iPad ne sont pas dans cette liste et restent où ils sont — leur rang, pris
+  // au bout de la carte, les range après le bloc du seed dans leur famille.
+  const refaits = PRODUCTS.filter((p) => FAMILLES_REFAITES.includes(p.categoryId));
+  await store.bulkPut('products', refaits.map((p) => ({ ...p })));
+}
+
 // Le dernier `rev` doit valoir CATALOG_REV : c'est le niveau qu'une base neuve
 // reçoit d'emblée, et ce qu'elle sauterait ici.
 const MIGRATIONS = [
   { rev: 1, run: carteCuisine },
   { rev: 2, run: sansNugget },
+  { rev: 3, run: tuilesDuBar },
 ].filter((m) => m.rev <= CATALOG_REV);
 
 // Applique ce qui manque. À appeler une fois la synchro tentée : avant, les
