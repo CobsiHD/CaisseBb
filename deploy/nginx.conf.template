@@ -19,15 +19,17 @@ server {
     # une seule et même phrase pour la serrure nginx et pour l'appli.
     # La seconde serrure est dans l'appli elle-même (js/gate.js).
     #
-    # Deux exceptions, toutes deux volontaires :
-    #  • `location /api/`  ci-dessous — l'agent d'impression du Raspberry Pi
-    #    s'authentifie avec son propre mot de passe et son rôle cloisonné ;
-    #  • le bloc `/.well-known/acme-challenge/` que certbot insère lui-même pour
-    #    renouveler le certificat : il répond par un `return`, traité par nginx
-    #    avant la phase d'authentification. setup-vps.sh le vérifie avec
-    #    `certbot renew --dry-run` — un certificat qui expire coupe tout le bar.
+    # Deux exceptions, toutes deux volontaires — voir les `auth_basic off`
+    # ci-dessous : la vérification Let's Encrypt et l'API de synchronisation.
     auth_basic "Caisse Bluebird";
     auth_basic_user_file /etc/nginx/caisse-bluebird.htpasswd;
+
+    # Renouvellement du certificat, laissé OUVERT. Ce bloc `^~` a priorité sur
+    # celui que certbot insère au moment du renouvellement : c'est donc lui qui
+    # sert la vérification, et fermé il ferait expirer le certificat — ce qui
+    # couperait tout le bar. setup-vps.sh le vérifie par un
+    # `certbot renew --dry-run` juste après avoir posé la serrure.
+    location ^~ /.well-known/acme-challenge/ { auth_basic off; root /var/www/html; }
 
     # L'appli n'a pas d'étape de build : les URL des modules ne changent jamais
     # d'un déploiement au suivant. Sans revalidation obligatoire, Safari applique
@@ -71,7 +73,8 @@ server {
     location /api/ {
         # Pas de mot de passe nginx ici : l'API a le sien (jeton signé), et
         # l'agent d'impression du Pi ne sait pas envoyer d'identifiants HTTP.
-        # Sans jeton valide, /api/pull, /api/push et /api/events répondent 401.
+        # Sans jeton valide, /api/pull, /api/push et /api/events répondent 401
+        # (vérifié en production le 2026-09-04).
         auth_basic off;
 
         proxy_pass http://127.0.0.1:8787;
