@@ -132,11 +132,12 @@ async function fichesCocktails() {
 }
 
 // ── 5 · Les fiches des douze classiques ──────────────────────
-// Mojito, Negroni, Old Fashioned, les six spritz, Margarita, Pina Colada et
-// Cosmopolitan reçoivent la leur. Une fiche déjà présente sur l'iPad n'est pas
-// écrasée : depuis la retouche 4, le bar peut les écrire lui-même, et sa
-// version fait foi sur celle du seed.
-async function fichesClassiques() {
+// ── 6 · Les fiches des trois mocktails ───────────────────────
+// Deux retouches, un seul geste : reposer les cocktails du seed pour que les
+// fiches qu'il vient de gagner arrivent sur l'iPad. Ce qui a été écrit sur
+// place tient — une fiche saisie au comptoir fait foi sur celle du seed depuis
+// la retouche 4, et la rupture comme la couleur restent.
+async function reposeLesCocktails() {
   const cocktails = PRODUCTS.filter((p) => p.categoryId === 'cocktails');
   await store.bulkPut('products', cocktails.map((p) => {
     const sur = state.products.find((x) => x.id === p.id);
@@ -157,7 +158,8 @@ const MIGRATIONS = [
   { rev: 2, run: sansNugget },
   { rev: 3, run: tuilesDuBar },
   { rev: 4, run: fichesCocktails },
-  { rev: 5, run: fichesClassiques },
+  { rev: 5, run: reposeLesCocktails },
+  { rev: 6, run: reposeLesCocktails },
 ].filter((m) => m.rev <= CATALOG_REV);
 
 // Applique ce qui manque. À appeler une fois la synchro tentée : avant, les

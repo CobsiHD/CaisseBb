@@ -5,7 +5,7 @@
 // déjà en service y montent par les retouches de migrations.js. Ce numéro vit
 // ici et pas dans migrations.js pour que store.js puisse le lire sans importer
 // migrations.js, qui importe déjà store.js.
-export const CATALOG_REV = 5;
+export const CATALOG_REV = 6;
 
 export const CATEGORIES = [
   {
@@ -938,7 +938,33 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "Tanqueray 0%, Sirop de Rose, Jus de Litchi, Citron, Tonic Pomelo & Baies Roses",
     "available": true,
-    "order": 20
+    "order": 20,
+    "recipe": {
+      "technique": "Shake",
+      "verre": "Long drink",
+      "ingredients": [
+        {
+          "label": "Tanqueray 0%",
+          "qty": "4 cl"
+        },
+        {
+          "label": "Sirop de rose",
+          "qty": "1 cl"
+        },
+        {
+          "label": "Jus de litchi",
+          "qty": "4 cl"
+        },
+        {
+          "label": "Citron",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Tonic Pomelo & Baies Roses",
+          "qty": "TOP"
+        }
+      ]
+    }
   },
   {
     "id": "cocktails-cause-and-effect",
@@ -956,7 +982,29 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "Sirop Fleur de Sureau, Purée de Passion, Jus de Poire, Citron",
     "available": true,
-    "order": 21
+    "order": 21,
+    "recipe": {
+      "technique": "Shake",
+      "verre": "Tumbler",
+      "ingredients": [
+        {
+          "label": "Sirop de fleur de sureau",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Purée de passion",
+          "qty": "3 cl"
+        },
+        {
+          "label": "Jus de poire",
+          "qty": "5 cl"
+        },
+        {
+          "label": "Citron",
+          "qty": "2 cl"
+        }
+      ]
+    }
   },
   {
     "id": "cocktails-virgin-more-much-more",
@@ -974,7 +1022,26 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "Captain Morgan Infusé au Peanut Butter, Ananas, Coco",
     "available": true,
-    "order": 22
+    "order": 22,
+    "recipe": {
+      "technique": "Shake",
+      "verre": "Coupette",
+      "finition": "Foam",
+      "ingredients": [
+        {
+          "label": "Captain Morgan infusé au peanut butter",
+          "qty": "5 cl"
+        },
+        {
+          "label": "Jus d’ananas",
+          "qty": "4 cl"
+        },
+        {
+          "label": "Purée de coco",
+          "qty": "1,5 cl"
+        }
+      ]
+    }
   },
   {
     "id": "bieres-bud",
