@@ -5,7 +5,7 @@
 // déjà en service y montent par les retouches de migrations.js. Ce numéro vit
 // ici et pas dans migrations.js pour que store.js puisse le lire sans importer
 // migrations.js, qui importe déjà store.js.
-export const CATALOG_REV = 3;
+export const CATALOG_REV = 4;
 
 export const CATEGORIES = [
   {
@@ -102,6 +102,32 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "Gin Hendrick’s, Liqueur Fruit de la Passion, Sirop de Fleur de Sureau, Jus de Poire, Citron",
     "available": true,
+    "recipe": {
+      "technique": "Shake",
+      "verre": "Tumbler",
+      "ingredients": [
+        {
+          "label": "Gin Hendrick’s",
+          "qty": "4 cl"
+        },
+        {
+          "label": "Liqueur de fruit de la passion",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Sirop de fleur de sureau",
+          "qty": "1 cl"
+        },
+        {
+          "label": "Jus de poire",
+          "qty": "4 cl"
+        },
+        {
+          "label": "Citron",
+          "qty": "2 cl"
+        }
+      ]
+    },
     "order": 0
   },
   {
@@ -120,6 +146,36 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "Hendrick’s Orbium, Sirop de Rose, Liqueur de Marasquin, Jus de Litchi, Citron, Pomelo & Baies Roses",
     "available": true,
+    "recipe": {
+      "technique": "Shake",
+      "verre": "Long drink",
+      "ingredients": [
+        {
+          "label": "Hendrick’s Orbium",
+          "qty": "4 cl"
+        },
+        {
+          "label": "Sirop de rose",
+          "qty": "1 cl"
+        },
+        {
+          "label": "Liqueur de marasquin",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Jus de litchi",
+          "qty": "4 cl"
+        },
+        {
+          "label": "Citron",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Pomelo",
+          "qty": "TOP"
+        }
+      ]
+    },
     "order": 1
   },
   {
@@ -192,6 +248,25 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "Rhum infusé au Peanut Butter, Jus d’Ananas infusé à la cannelle, Purée de Coco",
     "available": true,
+    "recipe": {
+      "technique": "Shake",
+      "verre": "Coupette",
+      "finition": "Foam",
+      "ingredients": [
+        {
+          "label": "Rhum infusé au peanut butter",
+          "qty": "5 cl"
+        },
+        {
+          "label": "Jus d’ananas",
+          "qty": "4 cl"
+        },
+        {
+          "label": "Purée de coco",
+          "qty": "1,5 cl"
+        }
+      ]
+    },
     "order": 5
   },
   {
@@ -210,6 +285,28 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "Vodka Absolut Tabasco, Tomate Acide, Sirop de Pêche, Eau pétillante",
     "available": true,
+    "recipe": {
+      "technique": "Verre à mélange",
+      "verre": "Old Fashioned",
+      "ingredients": [
+        {
+          "label": "Vodka Absolut Tabasco",
+          "qty": "4 cl"
+        },
+        {
+          "label": "Tomate acide",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Sirop de pêche",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Eau pétillante",
+          "qty": "6 cl"
+        }
+      ]
+    },
     "order": 6
   },
   {
@@ -246,6 +343,33 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "Tequila Milagro, Liqueur Chambord, Citron, Miel, Purée de passion",
     "available": true,
+    "recipe": {
+      "technique": "Shake",
+      "verre": "Coupette",
+      "finition": "Foam",
+      "ingredients": [
+        {
+          "label": "Tequila Milagro",
+          "qty": "4 cl"
+        },
+        {
+          "label": "Liqueur de Chambord",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Citron",
+          "qty": "2,5 cl"
+        },
+        {
+          "label": "Miel",
+          "qty": "1 cl"
+        },
+        {
+          "label": "Purée de passion",
+          "qty": "2 cl"
+        }
+      ]
+    },
     "order": 8
   },
   {
@@ -282,6 +406,32 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "Bourbon infusé Hibiscus, Liqueur de Fleur de sureau, Prosecco, Citron, Sirop de miel maison",
     "available": true,
+    "recipe": {
+      "technique": "Shake",
+      "verre": "Coupette",
+      "ingredients": [
+        {
+          "label": "Bourbon infusé hibiscus",
+          "qty": "4 cl"
+        },
+        {
+          "label": "Liqueur de fleur de sureau",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Prosecco",
+          "qty": "TOP"
+        },
+        {
+          "label": "Citron",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Sirop de miel",
+          "qty": "1 cl"
+        }
+      ]
+    },
     "order": 10
   },
   {
@@ -318,7 +468,78 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "Liqueur de Mandarine, Cognac, Sirop de Noisette, Jus de Pomme, Sirop de Vanille",
     "available": true,
+    "recipe": {
+      "technique": "Shake",
+      "verre": "Old Fashioned",
+      "ingredients": [
+        {
+          "label": "Liqueur de mandarine",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Cognac",
+          "qty": "4 cl"
+        },
+        {
+          "label": "Sirop de noisette",
+          "qty": "1 cl"
+        },
+        {
+          "label": "Jus de pomme",
+          "qty": "4 cl"
+        },
+        {
+          "label": "Sirop de vanille",
+          "qty": "1 cl"
+        }
+      ]
+    },
     "order": 12
+  },
+  {
+    "id": "cocktails-melancholia",
+    "categoryId": "cocktails",
+    "sub": "Whisky & Cognac",
+    "name": "Melancholia",
+    "variants": [
+      {
+        "label": "",
+        "price": 11
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "Bulleit Rye, Sirop de banane, Citron, Vin rouge, Bitter cacao",
+    "available": true,
+    "recipe": {
+      "technique": "Shake",
+      "verre": "Old Fashioned",
+      "finition": "Foam",
+      "ingredients": [
+        {
+          "label": "Bulleit Rye",
+          "qty": "5 cl"
+        },
+        {
+          "label": "Sirop de banane",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Citron",
+          "qty": "TOP"
+        },
+        {
+          "label": "Vin rouge",
+          "qty": "à l’œil"
+        },
+        {
+          "label": "Bitter cacao",
+          "qty": "2 dash"
+        }
+      ]
+    },
+    "order": 13
   },
   {
     "id": "cocktails-aperol-spritz",
@@ -336,7 +557,7 @@ export const PRODUCTS = [
     "happyHour": true,
     "desc": "Apérol, Prosecco, Eau Pétillante",
     "available": true,
-    "order": 13
+    "order": 14
   },
   {
     "id": "cocktails-campari-spritz",
@@ -354,7 +575,7 @@ export const PRODUCTS = [
     "happyHour": true,
     "desc": "Campari, Prosecco, Eau Pétillante",
     "available": true,
-    "order": 14
+    "order": 15
   },
   {
     "id": "cocktails-italicus-spritz",
@@ -372,7 +593,7 @@ export const PRODUCTS = [
     "happyHour": true,
     "desc": "Italicus, Prosecco, Eau Pétillante",
     "available": true,
-    "order": 15
+    "order": 16
   },
   {
     "id": "cocktails-st-germain-spritz",
@@ -390,7 +611,7 @@ export const PRODUCTS = [
     "happyHour": true,
     "desc": "St Germain, Prosecco, Eau Pétillante",
     "available": true,
-    "order": 16
+    "order": 17
   },
   {
     "id": "cocktails-limoncello-spritz",
@@ -408,7 +629,7 @@ export const PRODUCTS = [
     "happyHour": true,
     "desc": "Limoncello, Prosecco, Eau Pétillante",
     "available": true,
-    "order": 17
+    "order": 18
   },
   {
     "id": "cocktails-melonade-spritz",
@@ -426,7 +647,7 @@ export const PRODUCTS = [
     "happyHour": true,
     "desc": "Melonade, Prosecco, Eau Pétillante",
     "available": true,
-    "order": 18
+    "order": 19
   },
   {
     "id": "cocktails-roll-the-dice",
@@ -444,7 +665,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "Tanqueray 0%, Sirop de Rose, Jus de Litchi, Citron, Tonic Pomelo & Baies Roses",
     "available": true,
-    "order": 19
+    "order": 20
   },
   {
     "id": "cocktails-cause-and-effect",
@@ -462,7 +683,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "Sirop Fleur de Sureau, Purée de Passion, Jus de Poire, Citron",
     "available": true,
-    "order": 20
+    "order": 21
   },
   {
     "id": "cocktails-virgin-more-much-more",
@@ -480,7 +701,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "Captain Morgan Infusé au Peanut Butter, Ananas, Coco",
     "available": true,
-    "order": 21
+    "order": 22
   },
   {
     "id": "bieres-bud",
@@ -502,7 +723,7 @@ export const PRODUCTS = [
     "happyHour": true,
     "desc": "",
     "available": true,
-    "order": 22
+    "order": 23
   },
   {
     "id": "bieres-hoegarden-blanche",
@@ -524,7 +745,7 @@ export const PRODUCTS = [
     "happyHour": true,
     "desc": "Bière blanche belge légère et rafraîchissante, aux notes d’agrumes et d’épices, avec une douce touche de coriandre.",
     "available": true,
-    "order": 23
+    "order": 24
   },
   {
     "id": "bieres-kasteel-framboise",
@@ -546,7 +767,7 @@ export const PRODUCTS = [
     "happyHour": true,
     "desc": "",
     "available": true,
-    "order": 24
+    "order": 25
   },
   {
     "id": "bieres-mont-blanc-rousse",
@@ -568,7 +789,7 @@ export const PRODUCTS = [
     "happyHour": true,
     "desc": "",
     "available": true,
-    "order": 25
+    "order": 26
   },
   {
     "id": "bieres-la-bagarre",
@@ -590,7 +811,7 @@ export const PRODUCTS = [
     "happyHour": true,
     "desc": "",
     "available": true,
-    "order": 26
+    "order": 27
   },
   {
     "id": "bieres-delirium-tremens",
@@ -612,7 +833,7 @@ export const PRODUCTS = [
     "happyHour": true,
     "desc": "",
     "available": true,
-    "order": 27
+    "order": 28
   },
   {
     "id": "bieres-floris-peche",
@@ -634,7 +855,7 @@ export const PRODUCTS = [
     "happyHour": true,
     "desc": "Bière belge fruitée et rafraîchissante, aux arômes généreux de pêche. Douce, légère et sucrée, avec une finale fraîche et gourmande.",
     "available": true,
-    "order": 28
+    "order": 29
   },
   {
     "id": "bieres-kasteel-0",
@@ -661,7 +882,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "Rouge ou tropicale",
     "available": true,
-    "order": 29
+    "order": 30
   },
   {
     "id": "softs-limonade",
@@ -679,7 +900,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 30
+    "order": 31
   },
   {
     "id": "softs-coca-cola-classique",
@@ -697,7 +918,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 31
+    "order": 32
   },
   {
     "id": "softs-coca-cola-cherry",
@@ -715,7 +936,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 32
+    "order": 33
   },
   {
     "id": "softs-coca-cola-zero",
@@ -733,7 +954,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 33
+    "order": 34
   },
   {
     "id": "softs-badoit-fines-bulles",
@@ -751,7 +972,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 34
+    "order": 35
   },
   {
     "id": "softs-sirop",
@@ -818,7 +1039,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 35
+    "order": 36
   },
   {
     "id": "softs-diabolo",
@@ -857,7 +1078,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 36
+    "order": 37
   },
   {
     "id": "softs-jus-de-fruits-granini",
@@ -888,7 +1109,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 37
+    "order": 38
   },
   {
     "id": "softs-schweppes-tonic",
@@ -906,7 +1127,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 38
+    "order": 39
   },
   {
     "id": "softs-schweppes-soda-pomelo",
@@ -924,7 +1145,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 39
+    "order": 40
   },
   {
     "id": "softs-schweppes-ginger-beer",
@@ -942,7 +1163,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 40
+    "order": 41
   },
   {
     "id": "shooters-milagro-silver",
@@ -960,7 +1181,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "Une tequila cristalline, aux saveurs légères et vives d’agave frais et de citron vert.",
     "available": true,
-    "order": 41
+    "order": 42
   },
   {
     "id": "shooters-get27",
@@ -978,7 +1199,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "Une liqueur de menthe verte, fraîche et rafraîchissante, avec une douce note sucrée et une finale mentholée.",
     "available": true,
-    "order": 42
+    "order": 43
   },
   {
     "id": "shooters-genepi",
@@ -996,7 +1217,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "Une liqueur traditionnelle des Alpes, aux arômes intenses de plantes de montagne, avec une belle fraîcheur herbacée.",
     "available": true,
-    "order": 43
+    "order": 44
   },
   {
     "id": "shooters-chartreuse-verte",
@@ -1014,7 +1235,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "Une liqueur complexe, riche en plantes aromatiques, avec des notes d’herbes, d’épices et une forte intensité.",
     "available": true,
-    "order": 44
+    "order": 45
   },
   {
     "id": "shooters-chartreuse-jaune",
@@ -1032,7 +1253,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "Une version plus douce, avec des arômes plus fruités et légèrement plus sucrés, tout en conservant l’authenticité des plantes.",
     "available": true,
-    "order": 45
+    "order": 46
   },
   {
     "id": "shooters-patron-xo-cafe",
@@ -1050,7 +1271,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "Une liqueur de tequila et de café intensément aromatique, mêlant douceur torréfiée et puissance envoûtante.",
     "available": true,
-    "order": 46
+    "order": 47
   },
   {
     "id": "spiritueux-mathusalem-15-ans",
@@ -1073,7 +1294,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 47
+    "order": 48
   },
   {
     "id": "spiritueux-centenario-20e-anniversaire",
@@ -1096,7 +1317,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 48
+    "order": 49
   },
   {
     "id": "spiritueux-angostura-1919",
@@ -1119,7 +1340,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 49
+    "order": 50
   },
   {
     "id": "spiritueux-appleton-12-ans",
@@ -1142,7 +1363,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 50
+    "order": 51
   },
   {
     "id": "spiritueux-ron-libertad",
@@ -1165,7 +1386,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 51
+    "order": 52
   },
   {
     "id": "spiritueux-santa-teresa",
@@ -1188,7 +1409,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 52
+    "order": 53
   },
   {
     "id": "spiritueux-zacapa-23-ans",
@@ -1211,7 +1432,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 53
+    "order": 54
   },
   {
     "id": "spiritueux-monkey-shoulder-classic",
@@ -1234,7 +1455,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 54
+    "order": 55
   },
   {
     "id": "spiritueux-the-deacon",
@@ -1257,7 +1478,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 55
+    "order": 56
   },
   {
     "id": "spiritueux-bulleit-bourbon",
@@ -1280,7 +1501,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 56
+    "order": 57
   },
   {
     "id": "spiritueux-bulleit-rye",
@@ -1303,7 +1524,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 57
+    "order": 58
   },
   {
     "id": "spiritueux-glenfiddich-12-ans",
@@ -1326,7 +1547,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 58
+    "order": 59
   },
   {
     "id": "spiritueux-glenfiddich-15-ans",
@@ -1349,7 +1570,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 59
+    "order": 60
   },
   {
     "id": "spiritueux-glenfiddich-18-ans",
@@ -1372,7 +1593,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 60
+    "order": 61
   },
   {
     "id": "spiritueux-ailsa-bay",
@@ -1395,7 +1616,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 61
+    "order": 62
   },
   {
     "id": "spiritueux-blanton-s",
@@ -1418,7 +1639,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 62
+    "order": 63
   },
   {
     "id": "spiritueux-sequoia-black-cat",
@@ -1441,7 +1662,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 63
+    "order": 64
   },
   {
     "id": "spiritueux-sequoia-craft",
@@ -1464,7 +1685,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 64
+    "order": 65
   },
   {
     "id": "spiritueux-bellevoye-bleue",
@@ -1487,7 +1708,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 65
+    "order": 66
   },
   {
     "id": "spiritueux-bellevoye-blanche",
@@ -1510,7 +1731,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 66
+    "order": 67
   },
   {
     "id": "spiritueux-bellevoye-rouge",
@@ -1533,7 +1754,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 67
+    "order": 68
   },
   {
     "id": "spiritueux-milagro-silver",
@@ -1556,7 +1777,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 68
+    "order": 69
   },
   {
     "id": "spiritueux-espolon-reposado",
@@ -1579,7 +1800,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 69
+    "order": 70
   },
   {
     "id": "spiritueux-patron-platinum",
@@ -1602,7 +1823,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 70
+    "order": 71
   },
   {
     "id": "spiritueux-patron-silver",
@@ -1625,7 +1846,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 71
+    "order": 72
   },
   {
     "id": "spiritueux-patron-reposado",
@@ -1648,7 +1869,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 72
+    "order": 73
   },
   {
     "id": "spiritueux-hendrick-s",
@@ -1666,7 +1887,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 73
+    "order": 74
   },
   {
     "id": "spiritueux-hendrick-s-orbium",
@@ -1684,7 +1905,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 74
+    "order": 75
   },
   {
     "id": "spiritueux-hendrick-s-neptunia",
@@ -1702,7 +1923,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 75
+    "order": 76
   },
   {
     "id": "spiritueux-hendrick-s-flora-adora",
@@ -1720,7 +1941,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 76
+    "order": 77
   },
   {
     "id": "spiritueux-hendrick-s-grand-cabaret",
@@ -1738,7 +1959,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 77
+    "order": 78
   },
   {
     "id": "spiritueux-4-hendrick-s-tonic-service-a-the",
@@ -1756,7 +1977,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 78
+    "order": 79
   },
   {
     "id": "spiritueux-kinobi",
@@ -1774,7 +1995,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 79
+    "order": 80
   },
   {
     "id": "spiritueux-apres-92-black-raspberry",
@@ -1792,7 +2013,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 80
+    "order": 81
   },
   {
     "id": "spiritueux-apres-92-spices-orange",
@@ -1810,7 +2031,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 81
+    "order": 82
   },
   {
     "id": "spiritueux-june-pasteque",
@@ -1828,7 +2049,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 82
+    "order": 83
   },
   {
     "id": "spiritueux-june-poire-cardamome",
@@ -1846,7 +2067,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 83
+    "order": 84
   },
   {
     "id": "spiritueux-june-mangue-passion",
@@ -1864,7 +2085,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 84
+    "order": 85
   },
   {
     "id": "spiritueux-june-peche-de-vigne",
@@ -1882,7 +2103,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 85
+    "order": 86
   },
   {
     "id": "spiritueux-tanqueray-ten",
@@ -1900,7 +2121,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 86
+    "order": 87
   },
   {
     "id": "spiritueux-renais",
@@ -1918,7 +2139,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 87
+    "order": 88
   },
   {
     "id": "spiritueux-birdie",
@@ -1936,7 +2157,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 88
+    "order": 89
   },
   {
     "id": "spiritueux-get27",
@@ -1954,7 +2175,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 89
+    "order": 90
   },
   {
     "id": "spiritueux-genepi",
@@ -1972,7 +2193,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 90
+    "order": 91
   },
   {
     "id": "spiritueux-chartreuse-verte",
@@ -1990,7 +2211,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 91
+    "order": 92
   },
   {
     "id": "spiritueux-chartreuse-jaune",
@@ -2008,7 +2229,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 92
+    "order": 93
   },
   {
     "id": "spiritueux-chartreuse-vep",
@@ -2026,7 +2247,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 93
+    "order": 94
   },
   {
     "id": "spiritueux-pastis-des-alpes",
@@ -2044,7 +2265,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 94
+    "order": 95
   },
   {
     "id": "spiritueux-la-guilde-du-cognac-fins-bois-2011",
@@ -2062,7 +2283,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 95
+    "order": 96
   },
   {
     "id": "spiritueux-martel-vsop-cognac",
@@ -2080,7 +2301,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 96
+    "order": 97
   },
   {
     "id": "spiritueux-patron-xo-cafe",
@@ -2098,7 +2319,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 97
+    "order": 98
   },
   {
     "id": "vins-cotes-de-b-uf",
@@ -2120,7 +2341,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 98
+    "order": 99
   },
   {
     "id": "vins-crozes-hermitage",
@@ -2142,7 +2363,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 99
+    "order": 100
   },
   {
     "id": "vins-syrah",
@@ -2164,7 +2385,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 100
+    "order": 101
   },
   {
     "id": "vins-studio-rose",
@@ -2186,7 +2407,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 101
+    "order": 102
   },
   {
     "id": "vins-cap-des-pins",
@@ -2208,7 +2429,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 102
+    "order": 103
   },
   {
     "id": "vins-chardonnay-bphr",
@@ -2230,7 +2451,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 103
+    "order": 104
   },
   {
     "id": "vins-orelie",
@@ -2252,7 +2473,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 104
+    "order": 105
   },
   {
     "id": "vins-uby",
@@ -2274,7 +2495,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 105
+    "order": 106
   },
   {
     "id": "vins-studio-blanc",
@@ -2296,7 +2517,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 106
+    "order": 107
   },
   {
     "id": "vins-lallier",
@@ -2314,7 +2535,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 107
+    "order": 108
   },
   {
     "id": "vins-veuve-clicquot",
@@ -2332,7 +2553,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 108
+    "order": 109
   },
   {
     "id": "vins-moet-imperial",
@@ -2350,7 +2571,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 109
+    "order": 110
   },
   {
     "id": "vins-moet-imperial-rose",
@@ -2368,7 +2589,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 110
+    "order": 111
   },
   {
     "id": "snack-tenders-3-pieces",
@@ -2390,7 +2611,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 111
+    "order": 112
   },
   {
     "id": "snack-nuggets-de-poulet-6-pieces",
@@ -2412,7 +2633,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 112
+    "order": 113
   },
   {
     "id": "snack-sticks-mozza-6-pieces",
@@ -2434,7 +2655,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 113
+    "order": 114
   },
   {
     "id": "snack-oignons-rings-8-pieces",
@@ -2456,7 +2677,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 114
+    "order": 115
   },
   {
     "id": "snack-camemberts-panes-6-pieces",
@@ -2478,7 +2699,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 115
+    "order": 116
   },
   {
     "id": "snack-chili-cheese-6-pieces",
@@ -2500,7 +2721,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 116
+    "order": 117
   },
   {
     "id": "snack-sticks-chevre-6-pieces",
@@ -2522,7 +2743,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 117
+    "order": 118
   },
   {
     "id": "snack-la-barquette",
@@ -2544,7 +2765,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 118
+    "order": 119
   },
   {
     "id": "snack-frites-xxl",
@@ -2566,7 +2787,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "",
     "available": true,
-    "order": 119
+    "order": 120
   },
   {
     "id": "snack-planche-tapas",
@@ -2624,7 +2845,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "Frites + 3 tapas de 4 pièces au choix, sauf les tenders (2 pièces)",
     "available": true,
-    "order": 120
+    "order": 121
   }
 ];
 

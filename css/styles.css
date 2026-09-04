@@ -305,6 +305,24 @@ body {
 .menu-item .mi-desc { grid-column: 1 / -1; color: var(--muted); font-size: 15px; line-height: 1.5; max-width: 60ch; }
 .menu-item .mi-leader { border-bottom: 1px dotted var(--line-2); }
 
+/* Une ligne dont le produit porte une fiche technique s'ouvre d'une touche.
+   Le pastillage la signale : sans lui, rien ne dirait qu'elle est vivante. */
+.menu-item.a-fiche { cursor: pointer; border-radius: var(--r-sm); padding: 6px 10px; margin-inline: -10px; }
+.menu-item.a-fiche:hover, .menu-item.a-fiche:focus-visible { background: rgba(201,162,75,.07); outline: none; }
+.menu-item.a-fiche:active { background: rgba(201,162,75,.12); }
+.mi-fiche { font-family: var(--ui); font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--brass); border: 1px solid rgba(201,162,75,.4); border-radius: 999px; padding: 3px 8px; margin-left: 10px; vertical-align: 3px; }
+
+/* ── Fiche technique (modale) ───────────────────────────── */
+.fiche-reps { display: flex; flex-wrap: wrap; gap: 10px 34px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+.fiche-rep .v { font-family: var(--display); font-size: 22px; font-weight: 600; margin-top: 2px; }
+.fiche-ing { list-style: none; margin: 18px 0 0; padding: 0; }
+.fiche-ing li { display: flex; align-items: baseline; gap: 10px; padding: 9px 0; }
+.fiche-ing li + li { border-top: 1px solid var(--line); }
+.fiche-ing .fi-label { flex: 1; font-size: 16px; }
+.fiche-ing .fi-qty { font-family: var(--display); font-size: 20px; font-weight: 600; color: var(--brass-soft);
+  font-variant-numeric: tabular-nums; white-space: nowrap; }
+
 /* ============================================================
    TABLEAU DE BORD
    ============================================================ */

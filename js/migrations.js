@@ -118,12 +118,26 @@ async function tuilesDuBar() {
   await store.bulkPut('products', refaits.map((p) => ({ ...p })));
 }
 
+// ── 4 · Les fiches techniques des cocktails ──────────────────
+// Huit recettes entrent dans la carte, lisibles d'une touche depuis l'onglet
+// Carte (menu.js). Melancholia, la huitième, n'était pas encore en caisse.
+// Seuls les cocktails sont réécrits : une rupture ou une couleur posées sur
+// l'iPad leur restent, le reste de la carte n'est pas touché.
+async function fichesCocktails() {
+  const cocktails = PRODUCTS.filter((p) => p.categoryId === 'cocktails');
+  await store.bulkPut('products', cocktails.map((p) => {
+    const sur = state.products.find((x) => x.id === p.id);
+    return { ...p, ...(sur ? { available: sur.available !== false, ...(sur.color ? { color: sur.color } : {}) } : {}) };
+  }));
+}
+
 // Le dernier `rev` doit valoir CATALOG_REV : c'est le niveau qu'une base neuve
 // reçoit d'emblée, et ce qu'elle sauterait ici.
 const MIGRATIONS = [
   { rev: 1, run: carteCuisine },
   { rev: 2, run: sansNugget },
   { rev: 3, run: tuilesDuBar },
+  { rev: 4, run: fichesCocktails },
 ].filter((m) => m.rev <= CATALOG_REV);
 
 // Applique ce qui manque. À appeler une fois la synchro tentée : avant, les
