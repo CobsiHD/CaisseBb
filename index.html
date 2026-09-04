@@ -5,7 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>Bluebird · Caisse</title>
   <meta name="theme-color" content="#0E1B2A" />
-  <link rel="manifest" href="manifest.webmanifest" />
+  <!-- crossorigin="use-credentials" : sans lui le navigateur demande le manifeste
+       SANS les identifiants du mot de passe nginx, reçoit un 401, et la PWA
+       s'installe sans nom ni icône. -->
+  <link rel="manifest" href="manifest.webmanifest" crossorigin="use-credentials" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Bluebird" />
@@ -38,6 +41,10 @@
       <button class="icon-btn" id="settings-btn" title="Réglages" aria-label="Réglages">⚙</button>
     </div>
   </header>
+
+  <!-- Verrou d'entrée : opaque dès le premier octet (rien de la caisse ne
+       transparaît pendant le chargement), rempli et retiré par js/gate.js. -->
+  <div id="gate" class="gate"></div>
 
   <main id="view" class="view"></main>
 

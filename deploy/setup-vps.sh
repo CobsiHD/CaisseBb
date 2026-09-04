@@ -16,11 +16,12 @@ APP_DIR=/opt/caisse-bluebird
 WEB_DIR=/var/www/caisse-bluebird
 DATA_DIR=/var/lib/caisse-bluebird
 ENV_FILE=/etc/caisse-bluebird.env
+HTPASSWD=/etc/nginx/caisse-bluebird.htpasswd
 
 echo "▶ Paquets système"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
-apt-get install -y -qq nginx certbot python3-certbot-nginx rsync curl ca-certificates ufw
+apt-get install -y -qq nginx certbot python3-certbot-nginx rsync curl ca-certificates ufw openssl
 
 echo "▶ Node.js"
 NODE_MAJOR=$(node -v 2>/dev/null | sed 's/^v\([0-9]*\).*/\1/' || echo 0)
@@ -49,6 +50,30 @@ CAISSE_PASSWORD=$PW
 ENV
   chmod 600 "$ENV_FILE"
 fi
+
+# Le site n'est plus public : nginx exige le mot de passe avant de livrer le
+# moindre fichier (voir nginx.conf.template). C'est la MÊME phrase que celle de
+# l'appli — l'équipe n'en retient qu'une. Le fichier est régénéré à chaque
+# exécution, pour rattraper une installation antérieure ou un mot de passe
+# modifié à la main dans $ENV_FILE.
+echo "▶ Serrure nginx (mot de passe à l'entrée du site)"
+CAISSE_PW=$(sed -n 's/^CAISSE_PASSWORD=//p' "$ENV_FILE" | head -n 1)
+[ -n "$CAISSE_PW" ] || { echo "CAISSE_PASSWORD absent de $ENV_FILE, abandon." >&2; exit 1; }
+# `-stdin` : le mot de passe ne passe pas par la ligne de commande, où `ps` le
+# rendrait lisible par n'importe quel utilisateur de la machine.
+HASH=$(printf '%s' "$CAISSE_PW" | openssl passwd -apr1 -stdin)
+case "$HASH" in
+  '$apr1$'*) ;;
+  *) echo "openssl n'a pas produit d'empreinte apr1 — nginx refuserait la serrure." >&2; exit 1 ;;
+esac
+printf 'admin:%s\n' "$HASH" > "$HTPASSWD"
+chmod 640 "$HTPASSWD"
+chown root:www-data "$HTPASSWD"
+echo "  identifiant « admin », mot de passe = celui du bar."
+
+echo "▶ Outil de changement de mot de passe"
+install -m 750 "$(dirname "$0")/caisse-motdepasse.sh" /usr/local/sbin/caisse-motdepasse
+echo "  disponible : sudo caisse-motdepasse"
 
 # Accès restreint de l'agent d'impression du Pi : lecture des bons de cuisine,
 # écriture des seuls accusés. Tiré au sort — personne n'a à le retenir, il se
@@ -90,5 +115,18 @@ else
     echo "  ⚠ certbot a échoué — vérifie que $DOMAIN pointe bien vers ce VPS, puis relance : certbot --nginx -d $DOMAIN"
 fi
 
+# Le mot de passe couvre tout le site ; certbot renouvelle en répondant lui-même
+# sur /.well-known/acme-challenge/, avant la phase d'authentification de nginx.
+# C'est vrai, mais ça se vérifie : un certificat qui expire coupe tout le bar.
+echo "▶ Vérification du renouvellement automatique du certificat"
+if certbot renew --dry-run >/dev/null 2>&1; then
+  echo "  ✓ renouvellement OK malgré le mot de passe"
+else
+  echo "  ⚠ ÉCHEC du test de renouvellement — le certificat expirera dans 90 jours."
+  echo "    Lance « certbot renew --dry-run » pour voir l'erreur avant d'oublier."
+fi
+
 echo
 echo "✅ VPS prêt. Envoie maintenant l'appli depuis le Mac :  bash deploy/deploy.sh"
+echo "   Le site demande désormais l'identifiant « admin » + le mot de passe du bar,"
+echo "   puis la caisse le redemande une fois dans son écran de déverrouillage."

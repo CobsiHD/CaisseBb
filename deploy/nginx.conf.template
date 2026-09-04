@@ -12,6 +12,23 @@ server {
     gzip on;
     gzip_types text/css text/javascript application/javascript application/json image/svg+xml;
 
+    # ── Première serrure : rien de l'appli ne se télécharge sans mot de passe ──
+    # Posée au niveau du serveur, donc héritée par TOUS les blocs `location`
+    # ci-dessous (contrairement à `add_header`, `auth_basic` s'hérite bien).
+    # Le fichier est écrit par setup-vps.sh à partir de CAISSE_PASSWORD :
+    # une seule et même phrase pour la serrure nginx et pour l'appli.
+    # La seconde serrure est dans l'appli elle-même (js/gate.js).
+    #
+    # Deux exceptions, toutes deux volontaires :
+    #  • `location /api/`  ci-dessous — l'agent d'impression du Raspberry Pi
+    #    s'authentifie avec son propre mot de passe et son rôle cloisonné ;
+    #  • le bloc `/.well-known/acme-challenge/` que certbot insère lui-même pour
+    #    renouveler le certificat : il répond par un `return`, traité par nginx
+    #    avant la phase d'authentification. setup-vps.sh le vérifie avec
+    #    `certbot renew --dry-run` — un certificat qui expire coupe tout le bar.
+    auth_basic "Caisse Bluebird";
+    auth_basic_user_file /etc/nginx/caisse-bluebird.htpasswd;
+
     # L'appli n'a pas d'étape de build : les URL des modules ne changent jamais
     # d'un déploiement au suivant. Sans revalidation obligatoire, Safari applique
     # sa fraîcheur heuristique et peut resservir un ancien module — l'appli
@@ -52,6 +69,11 @@ server {
 
     # API de synchronisation (serveur Node local).
     location /api/ {
+        # Pas de mot de passe nginx ici : l'API a le sien (jeton signé), et
+        # l'agent d'impression du Pi ne sait pas envoyer d'identifiants HTTP.
+        # Sans jeton valide, /api/pull, /api/push et /api/events répondent 401.
+        auth_basic off;
+
         proxy_pass http://127.0.0.1:8787;
         proxy_http_version 1.1;
         proxy_set_header Host $host;

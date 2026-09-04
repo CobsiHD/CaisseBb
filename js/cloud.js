@@ -6,7 +6,6 @@
 // appliqué en local sans repartir (pas d'écho).
 import { CLOUD } from './cloud-config.js';
 import * as store from './store.js';
-import { h, modal, field, toast } from './ui.js';
 
 // Tables synchronisées → nom de leur clé primaire.
 const SYNCED = { categories: 'id', products: 'id', optiongroups: 'id', layout: 'id', tiles: 'id', orders: 'id', tickets: 'id', prints: 'id', settings: 'key' };
@@ -58,27 +57,47 @@ async function api(path, opts = {}) {
   return res.json();
 }
 
-// Demande le mot de passe partagé du bar. Une seule fois par iPad.
-async function askPassword() {
-  const input = h('input', { class: 'input', type: 'password', placeholder: '••••••••' });
-  const v = await modal({
-    title: 'Connexion à la caisse partagée',
-    body: h('div', {},
-      field('Mot de passe du bar', input),
-      h('div', { class: 'faint', style: 'font-size:12px; margin-top:6px' },
-        'Une seule fois sur cet iPad. Sans mot de passe, la caisse fonctionne en local.')),
-    actions: [{ label: 'Plus tard', value: false }, { label: 'Connecter', kind: 'primary', value: true }],
-    onMount: () => setTimeout(() => input.focus(), 50),
-  });
-  if (v !== true || !input.value) return null;
+// ── Jeton d'accès ───────────────────────────────────────────────────────────
+// Le même jeton sert au verrou d'entrée (gate.js) et à la synchro : l'équipe ne
+// saisit le mot de passe du bar qu'une fois par iPad.
+export function savedToken() {
+  try { return localStorage.getItem(LS_TOKEN); } catch { return null; }
+}
+export function clearToken() {
+  try { localStorage.removeItem(LS_TOKEN); } catch {}
+}
+
+// Un jeton s'écrit `role.expiration.signature`. Sa date d'expiration se lit donc
+// sans le serveur — c'est ce qui permet d'ouvrir la caisse quand le Wi-Fi du bar
+// est tombé. La signature, elle, n'est vérifiable que côté serveur : un jeton
+// bricolé ne donne accès à aucune donnée.
+export function tokenValid(t) {
+  const parts = String(t || '').split('.');
+  if (parts.length !== 2 && parts.length !== 3) return false;
+  const exp = Number(parts.length === 2 ? parts[0] : parts[1]);
+  return exp > Date.now();
+}
+
+// Échange le mot de passe du bar contre un jeton. Lève 'motdepasse' s'il est
+// refusé, 'serveur' si l'API est injoignable.
+export async function login(password) {
+  let res;
   try {
-    const r = await api('/api/login', { method: 'POST', body: JSON.stringify({ password: input.value }) });
-    localStorage.setItem(LS_TOKEN, r.token);
-    return r.token;
-  } catch (e) {
-    toast('Mot de passe incorrect ou serveur injoignable');
-    return null;
-  }
+    res = await fetch(base() + '/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
+    });
+  } catch { throw new Error('serveur'); }
+  if (res.status === 401) throw new Error('motdepasse');
+  if (!res.ok) throw new Error('serveur');
+  const r = await res.json();
+  // Le mot de passe de l'agent d'impression du Pi n'ouvre pas la caisse : il ne
+  // donne droit qu'aux bons de cuisine, et son rôle le dit.
+  if (r.role && r.role !== 'full') throw new Error('motdepasse');
+  token = r.token;
+  localStorage.setItem(LS_TOKEN, r.token);
+  return r;
 }
 
 // ── Démarrage ───────────────────────────────────────────────────────────────
@@ -91,7 +110,8 @@ export async function initCloud(onChange) {
   try { await fetch(base() + '/api/health').then((r) => r.json()); }
   catch { console.warn('[sync] serveur injoignable, mode local'); return false; }
 
-  if (!token) { token = await askPassword(); if (!token) return false; }
+  // Le verrou d'entrée (gate.js) a déjà obtenu le jeton ; sans lui, mode local.
+  if (!token) return false;
 
   try {
     const first = !lastRev();
@@ -224,14 +244,4 @@ async function flushOutbox() {
   } catch {
     setOutbox([...pending, ...outbox()]);
   }
-}
-
-// Déconnecte cet iPad de la caisse partagée (garde les données locales).
-export function disconnectCloud() {
-  localStorage.removeItem(LS_TOKEN);
-  localStorage.removeItem(LS_REV);
-  localStorage.removeItem(LS_OUTBOX);
-  ready = false;
-  store.setSyncHook(null);
-  if (es) { try { es.close(); } catch {} es = null; }
 }

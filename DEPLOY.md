@@ -6,6 +6,18 @@ La caisse devient accessible depuis n'importe quel iPad à une adresse du type
 
 Tout est hébergé sur ton VPS : aucun service tiers, aucun abonnement.
 
+**L'adresse n'est pas publique.** Sans le mot de passe du bar, un visiteur ne
+voit rien du tout — ni la carte, ni le plan, ni le chiffre d'affaires. Deux
+serrures, une seule phrase à retenir :
+
+| Serrure | Où | Ce qu'elle empêche |
+|---|---|---|
+| **nginx** (`admin` + mot de passe) | le serveur web | de **télécharger** l'appli : sans mot de passe, l'adresse ne renvoie aucun fichier |
+| **écran de déverrouillage** (`js/gate.js`) | l'appli elle-même | de **s'en servir** : rien ne s'affiche tant que le serveur n'a pas validé le mot de passe |
+
+Sur un iPad, les deux ne se saisissent qu'une fois : Safari retient les
+identifiants, et l'appli garde son jeton d'accès.
+
 ---
 
 ## Ce qui tourne sur le VPS
@@ -40,6 +52,17 @@ Le script installe nginx, Node.js et certbot, crée le service, ouvre le pare-fe
 puis **demande le mot de passe partagé du bar** — celui que chaque iPad saisira une
 fois pour se connecter à la caisse commune. Choisis-en un simple à dicter à l'équipe.
 
+Ce même mot de passe ferme les deux serrures : le script en fait l'empreinte pour
+nginx (`/etc/nginx/caisse-bluebird.htpasswd`, identifiant **`admin`**) et le laisse
+lire à l'appli. Il vérifie ensuite, avec `certbot renew --dry-run`, que la serrure
+n'empêche pas le renouvellement du certificat HTTPS.
+
+**Sur une installation déjà en service**, relancer ce même script suffit à poser la
+serrure nginx : le mot de passe existant est conservé, rien d'autre ne change.
+À faire **hors service** malgré tout : le script réécrit le vhost à partir du
+modèle, donc sans HTTPS, et c'est certbot qui le remet quelques secondes plus
+tard — le temps que ça dure, la caisse est injoignable.
+
 ## 3. Envoyer l'appli
 
 Crée `deploy/target.conf` (ignoré par git) :
@@ -59,9 +82,16 @@ Les iPads récupèrent la nouvelle version automatiquement au lancement suivant.
 ## 4. Sur chaque iPad
 
 1. Ouvrir `https://caisse.mondomaine.fr` dans Safari.
-2. Partage → **Sur l'écran d'accueil** (l'appli s'installe comme une vraie app,
+2. Safari demande un identifiant : **`admin`** + le mot de passe du bar.
+   Accepter de l'enregistrer dans le trousseau — il ne sera plus redemandé.
+3. Partage → **Sur l'écran d'accueil** (l'appli s'installe comme une vraie app,
    plein écran, et continue de fonctionner si le Wi-Fi coupe).
-3. Au premier lancement, saisir le **mot de passe du bar**. Une seule fois.
+4. Au premier lancement, l'appli affiche son **écran de déverrouillage** :
+   saisir le même mot de passe du bar. Une seule fois.
+
+À partir de là l'iPad s'ouvre directement, y compris **sans réseau** : le jeton
+obtenu vaut 180 jours. Les Réglages contiennent un bouton **🔒 Verrouiller cet
+iPad** pour l'effacer (fin de saison, iPad prêté, appareil égaré).
 
 Le premier iPad connecté envoie sa configuration au serveur. Les suivants récupèrent
 celle du serveur — donc **connecte d'abord l'iPad qui a la bonne carte et le bon plan.**
@@ -99,9 +129,26 @@ et le reporter dans `/etc/bluebird-impression.env` sur le Pi (voir le README de
 `bluebird-impression`). Relancer `setup-vps.sh` sur une installation existante
 suffit à le créer : le reste de la configuration est conservé.
 
-**Changer le mot de passe du bar :** éditer `CAISSE_PASSWORD` dans
-`/etc/caisse-bluebird.env` puis `systemctl restart caisse-bluebird`. Les iPads déjà
-connectés le restent ; seuls les nouveaux devront saisir le nouveau mot de passe.
+**Changer le mot de passe du bar :**
+
+```bash
+ssh root@IP-DU-VPS 'caisse-motdepasse'
+```
+
+Il change les **deux** serrures d'un coup (l'appli et nginx) et recharge les
+services. Les modifier séparément mènerait à une caisse qui réclame deux mots de
+passe différents.
+
+Après le changement, Safari redemandera le nouveau mot de passe sur chaque iPad,
+mais l'appli, elle, gardera son jeton — les iPads déjà connectés continuent de
+fonctionner. Pour tout **déconnecter** (iPad volé, salarié parti) :
+
+```bash
+ssh root@IP-DU-VPS 'rm /var/lib/caisse-bluebird/secret && systemctl restart caisse-bluebird'
+```
+
+Tous les jetons deviennent invalides d'un coup : chaque iPad devra ressaisir le
+mot de passe. Les données ne bougent pas.
 
 ---
 

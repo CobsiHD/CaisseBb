@@ -9,13 +9,14 @@ import { renderDashboard } from './dashboard.js';
 import { renderHome } from './home.js';
 import { renderCuisine } from './cuisine.js';
 import { notifyNewTickets, newTicketCount } from './kitchen.js';
-import { initCloud, syncActive, disconnectCloud, cloudEnabled } from './cloud.js';
+import { initCloud, syncActive, clearToken, cloudEnabled } from './cloud.js';
 import { runMigrations } from './migrations.js';
 import { PROFILES, profile, profileId, setProfile, tabAllowed } from './profile.js';
 import { mountMobileShell, uiModeSelector } from './mobile/shell.js';
 import { isMobileUI } from './uimode.js';
 import { MOBILE_VIEWS, MOBILE_HOME_VIEW } from './mobile/views.js';
 import { isListMode } from './mobile/mfloor.js';
+import { unlock } from './gate.js';
 
 const PAD_VIEWS = {
   home: renderHome,
@@ -134,16 +135,22 @@ export async function openSettings() {
         h('div', { class: 'faint', style: 'font-size:12px; margin-top:6px' }, profile().hint),
         h('div', { class: 'faint', style: 'font-size:12px; margin-top:4px' },
           'Propre à cet iPad : ce choix ne se synchronise pas. Il signe aussi les bons envoyés en cuisine.'))),
-    field('Synchronisation entre iPads',
+    field('Accès et synchronisation',
       h('div', {},
         h('div', { class: 'muted' }, cloudEnabled()
           ? (syncActive() ? '\u2713 Connecté à la caisse partagée' : 'Hors ligne — données locales seulement')
           : 'Désactivée dans la configuration'),
-        syncActive() ? h('button', { class: 'btn btn-sm btn-ghost', style: 'margin-top:8px', onclick: async () => {
-          if (await confirmDialog('Déconnecter cet iPad de la caisse partagée ? Ses données resteront en local.', { okLabel: 'Déconnecter', danger: true })) {
-            disconnectCloud(); toast('iPad déconnecté — recharge la page pour te reconnecter');
+        // Verrouiller ne coupe pas la synchro : ça efface le seul jeton d'accès
+        // de cet iPad. Au prochain lancement, le verrou d'entrée (gate.js)
+        // redemande le mot de passe du bar. La file d'attente d'écritures et
+        // l'avancement de la synchro sont conservés — rien n'est perdu.
+        cloudEnabled() ? h('button', { class: 'btn btn-sm btn-ghost', style: 'margin-top:8px', onclick: async () => {
+          if (await confirmDialog('Verrouiller la caisse sur cet iPad ? Il faudra ressaisir le mot de passe du bar pour la rouvrir.', { okLabel: 'Verrouiller', danger: true })) {
+            clearToken(); location.reload();
           }
-        } }, 'Déconnecter cet iPad') : null)),
+        } }, '\u{1F512} Verrouiller cet iPad') : null,
+        h('div', { class: 'faint', style: 'font-size:12px; margin-top:6px' },
+          'La caisse ne s\'ouvre qu\'avec le mot de passe du bar. Une fois saisi sur cet iPad, il n\'est plus redemandé.'))),
     field('Interface',
       h('div', {},
         uiModeSelector(),
@@ -204,6 +211,8 @@ export async function requirePin(reason = 'Accès protégé') {
 }
 
 async function boot() {
+  // Rien ne se charge ni ne s'affiche avant le mot de passe du bar.
+  await unlock();
   await loadAll();
   bindNav();
   applyProfile();
