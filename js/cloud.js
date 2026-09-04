@@ -155,7 +155,7 @@ async function firstSync() {
         ops.push({ op: 'put', table: t, value: row });
       }
     }
-    if (ops.length) { const r = await api('/api/push', { method: 'POST', body: JSON.stringify({ ops, clientId }) }); setLastRev(r.rev); }
+    if (ops.length) await envoie(ops);
     else setLastRev(rev || 1);
   }
 }
@@ -225,23 +225,45 @@ function setOutbox(v) {
   try { localStorage.setItem(LS_OUTBOX, JSON.stringify(v.slice(-2000))); } catch {}
 }
 
-async function push(ops) {
-  try {
-    const r = await api('/api/push', { method: 'POST', body: JSON.stringify({ ops, clientId }) });
-    setLastRev(r.rev);
-  } catch {
-    setOutbox([...outbox(), ...ops]);
+// Le serveur refuse une requête de plus de 8 Mo. Une carte dont les fiches
+// portent des photos peut peser plusieurs mégaoctets, et la première synchro
+// d'un iPad neuf pousse la base entière d'un coup : on la découpe pour ne
+// jamais s'approcher du plafond.
+const PUSH_MAX_OCTETS = 3 * 1024 * 1024;
+
+function lots(ops) {
+  const out = [];
+  let courant = [], taille = 0;
+  for (const o of ops) {
+    const t = JSON.stringify(o).length;
+    // Une opération seule au-delà du plafond part quand même : la refuser ici
+    // la perdrait en silence, et le serveur dira non plus clairement.
+    if (courant.length && taille + t > PUSH_MAX_OCTETS) { out.push(courant); courant = []; taille = 0; }
+    courant.push(o); taille += t;
   }
+  if (courant.length) out.push(courant);
+  return out;
+}
+
+// Laisse remonter l'erreur : à l'appelant de choisir entre la file d'attente et
+// l'abandon de la synchro.
+async function envoie(ops) {
+  for (const paquet of lots(ops)) {
+    const r = await api('/api/push', { method: 'POST', body: JSON.stringify({ ops: paquet, clientId }) });
+    setLastRev(r.rev);
+  }
+}
+
+async function push(ops) {
+  // Tout repart en file, y compris ce qui était déjà passé dans un paquet
+  // précédent : réécrire la même ligne avec le même contenu est sans effet.
+  try { await envoie(ops); } catch { setOutbox([...outbox(), ...ops]); }
 }
 
 async function flushOutbox() {
   const pending = outbox();
   if (!pending.length) return;
   setOutbox([]);
-  try {
-    const r = await api('/api/push', { method: 'POST', body: JSON.stringify({ ops: pending, clientId }) });
-    setLastRev(r.rev);
-  } catch {
-    setOutbox([...pending, ...outbox()]);
-  }
+  try { await envoie(pending); }
+  catch { setOutbox([...pending, ...outbox()]); }
 }

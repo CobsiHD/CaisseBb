@@ -5,7 +5,7 @@
 // déjà en service y montent par les retouches de migrations.js. Ce numéro vit
 // ici et pas dans migrations.js pour que store.js puisse le lire sans importer
 // migrations.js, qui importe déjà store.js.
-export const CATALOG_REV = 4;
+export const CATALOG_REV = 5;
 
 export const CATEGORIES = [
   {
@@ -194,7 +194,29 @@ export const PRODUCTS = [
     "happyHour": true,
     "desc": "Gin Tanqueray Ten, Campari, Vermouth Del Professore Rouge",
     "available": true,
-    "order": 2
+    "order": 2,
+    "recipe": {
+      "technique": "Verre à mélange",
+      "verre": "Old Fashioned",
+      "ingredients": [
+        {
+          "label": "Gin Tanqueray Ten",
+          "qty": "3 cl"
+        },
+        {
+          "label": "Campari",
+          "qty": "3 cl"
+        },
+        {
+          "label": "Vermouth Del Professor Rouge",
+          "qty": "3 cl"
+        },
+        {
+          "label": "Zeste d’orange",
+          "qty": "1"
+        }
+      ]
+    }
   },
   {
     "id": "cocktails-mojito",
@@ -212,7 +234,37 @@ export const PRODUCTS = [
     "happyHour": true,
     "desc": "Rhum Havana, Cassonade, Menthe & Citron Vert, Eau Pétillante",
     "available": true,
-    "order": 3
+    "order": 3,
+    "recipe": {
+      "technique": "Build",
+      "verre": "Long drink",
+      "ingredients": [
+        {
+          "label": "Rhum Havana",
+          "qty": "5 cl"
+        },
+        {
+          "label": "Cassonade",
+          "qty": "2 c. à café"
+        },
+        {
+          "label": "Citron vert",
+          "qty": "½ en quartiers"
+        },
+        {
+          "label": "Menthe fraîche",
+          "qty": "10 feuilles"
+        },
+        {
+          "label": "Glace pilée",
+          "qty": "à hauteur"
+        },
+        {
+          "label": "Eau pétillante",
+          "qty": "TOP"
+        }
+      ]
+    }
   },
   {
     "id": "cocktails-pina-colada",
@@ -230,7 +282,29 @@ export const PRODUCTS = [
     "happyHour": true,
     "desc": "Rhum Havana 7 ans, Purée de coco, Jus d’Ananas, Citron",
     "available": true,
-    "order": 4
+    "order": 4,
+    "recipe": {
+      "technique": "Shake",
+      "verre": "Tumbler",
+      "ingredients": [
+        {
+          "label": "Rhum Havana 7 ans",
+          "qty": "4 cl"
+        },
+        {
+          "label": "Purée de coco",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Jus d’ananas",
+          "qty": "4 cl"
+        },
+        {
+          "label": "Citron",
+          "qty": "1 cl"
+        }
+      ]
+    }
   },
   {
     "id": "cocktails-more-much-more",
@@ -325,7 +399,33 @@ export const PRODUCTS = [
     "happyHour": true,
     "desc": "Vodka Ciroc, Cointreau, Jus de Cranberry, Citron",
     "available": true,
-    "order": 7
+    "order": 7,
+    "recipe": {
+      "technique": "Shake",
+      "verre": "Coupette",
+      "ingredients": [
+        {
+          "label": "Vodka Ciroc",
+          "qty": "4 cl"
+        },
+        {
+          "label": "Cointreau",
+          "qty": "1,5 cl"
+        },
+        {
+          "label": "Jus de cranberry",
+          "qty": "3 cl"
+        },
+        {
+          "label": "Citron",
+          "qty": "1,5 cl"
+        },
+        {
+          "label": "Zeste d’orange",
+          "qty": "1"
+        }
+      ]
+    }
   },
   {
     "id": "cocktails-how-is-your-heart",
@@ -388,7 +488,26 @@ export const PRODUCTS = [
     "happyHour": true,
     "desc": "Tequila Milagro, Cointreau, Citron",
     "available": true,
-    "order": 9
+    "order": 9,
+    "recipe": {
+      "technique": "Shake",
+      "verre": "Coupette",
+      "finition": "Croûte de sel",
+      "ingredients": [
+        {
+          "label": "Tequila Milagro",
+          "qty": "5 cl"
+        },
+        {
+          "label": "Cointreau",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Citron",
+          "qty": "2 cl"
+        }
+      ]
+    }
   },
   {
     "id": "cocktails-le-bluebird",
@@ -450,7 +569,29 @@ export const PRODUCTS = [
     "happyHour": true,
     "desc": "Bourbon Bulleit, Sucre, Angostura Bitter",
     "available": true,
-    "order": 11
+    "order": 11,
+    "recipe": {
+      "technique": "Verre à mélange",
+      "verre": "Old Fashioned",
+      "ingredients": [
+        {
+          "label": "Bourbon Bulleit",
+          "qty": "6 cl"
+        },
+        {
+          "label": "Sirop de sucre",
+          "qty": "1 cl"
+        },
+        {
+          "label": "Angostura bitter",
+          "qty": "2 dash"
+        },
+        {
+          "label": "Zeste d’orange",
+          "qty": "1"
+        }
+      ]
+    }
   },
   {
     "id": "cocktails-i-will-remember",
@@ -557,7 +698,29 @@ export const PRODUCTS = [
     "happyHour": true,
     "desc": "Apérol, Prosecco, Eau Pétillante",
     "available": true,
-    "order": 14
+    "order": 14,
+    "recipe": {
+      "technique": "Build",
+      "verre": "Long drink",
+      "ingredients": [
+        {
+          "label": "Apérol",
+          "qty": "5 cl"
+        },
+        {
+          "label": "Prosecco",
+          "qty": "7 cl"
+        },
+        {
+          "label": "Eau pétillante",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Tranche d’orange",
+          "qty": "1"
+        }
+      ]
+    }
   },
   {
     "id": "cocktails-campari-spritz",
@@ -575,7 +738,29 @@ export const PRODUCTS = [
     "happyHour": true,
     "desc": "Campari, Prosecco, Eau Pétillante",
     "available": true,
-    "order": 15
+    "order": 15,
+    "recipe": {
+      "technique": "Build",
+      "verre": "Long drink",
+      "ingredients": [
+        {
+          "label": "Campari",
+          "qty": "5 cl"
+        },
+        {
+          "label": "Prosecco",
+          "qty": "7 cl"
+        },
+        {
+          "label": "Eau pétillante",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Tranche d’orange",
+          "qty": "1"
+        }
+      ]
+    }
   },
   {
     "id": "cocktails-italicus-spritz",
@@ -593,7 +778,29 @@ export const PRODUCTS = [
     "happyHour": true,
     "desc": "Italicus, Prosecco, Eau Pétillante",
     "available": true,
-    "order": 16
+    "order": 16,
+    "recipe": {
+      "technique": "Build",
+      "verre": "Long drink",
+      "ingredients": [
+        {
+          "label": "Italicus",
+          "qty": "5 cl"
+        },
+        {
+          "label": "Prosecco",
+          "qty": "7 cl"
+        },
+        {
+          "label": "Eau pétillante",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Olive verte",
+          "qty": "1"
+        }
+      ]
+    }
   },
   {
     "id": "cocktails-st-germain-spritz",
@@ -611,7 +818,29 @@ export const PRODUCTS = [
     "happyHour": true,
     "desc": "St Germain, Prosecco, Eau Pétillante",
     "available": true,
-    "order": 17
+    "order": 17,
+    "recipe": {
+      "technique": "Build",
+      "verre": "Long drink",
+      "ingredients": [
+        {
+          "label": "St Germain",
+          "qty": "5 cl"
+        },
+        {
+          "label": "Prosecco",
+          "qty": "7 cl"
+        },
+        {
+          "label": "Eau pétillante",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Zeste de citron",
+          "qty": "1"
+        }
+      ]
+    }
   },
   {
     "id": "cocktails-limoncello-spritz",
@@ -629,7 +858,29 @@ export const PRODUCTS = [
     "happyHour": true,
     "desc": "Limoncello, Prosecco, Eau Pétillante",
     "available": true,
-    "order": 18
+    "order": 18,
+    "recipe": {
+      "technique": "Build",
+      "verre": "Long drink",
+      "ingredients": [
+        {
+          "label": "Limoncello",
+          "qty": "5 cl"
+        },
+        {
+          "label": "Prosecco",
+          "qty": "7 cl"
+        },
+        {
+          "label": "Eau pétillante",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Zeste de citron",
+          "qty": "1"
+        }
+      ]
+    }
   },
   {
     "id": "cocktails-melonade-spritz",
@@ -647,7 +898,29 @@ export const PRODUCTS = [
     "happyHour": true,
     "desc": "Melonade, Prosecco, Eau Pétillante",
     "available": true,
-    "order": 19
+    "order": 19,
+    "recipe": {
+      "technique": "Build",
+      "verre": "Long drink",
+      "ingredients": [
+        {
+          "label": "Melonade",
+          "qty": "5 cl"
+        },
+        {
+          "label": "Prosecco",
+          "qty": "7 cl"
+        },
+        {
+          "label": "Eau pétillante",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Quartier de melon",
+          "qty": "1"
+        }
+      ]
+    }
   },
   {
     "id": "cocktails-roll-the-dice",

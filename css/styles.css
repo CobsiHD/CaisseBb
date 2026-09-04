@@ -283,6 +283,7 @@ body {
 .badge { font-size: 11px; font-weight: 800; letter-spacing: .04em; padding: 3px 8px; border-radius: 999px; }
 .badge.hh { color: var(--brass); border: 1px solid rgba(201,162,75,.45); }
 .badge.off { color: var(--encaisser); border: 1px solid rgba(210,121,107,.45); }
+.badge.fiche { color: var(--bluebird); border: 1px solid rgba(79,163,199,.45); }
 
 /* ============================================================
    CARTE (mode affichage)
@@ -316,6 +317,12 @@ body {
 /* ── Fiche technique (modale) ───────────────────────────── */
 .fiche-reps { display: flex; flex-wrap: wrap; gap: 10px 34px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
 .fiche-rep .v { font-family: var(--display); font-size: 22px; font-weight: 600; margin-top: 2px; }
+/* Bornée en hauteur : la recette doit rester lisible sans faire défiler la
+   modale, la photo n'est pas le sujet. */
+.fiche-photo { display: block; width: 100%; max-height: 230px; object-fit: contain;
+  margin: 18px 0 0; border-radius: var(--r-sm); background: var(--ink-1); }
+.fiche-vignette { flex: 0 0 62px; width: 62px; height: 62px; object-fit: cover;
+  border-radius: var(--r-sm); background: var(--ink-1); border: 1px solid var(--line); }
 .fiche-ing { list-style: none; margin: 18px 0 0; padding: 0; }
 .fiche-ing li { display: flex; align-items: baseline; gap: 10px; padding: 9px 0; }
 .fiche-ing li + li { border-top: 1px solid var(--line); }

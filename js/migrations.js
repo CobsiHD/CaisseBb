@@ -131,6 +131,25 @@ async function fichesCocktails() {
   }));
 }
 
+// ── 5 · Les fiches des douze classiques ──────────────────────
+// Mojito, Negroni, Old Fashioned, les six spritz, Margarita, Pina Colada et
+// Cosmopolitan reçoivent la leur. Une fiche déjà présente sur l'iPad n'est pas
+// écrasée : depuis la retouche 4, le bar peut les écrire lui-même, et sa
+// version fait foi sur celle du seed.
+async function fichesClassiques() {
+  const cocktails = PRODUCTS.filter((p) => p.categoryId === 'cocktails');
+  await store.bulkPut('products', cocktails.map((p) => {
+    const sur = state.products.find((x) => x.id === p.id);
+    if (!sur) return { ...p };
+    return {
+      ...p,
+      available: sur.available !== false,
+      ...(sur.color ? { color: sur.color } : {}),
+      ...(sur.recipe?.ingredients?.length ? { recipe: sur.recipe } : {}),
+    };
+  }));
+}
+
 // Le dernier `rev` doit valoir CATALOG_REV : c'est le niveau qu'une base neuve
 // reçoit d'emblée, et ce qu'elle sauterait ici.
 const MIGRATIONS = [
@@ -138,6 +157,7 @@ const MIGRATIONS = [
   { rev: 2, run: sansNugget },
   { rev: 3, run: tuilesDuBar },
   { rev: 4, run: fichesCocktails },
+  { rev: 5, run: fichesClassiques },
 ].filter((m) => m.rev <= CATALOG_REV);
 
 // Applique ce qui manque. À appeler une fois la synchro tentée : avant, les

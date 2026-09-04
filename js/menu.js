@@ -25,6 +25,7 @@ function ficheTechnique(p) {
         repere('Technique', r.technique),
         repere('Verre', r.verre),
         repere('Finition', r.finition)),
+      r.image ? h('img', { class: 'fiche-photo', src: r.image, alt: `${p.name} — photo ou schéma` }) : null,
       h('ul', { class: 'fiche-ing' }, (r.ingredients || []).map((i) =>
         h('li', {}, h('span', { class: 'fi-label' }, i.label), h('span', { class: 'fi-qty' }, i.qty)))),
     ),
