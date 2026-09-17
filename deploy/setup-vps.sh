@@ -16,7 +16,9 @@ APP_DIR=/opt/caisse-bluebird
 WEB_DIR=/var/www/caisse-bluebird
 DATA_DIR=/var/lib/caisse-bluebird
 ENV_FILE=/etc/caisse-bluebird.env
-HTPASSWD=/etc/nginx/caisse-bluebird.htpasswd
+# Ancienne serrure HTTP Basic, retirée lors du passage au cookie : on la
+# supprime plus bas pour ne pas laisser traîner un fichier de mots de passe.
+HTPASSWD_LEGACY=/etc/nginx/caisse-bluebird.htpasswd
 
 echo "▶ Paquets système"
 export DEBIAN_FRONTEND=noninteractive
@@ -51,25 +53,20 @@ ENV
   chmod 600 "$ENV_FILE"
 fi
 
-# Le site n'est plus public : nginx exige le mot de passe avant de livrer le
-# moindre fichier (voir nginx.conf.template). C'est la MÊME phrase que celle de
-# l'appli — l'équipe n'en retient qu'une. Le fichier est régénéré à chaque
-# exécution, pour rattraper une installation antérieure ou un mot de passe
-# modifié à la main dans $ENV_FILE.
-echo "▶ Serrure nginx (mot de passe à l'entrée du site)"
+# Le site n'est pas public : nginx interroge le serveur de synchro avant de
+# livrer le moindre fichier (auth_request → /api/gate-check) et renvoie sur la
+# page de connexion quand le cookie manque. Rien à générer ici : la serrure
+# repose sur CAISSE_PASSWORD ci-dessus et sur le secret de signature du serveur.
+#
+# On utilisait avant une authentification HTTP (htpasswd, identifiant « admin »).
+# Elle a été retirée : ajoutée à l'écran d'accueil, une PWA iPad n'affiche JAMAIS
+# la fenêtre de mot de passe native, et la caisse ouvrait sur un écran blanc sans
+# formulaire — tous les matins, avec obligation de repasser par Safari.
+echo "▶ Serrure nginx (cookie vérifié par le serveur de synchro)"
 CAISSE_PW=$(sed -n 's/^CAISSE_PASSWORD=//p' "$ENV_FILE" | head -n 1)
 [ -n "$CAISSE_PW" ] || { echo "CAISSE_PASSWORD absent de $ENV_FILE, abandon." >&2; exit 1; }
-# `-stdin` : le mot de passe ne passe pas par la ligne de commande, où `ps` le
-# rendrait lisible par n'importe quel utilisateur de la machine.
-HASH=$(printf '%s' "$CAISSE_PW" | openssl passwd -apr1 -stdin)
-case "$HASH" in
-  '$apr1$'*) ;;
-  *) echo "openssl n'a pas produit d'empreinte apr1 — nginx refuserait la serrure." >&2; exit 1 ;;
-esac
-printf 'admin:%s\n' "$HASH" > "$HTPASSWD"
-chmod 640 "$HTPASSWD"
-chown root:www-data "$HTPASSWD"
-echo "  identifiant « admin », mot de passe = celui du bar."
+rm -f "$HTPASSWD_LEGACY"
+echo "  plus de fichier de mots de passe : le cookie remplace l'authentification HTTP."
 
 echo "▶ Outil de changement de mot de passe"
 install -m 750 "$(dirname "$0")/caisse-motdepasse.sh" /usr/local/sbin/caisse-motdepasse
@@ -115,8 +112,8 @@ else
     echo "  ⚠ certbot a échoué — vérifie que $DOMAIN pointe bien vers ce VPS, puis relance : certbot --nginx -d $DOMAIN"
 fi
 
-# Le mot de passe couvre tout le site ; certbot renouvelle en répondant lui-même
-# sur /.well-known/acme-challenge/, avant la phase d'authentification de nginx.
+# La serrure couvre tout le site, mais /.well-known/acme-challenge/ en est exclu
+# explicitement (`auth_request off`) pour que certbot puisse répondre.
 # C'est vrai, mais ça se vérifie : un certificat qui expire coupe tout le bar.
 echo "▶ Vérification du renouvellement automatique du certificat"
 if certbot renew --dry-run >/dev/null 2>&1; then
@@ -128,5 +125,5 @@ fi
 
 echo
 echo "✅ VPS prêt. Envoie maintenant l'appli depuis le Mac :  bash deploy/deploy.sh"
-echo "   Le site demande désormais l'identifiant « admin » + le mot de passe du bar,"
-echo "   puis la caisse le redemande une fois dans son écran de déverrouillage."
+echo "   Le site ouvre sur sa page de connexion et demande le mot de passe du bar,"
+echo "   une seule fois par iPad : l'appli réutilise ensuite le même cookie."

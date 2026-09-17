@@ -202,12 +202,13 @@ function applyOps(ops) {
 }
 
 // ── Utilitaires HTTP ────────────────────────────────────────────────────────
-function json(res, code, obj) {
+function json(res, code, obj, extra = {}) {
   const body = JSON.stringify(obj);
   res.writeHead(code, {
     'Content-Type': 'application/json; charset=utf-8',
     'Cache-Control': 'no-store',
     'Access-Control-Allow-Origin': '*',
+    ...extra,
   });
   res.end(body);
 }
@@ -230,6 +231,32 @@ function bearer(req, url) {
   const h = req.headers.authorization || '';
   if (h.startsWith('Bearer ')) return h.slice(7);
   return url.searchParams.get('token'); // EventSource ne peut pas envoyer d'en-tête
+}
+
+// ── Cookie de session ───────────────────────────────────────────────────────
+// C'est lui que nginx interroge avant de livrer le moindre fichier de l'appli.
+// Pourquoi un cookie et pas l'authentification HTTP qu'on utilisait avant :
+// ajoutée à l'écran d'accueil, une PWA iPad n'affiche JAMAIS la fenêtre de mot
+// de passe native. Un 401 y devient un écran blanc sans formulaire, et la caisse
+// est inutilisable. Le cookie, lui, survit dans le bac à sable du plein écran.
+const COOKIE = 'bb-gate';
+
+function cookieToken(req) {
+  const raw = req.headers.cookie || '';
+  for (const part of raw.split(';')) {
+    const i = part.indexOf('=');
+    if (i < 0) continue;
+    if (part.slice(0, i).trim() === COOKIE) return decodeURIComponent(part.slice(i + 1).trim());
+  }
+  return null;
+}
+
+// HttpOnly : le jeton échappe à toute lecture JavaScript. Secure : il ne part
+// qu'en HTTPS. SameSite=Lax : pas depuis un autre site. Max-Age aligné sur la
+// durée de vie du jeton, pour que l'équipe ne ressaisisse rien pendant la saison.
+function sessionCookie(token) {
+  const age = Math.floor(TOKEN_TTL_MS / 1000);
+  return `${COOKIE}=${encodeURIComponent(token)}; Path=/; Max-Age=${age}; HttpOnly; Secure; SameSite=Lax`;
 }
 
 const MIME = {
@@ -277,9 +304,36 @@ const server = http.createServer(async (req, res) => {
   if (url.pathname === '/api/login' && req.method === 'POST') {
     let body;
     try { body = await readBody(req); } catch { return json(res, 400, { error: 'json invalide' }); }
-    if (sameSecret(body.password, PASSWORD)) return json(res, 200, { token: makeToken('full'), role: 'full' });
+    if (sameSecret(body.password, PASSWORD)) {
+      // Le mot de passe du bar ferme les deux serrures d'un coup : le cookie que
+      // nginx vérifiera avant de livrer un seul fichier, et le jeton que l'appli
+      // garde pour la synchro et pour rouvrir quand le Wi-Fi est tombé.
+      const t = makeToken('full');
+      return json(res, 200, { token: t, role: 'full' }, { 'Set-Cookie': sessionCookie(t) });
+    }
+    // L'agent d'impression ne télécharge jamais l'appli : pas de cookie pour lui.
     if (sameSecret(body.password, AGENT_PASSWORD)) return json(res, 200, { token: makeToken('agent'), role: 'agent' });
     return json(res, 401, { error: 'mot de passe incorrect' });
+  }
+
+  // Sous-requête de nginx (auth_request). Elle arrive sans corps et sans en-tête
+  // Authorization : seuls les cookies la suivent. Elle ne décide que d'une chose,
+  // si les FICHIERS de l'appli sont livrés — ce qu'on peut en faire reste gardé
+  // par les routes ci-dessous, qui exigent toujours un jeton.
+  if (url.pathname === '/api/gate-check') {
+    const t = readToken(cookieToken(req));
+    res.writeHead(t && t.role === 'full' ? 204 : 401);
+    return res.end();
+  }
+
+  // L'appli échange son cookie contre le jeton de synchro. C'est ce qui évite de
+  // réclamer le mot de passe une seconde fois devant le verrou d'entrée : la
+  // page de connexion vient déjà de le demander.
+  if (url.pathname === '/api/session') {
+    const raw = cookieToken(req);
+    const t = readToken(raw);
+    if (t && t.role === 'full') return json(res, 200, { token: raw, role: 'full' });
+    return json(res, 401, { error: 'non autorisé' });
   }
 
   const auth = readToken(bearer(req, url));

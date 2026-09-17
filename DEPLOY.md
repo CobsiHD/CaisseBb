@@ -8,15 +8,22 @@ Tout est hébergé sur ton VPS : aucun service tiers, aucun abonnement.
 
 **L'adresse n'est pas publique.** Sans le mot de passe du bar, un visiteur ne
 voit rien du tout — ni la carte, ni le plan, ni le chiffre d'affaires. Deux
-serrures, une seule phrase à retenir :
+serrures, une seule phrase à retenir, **et une seule saisie par iPad** :
 
 | Serrure | Où | Ce qu'elle empêche |
 |---|---|---|
-| **nginx** (`admin` + mot de passe) | le serveur web | de **télécharger** l'appli : sans mot de passe, l'adresse ne renvoie aucun fichier |
+| **nginx** (cookie de session) | le serveur web | de **télécharger** l'appli : sans cookie valide, l'adresse renvoie sur la page de connexion |
 | **écran de déverrouillage** (`js/gate.js`) | l'appli elle-même | de **s'en servir** : rien ne s'affiche tant que le serveur n'a pas validé le mot de passe |
 
-Sur un iPad, les deux ne se saisissent qu'une fois : Safari retient les
-identifiants, et l'appli garde son jeton d'accès.
+Le mot de passe se saisit **une seule fois**, sur la page de connexion : elle pose
+le cookie que nginx vérifiera, et l'appli échange ensuite ce cookie contre son
+jeton (`/api/session`) sans rien redemander.
+
+> **Pourquoi un cookie et pas l'authentification HTTP** (utilisée jusqu'au
+> 2026-09-17) : ajoutée à l'écran d'accueil, une PWA iPad n'affiche **jamais** la
+> fenêtre de mot de passe native de Safari. Le 401 y devenait un écran blanc sans
+> formulaire — la caisse était inutilisable au lancement, tous les jours, et il
+> fallait repasser par le site. Un cookie, lui, survit au mode plein écran.
 
 ---
 
@@ -52,16 +59,17 @@ Le script installe nginx, Node.js et certbot, crée le service, ouvre le pare-fe
 puis **demande le mot de passe partagé du bar** — celui que chaque iPad saisira une
 fois pour se connecter à la caisse commune. Choisis-en un simple à dicter à l'équipe.
 
-Ce même mot de passe ferme les deux serrures : le script en fait l'empreinte pour
-nginx (`/etc/nginx/caisse-bluebird.htpasswd`, identifiant **`admin`**) et le laisse
-lire à l'appli. Il vérifie ensuite, avec `certbot renew --dry-run`, que la serrure
-n'empêche pas le renouvellement du certificat HTTPS.
+Ce même mot de passe ferme les deux serrures : nginx interroge le serveur de
+synchro (`auth_request` → `/api/gate-check`) avant de livrer le moindre fichier,
+et le serveur valide le cookie comme il valide les jetons. Il n'y a donc **aucun
+fichier de mots de passe à gérer**. Le script vérifie ensuite, avec
+`certbot renew --dry-run`, que la serrure n'empêche pas le renouvellement HTTPS.
 
-**Sur une installation déjà en service**, relancer ce même script suffit à poser la
-serrure nginx : le mot de passe existant est conservé, rien d'autre ne change.
-À faire **hors service** malgré tout : le script réécrit le vhost à partir du
-modèle, donc sans HTTPS, et c'est certbot qui le remet quelques secondes plus
-tard — le temps que ça dure, la caisse est injoignable.
+**Sur une installation déjà en service**, à lancer **hors service** : le script
+réécrit le vhost à partir du modèle, donc sans HTTPS, et c'est certbot qui le
+remet quelques secondes plus tard — le temps que ça dure, la caisse est
+injoignable. Pour une simple retouche du vhost, mieux vaut le patcher en place
+(en gardant une sauvegarde datée à côté) et recharger avec `systemctl reload`.
 
 ## 3. Envoyer l'appli
 
@@ -81,13 +89,12 @@ Les iPads récupèrent la nouvelle version automatiquement au lancement suivant.
 
 ## 4. Sur chaque iPad
 
-1. Ouvrir `https://caisse.mondomaine.fr` dans Safari.
-2. Safari demande un identifiant : **`admin`** + le mot de passe du bar.
-   Accepter de l'enregistrer dans le trousseau — il ne sera plus redemandé.
+1. Ouvrir `https://caisse.mondomaine.fr` dans Safari : la **page de connexion**
+   s'affiche.
+2. Saisir le mot de passe du bar. **Une seule fois** — le cookie obtenu vaut
+   180 jours, et l'appli s'en sert pour son propre verrou sans le redemander.
 3. Partage → **Sur l'écran d'accueil** (l'appli s'installe comme une vraie app,
    plein écran, et continue de fonctionner si le Wi-Fi coupe).
-4. Au premier lancement, l'appli affiche son **écran de déverrouillage** :
-   saisir le même mot de passe du bar. Une seule fois.
 
 À partir de là l'iPad s'ouvre directement, y compris **sans réseau** : le jeton
 obtenu vaut 180 jours. Les Réglages contiennent un bouton **🔒 Verrouiller cet
@@ -135,13 +142,14 @@ suffit à le créer : le reste de la configuration est conservé.
 ssh root@IP-DU-VPS 'caisse-motdepasse'
 ```
 
-Il change les **deux** serrures d'un coup (l'appli et nginx) et recharge les
-services. Les modifier séparément mènerait à une caisse qui réclame deux mots de
-passe différents.
+Les deux serrures puisant à la même source (`CAISSE_PASSWORD` et le jeton signé
+qu'il délivre), il n'y a plus qu'une seule chose à changer : le script réécrit la
+variable et redémarre le serveur.
 
-Après le changement, Safari redemandera le nouveau mot de passe sur chaque iPad,
-mais l'appli, elle, gardera son jeton — les iPads déjà connectés continuent de
-fonctionner. Pour tout **déconnecter** (iPad volé, salarié parti) :
+Les iPads déjà connectés **ne bougent pas** : leur cookie et leur jeton sont
+signés par un secret que ce changement ne touche pas. Seule une nouvelle
+connexion réclamera la nouvelle phrase. Pour tout **déconnecter** (iPad volé,
+salarié parti) :
 
 ```bash
 ssh root@IP-DU-VPS 'rm /var/lib/caisse-bluebird/secret && systemctl restart caisse-bluebird'

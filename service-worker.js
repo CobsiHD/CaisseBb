@@ -1,5 +1,5 @@
 // service-worker.js — cache applicatif pour fonctionnement hors-ligne.
-const CACHE = 'bluebird-v38';
+const CACHE = 'bluebird-v45';
 const ASSETS_EXT = [
   'arche_pierre', 'caniveau', 'chaise_noire', 'chaise_verte', 'deck_tile',
   'enseigne_bluebird', 'enseigne_neon_b', 'guirlande_lumineuse', 'jardiniere',
@@ -20,7 +20,7 @@ const CORE = [
   'js/app.js', 'js/state.js', 'js/store.js', 'js/seed.js', 'js/migrations.js',
   'js/ui.js', 'js/pos.js',
   'js/floorplan.js', 'js/elements.js', 'js/order.js', 'js/home.js',
-  'js/catalog.js', 'js/menu.js', 'js/dashboard.js',
+  'js/catalog.js', 'js/menu.js', 'js/recettes.js', 'js/dashboard.js',
   'js/kitchen.js', 'js/cuisine.js', 'js/note.js', 'js/openorder.js', 'js/options.js',
   'js/mobile/shell.js', 'js/mobile/views.js', 'js/mobile/mfloor.js',
   'js/mobile/morder.js', 'js/mobile/mhome.js',
@@ -54,6 +54,10 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(fetch(request));
     return;
   }
+  // La page de connexion est la porte de secours : jamais interceptée, jamais
+  // mise en cache. Servie périmée, elle enfermerait dehors.
+  if (reqUrl.pathname === '/connexion.html') return;
+
   const sameOrigin = reqUrl.origin === self.location.origin;
 
   const cacheCopy = (res) => {
@@ -64,9 +68,28 @@ self.addEventListener('fetch', (e) => {
     return res;
   };
 
+  // Le verrou a repris la main (cookie expiré) : la réponse est parfaitement
+  // valide au sens HTTP, mais elle ne contient pas l'appli.
+  const refus = (res) => res && (res.status === 401 || res.status === 403);
+
   if (sameOrigin) {
-    // Network-first : toujours la dernière version quand en ligne, cache en secours hors-ligne.
-    e.respondWith(fetch(request).then(cacheCopy).catch(() => caches.match(request)));
+    // Network-first : toujours la dernière version quand en ligne, cache en secours.
+    //
+    // `fetch` ne REJETTE que sur une panne réseau. Un 401 est une promesse tenue,
+    // donc le `.catch()` ne se déclenchait pas et le refus repartait tel quel
+    // vers la page — qui se retrouvait sans HTML ni modules, avec le cache plein
+    // juste à côté. C'était l'écran blanc de la PWA.
+    //
+    // On sert donc la copie en cache : l'appli redémarre et son propre verrou
+    // (gate.js) redemande le mot de passe sans quitter l'écran. Sans copie en
+    // cache, on laisse passer le refus pour que nginx envoie sur /connexion.html.
+    e.respondWith(
+      fetch(request)
+        .then((res) => (refus(res)
+          ? caches.match(request).then((c) => c || res)
+          : cacheCopy(res)))
+        .catch(() => caches.match(request))
+    );
   } else {
     // Cache-first pour les ressources externes (polices Google).
     e.respondWith(caches.match(request).then((cached) => cached || fetch(request).then(cacheCopy)));

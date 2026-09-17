@@ -86,6 +86,11 @@ export async function login(password) {
     res = await fetch(base() + '/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      // La réponse pose le cookie de session que nginx vérifie avant de livrer
+      // les fichiers. Sans ce drapeau, un mot de passe saisi DANS l'appli ne
+      // rouvrirait pas la serrure des fichiers, et le lancement suivant
+      // repartirait bêtement sur /connexion.html.
+      credentials: 'same-origin',
       body: JSON.stringify({ password }),
     });
   } catch { throw new Error('serveur'); }
@@ -98,6 +103,23 @@ export async function login(password) {
   token = r.token;
   localStorage.setItem(LS_TOKEN, r.token);
   return r;
+}
+
+// Échange le cookie de session contre le jeton de synchro. C'est ce qui fait
+// qu'on ne saisit le mot de passe QU'UNE fois : si les fichiers de l'appli sont
+// arrivés, c'est que nginx a déjà validé le cookie — redemander la même phrase
+// devant le verrou d'entrée n'apprendrait rien à personne.
+// Renvoie le jeton, ou null s'il n'y a pas de cookie valide (on demandera alors).
+export async function session() {
+  try {
+    const res = await fetch(base() + '/api/session', { credentials: 'same-origin' });
+    if (!res.ok) return null;
+    const r = await res.json();
+    if (!r.token || (r.role && r.role !== 'full')) return null;
+    token = r.token;
+    localStorage.setItem(LS_TOKEN, r.token);
+    return r.token;
+  } catch { return null; }   // serveur injoignable : on retombera sur le formulaire
 }
 
 // ── Démarrage ───────────────────────────────────────────────────────────────

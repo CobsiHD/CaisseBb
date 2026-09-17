@@ -1,15 +1,16 @@
 // gate.js — verrou d'entrée : la caisse ne s'ouvre qu'avec le mot de passe du bar.
 //
 // C'est la seconde serrure. La première est dans nginx (voir
-// deploy/nginx.conf.template) : elle refuse de livrer les fichiers de l'appli.
-// Celle-ci refuse de s'en servir — carte, notes, chiffre d'affaires, rien ne
-// s'affiche avant que le serveur ait validé le mot de passe.
+// deploy/nginx.conf.template) : elle refuse de livrer les fichiers de l'appli
+// tant qu'un cookie de session valide ne l'accompagne pas. Celle-ci refuse de
+// s'en servir — carte, notes, chiffre d'affaires, rien ne s'affiche avant que
+// le serveur ait validé le mot de passe.
 //
 // Le jeton obtenu est celui de la synchro : une seule saisie par iPad. Sa date
 // d'expiration se lit sans le serveur, pour que la caisse continue de s'ouvrir
 // quand le Wi-Fi du bar est tombé — l'appli doit rester utilisable en service.
 import { CLOUD } from './cloud-config.js';
-import { savedToken, clearToken, tokenValid, login } from './cloud.js';
+import { savedToken, clearToken, tokenValid, login, session } from './cloud.js';
 import { h } from './ui.js';
 
 // Poste de développement (python3 -m http.server) : pas d'API à interroger, le
@@ -23,6 +24,9 @@ export async function unlock() {
   if (!CLOUD.ENABLED || isDev()) { gate.remove(); return; }
   if (tokenValid(savedToken())) { gate.remove(); return; }
   clearToken();          // jeton expiré ou bricolé : on repart d'une page blanche
+  // Ces fichiers viennent d'être livrés, donc nginx a validé un cookie : on
+  // l'échange contre le jeton, plutôt que de réclamer deux fois la même phrase.
+  if (await session()) { gate.remove(); return; }
   await ask(gate);
   gate.remove();
 }

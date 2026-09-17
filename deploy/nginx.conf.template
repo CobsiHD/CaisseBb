@@ -12,24 +12,54 @@ server {
     gzip on;
     gzip_types text/css text/javascript application/javascript application/json image/svg+xml;
 
-    # ── Première serrure : rien de l'appli ne se télécharge sans mot de passe ──
+    # ── Première serrure : rien de l'appli ne se télécharge sans cookie valide ──
     # Posée au niveau du serveur, donc héritée par TOUS les blocs `location`
-    # ci-dessous (contrairement à `add_header`, `auth_basic` s'hérite bien).
-    # Le fichier est écrit par setup-vps.sh à partir de CAISSE_PASSWORD :
-    # une seule et même phrase pour la serrure nginx et pour l'appli.
-    # La seconde serrure est dans l'appli elle-même (js/gate.js).
+    # ci-dessous ; les exceptions sont des `auth_request off` explicites.
     #
-    # Deux exceptions, toutes deux volontaires — voir les `auth_basic off`
-    # ci-dessous : la vérification Let's Encrypt et l'API de synchronisation.
-    auth_basic "Caisse Bluebird";
-    auth_basic_user_file /etc/nginx/caisse-bluebird.htpasswd;
+    # Pourquoi un cookie et non l'authentification HTTP qu'on utilisait avant :
+    # ajoutée à l'écran d'accueil, une PWA iPad n'affiche JAMAIS la fenêtre de
+    # mot de passe native. Le 401 y devenait un écran blanc sans formulaire —
+    # la caisse était inutilisable au lancement, tous les jours, et il fallait
+    # repasser par Safari. Un cookie, lui, survit au mode plein écran.
+    #
+    # La seconde serrure reste dans l'appli elle-même (js/gate.js).
+    auth_request /gate;
+    error_page 401 = @connexion;
+
+    # Sous-requête interne : le serveur Node lit le cookie et répond 204 ou 401.
+    # `internal` — inatteignable depuis l'extérieur.
+    location = /gate {
+        internal;
+        auth_request off;
+        proxy_pass http://127.0.0.1:8787/api/gate-check;
+        proxy_pass_request_body off;
+        proxy_set_header Content-Length "";
+        proxy_set_header Host $host;
+        proxy_set_header X-Original-URI $request_uri;
+    }
+
+    # Sans cookie valide, on ENVOIE vers la page de connexion au lieu de rendre
+    # un 401 nu : c'est toute la raison d'être de ce montage.
+    location @connexion {
+        return 302 /connexion.html;
+    }
+
+    # La porte de secours, forcément ouverte : derrière la serrure, elle
+    # provoquerait une boucle de redirection. Jamais mise en cache non plus —
+    # servie périmée, elle enfermerait dehors.
+    location = /connexion.html {
+        auth_request off;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header Cache-Control "no-store" always;
+    }
 
     # Renouvellement du certificat, laissé OUVERT. Ce bloc `^~` a priorité sur
     # celui que certbot insère au moment du renouvellement : c'est donc lui qui
     # sert la vérification, et fermé il ferait expirer le certificat — ce qui
     # couperait tout le bar. setup-vps.sh le vérifie par un
     # `certbot renew --dry-run` juste après avoir posé la serrure.
-    location ^~ /.well-known/acme-challenge/ { auth_basic off; root /var/www/html; }
+    location ^~ /.well-known/acme-challenge/ { auth_request off; root /var/www/html; }
 
     # L'appli n'a pas d'étape de build : les URL des modules ne changent jamais
     # d'un déploiement au suivant. Sans revalidation obligatoire, Safari applique
@@ -71,11 +101,17 @@ server {
 
     # API de synchronisation (serveur Node local).
     location /api/ {
-        # Pas de mot de passe nginx ici : l'API a le sien (jeton signé), et
-        # l'agent d'impression du Pi ne sait pas envoyer d'identifiants HTTP.
-        # Sans jeton valide, /api/pull, /api/push et /api/events répondent 401
-        # (vérifié en production le 2026-09-04).
-        auth_basic off;
+        # Pas de serrure nginx ici : l'API a la sienne (jeton signé), et c'est
+        # elle qui pose le cookie (/api/login) comme qui le vérifie
+        # (/api/gate-check). L'y soumettre fermerait la porte de l'extérieur.
+        # Sans jeton valide, /api/pull, /api/push et /api/events répondent 401.
+        auth_request off;
+
+        # Les 401 du serveur Node sont du JSON et doivent le rester : l'agent
+        # d'impression et la synchro attendent une erreur, pas une page de
+        # connexion. `proxy_intercept_errors` vaut off par défaut, donc le
+        # `error_page 401` du serveur ne s'applique PAS aux réponses qui
+        # viennent d'ici — ne surtout pas le réactiver.
 
         proxy_pass http://127.0.0.1:8787;
         proxy_http_version 1.1;
