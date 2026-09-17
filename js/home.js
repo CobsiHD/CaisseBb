@@ -7,7 +7,7 @@ import { isTableType } from './elements.js';
 import { catColor, colorPicker, paginate } from './pos.js';
 import { unsentCount, hasCuisineLines, printTicket } from './kitchen.js';
 import { addProductToItems } from './note.js';
-import { groupsEditor } from './options.js';
+import { groupsEditor, optionLabel } from './options.js';
 import { visibleCategories } from './profile.js';
 
 const slug = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'x';
@@ -51,7 +51,7 @@ function renderSelection() {
 }
 
 function renderLine(item) {
-  const opts = (item.options || []).map((o) => o.label).join(' · ');
+  const opts = (item.options || []).map(optionLabel).join(' · ');
   return h('div', { class: 'tk-line' },
     h('div', { style: 'min-width:0' },
       h('span', { class: 'nm' }, item.name),

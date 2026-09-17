@@ -87,7 +87,7 @@ export const money = (n) => eur.format(n || 0);
 
 // ── Dérivations notes / tables ───────────────────────────────
 export function lineUnit(item) {
-  const opts = (item.options || []).reduce((s, o) => s + (o.delta || 0), 0);
+  const opts = (item.options || []).reduce((s, o) => s + (o.delta || 0) * (o.qty || 1), 0);
   return (item.price || 0) + opts;
 }
 // "1 acheté = 1 offert" : on ne facture qu'une unité sur deux.

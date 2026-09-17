@@ -5,6 +5,7 @@ import * as store from './store.js';
 import { renderFloor } from './floorplan.js';
 import { renderCatalog } from './catalog.js';
 import { renderMenu } from './menu.js';
+import { renderRecettes } from './recettes.js';
 import { renderDashboard } from './dashboard.js';
 import { renderHome } from './home.js';
 import { renderCuisine } from './cuisine.js';
@@ -22,6 +23,7 @@ const PAD_VIEWS = {
   home: renderHome,
   floor: renderFloor,
   menu: renderMenu,
+  recettes: renderRecettes,
   catalog: renderCatalog,
   dashboard: renderDashboard,
   cuisine: renderCuisine,

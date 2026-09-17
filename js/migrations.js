@@ -151,6 +151,77 @@ async function reposeLesCocktails() {
   }));
 }
 
+// ── 7 · La tuile Événement, les dix shots et les mètres ────
+// Une famille de plus sur le pavé de touches, qui porte la sélection de shots
+// de la soirée du jeudi. Le numéro du shot vit dans son nom (« 26 · Bleu
+// Piscine ») : il part ainsi sur le bon papier, sur la note et à l'écran cuisine
+// sans que l'agent d'impression ait à connaître quoi que ce soit de neuf.
+//
+// Les deux mètres à 25 € lisent la même sélection par sous-famille partagée :
+// `metre-mixte` (dix parfums cochés) et `metre-unique` (un parfum pris dix
+// fois). Elles partent AVANT les produits — un mètre dont la sous-famille
+// n'existe pas encore s'ouvrirait sans dialogue de choix, et le barman
+// enverrait un mètre vide en cuisine.
+//
+// La sélection tourne d'une soirée à l'autre : ce que le bar ajoute ou retire
+// sur l'iPad lui reste, cette retouche ne repose que ce que porte le seed.
+async function soireeShots() {
+  const famille = CATEGORIES.find((c) => c.id === 'evenement');
+  const surPlace = state.categories.find((c) => c.id === 'evenement');
+  await store.put('categories', { ...famille, ...surPlace, name: famille.name, order: famille.order });
+
+  // La liste des shots du mètre se remanie chaque semaine au comptoir : celle
+  // qui est sur l'iPad fait foi dès qu'elle a été touchée.
+  for (const g of OPTION_GROUPS.filter((x) => x.id.startsWith('metre-'))) {
+    const sur = (state.optionGroups || []).find((x) => x.id === g.id);
+    await store.put('optiongroups', sur ? { ...g, ...sur } : { ...g });
+  }
+
+  const shots = PRODUCTS.filter((p) => p.categoryId === 'evenement');
+  await store.bulkPut('products', shots.map((p) => {
+    const sur = state.products.find((x) => x.id === p.id);
+    if (!sur) return { ...p };
+    return {
+      ...p,
+      available: sur.available !== false,
+      ...(sur.color ? { color: sur.color } : {}),
+      ...(sur.recipe?.ingredients?.length ? { recipe: sur.recipe } : {}),
+    };
+  }));
+}
+
+// ── 8 · « Bison en Chaleur » devient « Baby Pornstar » ─────
+// Simple renommage : le shot n°11 est un Pornstar Martini en version courte, et
+// il valait mieux que son nom le dise. L'identifiant, lui, ne bouge PAS — le
+// changer poserait un second produit à côté de l'ancien sur les iPads qui ont
+// déjà reçu la retouche 7, et casserait une tuile perso qui pointerait dessus.
+//
+// Reposer les produits suffit pour la touche et le bon papier : le nom vient
+// toujours du seed. Les deux listes de choix des mètres, elles, sont préservées
+// par la retouche 7 — le bar y remanie sa sélection chaque semaine. On y
+// renomme donc le choix sur place, sans écraser ce qui a été touché au comptoir.
+const RENOMMES = [['11 · Bison en Chaleur', '11 · Baby Pornstar']];
+
+async function babyPornstar() {
+  for (const g of state.optionGroups || []) {
+    if (!g.id?.startsWith('metre-')) continue;
+    let change = false;
+    const choices = (g.choices || []).map((c) => {
+      for (const [avant, apres] of RENOMMES) {
+        // Le mètre unique suffixe ses choix (« × 10 ») : on renomme le début.
+        if (c.label === avant || c.label.startsWith(`${avant} `)) {
+          change = true;
+          return { ...c, label: c.label.replace(avant, apres) };
+        }
+      }
+      return c;
+    });
+    if (change) await store.put('optiongroups', { ...g, choices });
+  }
+
+  await soireeShots();
+}
+
 // Le dernier `rev` doit valoir CATALOG_REV : c'est le niveau qu'une base neuve
 // reçoit d'emblée, et ce qu'elle sauterait ici.
 const MIGRATIONS = [
@@ -160,6 +231,8 @@ const MIGRATIONS = [
   { rev: 4, run: fichesCocktails },
   { rev: 5, run: reposeLesCocktails },
   { rev: 6, run: reposeLesCocktails },
+  { rev: 7, run: soireeShots },
+  { rev: 8, run: babyPornstar },
 ].filter((m) => m.rev <= CATALOG_REV);
 
 // Applique ce qui manque. À appeler une fois la synchro tentée : avant, les

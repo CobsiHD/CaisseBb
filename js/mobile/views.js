@@ -1,9 +1,11 @@
 // mobile/views.js — table de routage de l'interface téléphone.
 //
-// Carte, Produits, Tableau de bord et Cuisine sont déjà en colonne unique :
+// Carte, Recettes, Produits, Tableau de bord et Cuisine sont déjà en colonne
+// unique :
 // ils réutilisent les vues de l'iPad, que le CSS mobile resserre. Seuls la
 // salle et le comptoir ont une mise en page à part.
 import { renderMenu } from '../menu.js';
+import { renderRecettes } from '../recettes.js';
 import { renderCatalog } from '../catalog.js';
 import { renderDashboard } from '../dashboard.js';
 import { renderCuisine } from '../cuisine.js';
@@ -14,6 +16,7 @@ export const MOBILE_VIEWS = {
   home: renderMHome,
   floor: renderMFloor,
   menu: renderMenu,
+  recettes: renderRecettes,
   catalog: renderCatalog,
   dashboard: renderDashboard,
   cuisine: renderCuisine,

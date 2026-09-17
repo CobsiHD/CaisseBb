@@ -5,6 +5,7 @@
 import { state, money, lineUnit, lineTotal, lineBilledQty, openOrdersForTable, tableLabel } from './state.js';
 import { h, clear, toast } from './ui.js';
 import { catColor, paginate } from './pos.js';
+import { optionLabel } from './options.js';
 import {
   tableEl, placeLabel, orderSum, saveOrder, newOrder, ensureOrder,
   changeQty, addProduct, editLine, printMark, printOrder, unsentCount, hasCuisineLines,
@@ -100,7 +101,7 @@ function renderTicket() {
 }
 
 function renderLine(order, item) {
-  const opts = (item.options || []).map((o) => o.label).join(' · ');
+  const opts = (item.options || []).map(optionLabel).join(' · ');
   return h('div', { class: 'tk-line' },
     h('div', { onclick: () => doEditLine(order, item), style: 'cursor:pointer; min-width:0' },
       h('span', { class: 'nm' }, item.name),

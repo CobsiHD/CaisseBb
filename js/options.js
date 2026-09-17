@@ -10,10 +10,15 @@ import { state, money, reloadCatalog } from './state.js';
 import * as store from './store.js';
 
 // ── Modèle ───────────────────────────────────────────────────
-// product.optionGroups = [{ name, multi, required, count, choices: [{ label, delta }] }]
+// product.optionGroups = [{ name, multi, required, count, repeat, choices: [{ label, delta }] }]
 // `count` (groupes à choix multiple) : nombre EXACT de choix attendus — 3 tapas
 // sur la planche, ni 2 ni 4. 0 = libre. Un groupe compté est obligatoire de fait :
 // on ne peut pas en cocher 3 et n'en vouloir aucun.
+// `repeat` : le même choix peut être pris plusieurs fois, et c'est la SOMME des
+// quantités qui doit valoir `count` — quatre Bleu Piscine et six Pample-Rhum
+// font un mètre de dix. Les pastilles deviennent des compteurs, et chaque choix
+// retenu porte sa quantité sur la ligne de note. Sans `repeat`, rien ne change :
+// une case cochée vaut un, comme les sauces l'ont toujours fait.
 // Un groupe sans nom ou sans choix n'existe pas : on l'ignore partout plutôt
 // que d'ouvrir un dialogue vide au serveur en plein coup de feu.
 //
@@ -53,6 +58,9 @@ const normalize = (g, ref = null) => {
     multi,
     required: !!g?.required || count > 0,
     count,
+    // Répéter n'a de sens que sur un groupe compté : sans compte, « trois fois
+    // le même » n'a pas de borne et le serveur taperait dans le vide.
+    repeat: count > 0 && !!g?.repeat,
     choices: cleanChoices(g?.choices),
   };
 };
@@ -87,13 +95,21 @@ export function hasGroups(product) { return productGroups(product).length > 0; }
 // Signature d'une liste d'options : deux lignes qui se ressemblent doivent
 // fusionner (2× Frites sauce curry), deux lignes différentes rester séparées.
 export function optionsKey(options) {
-  return (options || []).map((o) => `${o.group || ''}|${o.label}`).sort().join('§');
+  // La quantité fait partie de l'identité : quatre Bleu Piscine et six
+  // Pample-Rhum ne sont pas le même mètre que cinq et cinq, les deux lignes
+  // doivent rester séparées sur la note.
+  return (options || []).map((o) => `${o.group || ''}|${o.label}|${o.qty || 1}`).sort().join('§');
+}
+
+/** Un choix tel qu'il se lit sur la note, le bon papier et l'écran cuisine. */
+export function optionLabel(o) {
+  return (o?.qty > 1 ? `${o.qty}× ` : '') + (o?.label || '');
 }
 
 const choiceLabel = (c) => (c.delta ? `${c.label} (+${money(c.delta)})` : c.label);
 
 // Ce qu'on annonce sous le nom d'une sous-famille.
-const hintFor = (g) => (g.count ? `${g.count} au choix`
+const hintFor = (g) => (g.count ? `${g.count} ${g.repeat ? 'à répartir' : 'au choix'}`
   : g.required ? (g.multi ? 'au moins un' : 'obligatoire')
   : (g.multi ? 'plusieurs possibles' : 'facultatif'));
 
@@ -102,41 +118,78 @@ const hintFor = (g) => (g.count ? `${g.count} au choix`
 // Renvoie { el, get(), missing() }.
 export function groupsPicker(product, preselected = []) {
   const groups = productGroups(product);
-  const chosen = new Map(groups.map((g) => [g.name, new Set(
+  // Une quantité par choix retenu, zéro pour les autres. Un groupe ordinaire
+  // n'y met jamais que des 1 : cocher, c'est prendre une fois.
+  const chosen = new Map(groups.map((g) => [g.name, new Map(
     (preselected || [])
       .filter((o) => o.group === g.name && g.choices.some((c) => c.label === o.label))
-      .map((o) => o.label))]));
+      .map((o) => [o.label, Math.max(1, Math.trunc(Number(o.qty) || 1))]))]));
+
+  // Ce que pèse un groupe : le nombre de choix cochés, ou la somme des
+  // quantités quand le même choix peut être repris.
+  const poids = (g) => {
+    const m = chosen.get(g.name);
+    return g.repeat ? [...m.values()].reduce((s, n) => s + n, 0) : m.size;
+  };
 
   const el = h('div', { class: 'optgroups' });
 
   for (const g of groups) {
-    const set = chosen.get(g.name);
+    const m = chosen.get(g.name);
     const row = h('div', { class: 'opt-toggle' });
     const hintEl = h('span', { class: 'faint', style: 'font-weight:600' });
     // Un groupe compté affiche où il en est (2/3) : le serveur voit d'un coup
     // d'œil ce qu'il reste à cocher, sans avoir à compter les pastilles.
     const paint = () => {
+      const total = poids(g);
       row.querySelectorAll('.chip').forEach((ch) => {
-        const on = set.has(ch.dataset.label);
-        ch.classList.toggle('active', on);
+        const qty = m.get(ch.dataset.label) || 0;
+        ch.classList.toggle('active', qty > 0);
         // Quand le compte est atteint, les pastilles restantes s'éteignent :
-        // on ne propose pas un geste qu'on refusera juste après.
-        ch.classList.toggle('opt-full', !on && g.count > 0 && set.size >= g.count);
+        // on ne propose pas un geste qu'on refusera juste après. Sur un groupe
+        // répétable, plus rien n'est proposé — même ce qui est déjà pris.
+        ch.classList.toggle('opt-full', g.count > 0 && total >= g.count && (g.repeat || !qty));
+        const badge = ch.querySelector('.opt-qty');
+        if (badge) { badge.textContent = qty > 1 ? `× ${qty}` : ''; badge.hidden = qty < 2; }
+        const moins = ch.querySelector('.opt-moins');
+        if (moins) moins.hidden = !qty;
       });
-      hintEl.textContent = ` · ${g.count ? `${set.size}/${g.count}` : hintFor(g)}`;
+      hintEl.textContent = ` · ${g.count ? `${total}/${g.count}` : hintFor(g)}`;
     };
 
     for (const c of g.choices) {
-      row.append(h('button', {
-        class: 'chip',
-        dataset: { label: c.label },
-        onclick: () => {
-          if (set.has(c.label)) set.delete(c.label);
-          else if (g.count && set.size >= g.count) { toast(`${g.name} : ${g.count} au maximum`); return; }
-          else { if (!g.multi) set.clear(); set.add(c.label); }
+      // Sur un groupe répétable, la pastille est un compteur : on tape pour
+      // ajouter, on tape le « − » pour retirer. Ailleurs elle reste une case
+      // qui bascule, exactement comme avant.
+      const badge = g.repeat ? h('span', { class: 'opt-qty', hidden: true }) : null;
+      const moins = g.repeat ? h('span', {
+        class: 'opt-moins', hidden: true, title: 'Retirer un',
+        onclick: (e) => {
+          e.stopPropagation();
+          const qty = m.get(c.label) || 0;
+          if (qty <= 1) m.delete(c.label); else m.set(c.label, qty - 1);
           paint();
         },
-      }, choiceLabel(c)));
+      }, '−') : null;
+
+      row.append(h('button', {
+        class: `chip ${g.repeat ? 'opt-compteur' : ''}`,
+        dataset: { label: c.label },
+        onclick: () => {
+          const qty = m.get(c.label) || 0;
+          if (g.repeat) {
+            if (poids(g) >= g.count) { toast(`${g.name} : ${g.count} au maximum`); return; }
+            m.set(c.label, qty + 1);
+          } else if (qty) {
+            m.delete(c.label);
+          } else {
+            if (g.count && poids(g) >= g.count) { toast(`${g.name} : ${g.count} au maximum`); return; }
+            if (!g.multi) m.clear();
+            m.set(c.label, 1);
+          }
+          paint();
+        },
+      }, choiceLabel(c), badge, moins));
     }
 
     paint();
@@ -145,12 +198,17 @@ export function groupsPicker(product, preselected = []) {
 
   return {
     el,
-    // Les choix, à plat, prêts à être posés sur la ligne de note.
+    // Les choix, à plat, prêts à être posés sur la ligne de note. La quantité
+    // n'est écrite que là où elle veut dire quelque chose : une sauce cochée
+    // garde la forme qu'elle a toujours eue.
     get() {
       const out = [];
       for (const g of groups) {
+        const m = chosen.get(g.name);
         for (const c of g.choices) {
-          if (chosen.get(g.name).has(c.label)) out.push({ label: c.label, delta: c.delta, group: g.name });
+          const qty = m.get(c.label) || 0;
+          if (!qty) continue;
+          out.push({ label: c.label, delta: c.delta, group: g.name, ...(g.repeat ? { qty } : {}) });
         }
       }
       return out;
@@ -159,8 +217,13 @@ export function groupsPicker(product, preselected = []) {
     // pas seulement « vide ou plein » : 2 tapas sur 3, c'est encore incomplet.
     missing() {
       for (const g of groups) {
-        const n = chosen.get(g.name).size;
-        if (g.count) { if (n !== g.count) return `${g.name} : ${g.count} choix (${n} coché${n > 1 ? 's' : ''})`; continue; }
+        const n = poids(g);
+        if (g.count) {
+          if (n === g.count) continue;
+          return g.repeat
+            ? `${g.name} : ${g.count} à répartir (${n} pris)`
+            : `${g.name} : ${g.count} choix (${n} coché${n > 1 ? 's' : ''})`;
+        }
         if (g.required && n === 0) return `Choisis : ${g.name}`;
       }
       return null;
@@ -235,7 +298,7 @@ export function groupsEditor(product) {
         h('div', { style: 'flex:1; min-width:0' },
           h('div', { style: 'font-weight:700' }, '🔗 ', g.name,
             h('span', { class: 'faint', style: 'font-weight:600' },
-              `  ·  ${g.count ? `${g.count} au choix` : g.multi ? 'plusieurs choix' : 'un seul choix'}`
+              `  ·  ${g.count ? `${g.count} ${g.repeat ? 'à répartir' : 'au choix'}` : g.multi ? 'plusieurs choix' : 'un seul choix'}`
               + `${g.required && !g.count ? ' · obligatoire' : ''}`)),
           h('div', { class: 'faint', style: 'font-size:12px; margin-top:2px' },
             (g.choices || []).map((c) => c.label).join(', '))),
@@ -274,13 +337,25 @@ export function apercu(group) {
   return `${group.name} · ${noms}${reste}`;
 }
 
-function groupBox(g = { name: '', multi: false, required: false, count: 0, choices: [{ label: '', delta: 0 }] }) {
+function groupBox(g = { name: '', multi: false, required: false, count: 0, repeat: false, choices: [{ label: '', delta: 0 }] }) {
   const name = h('input', { class: 'input', value: g.name || '', placeholder: 'Nom du sous-choix (ex. Sauce)' });
   const multi = h('input', { type: 'checkbox', checked: !!g.multi, onchange: () => syncCount() });
   const required = h('input', { type: 'checkbox', checked: !!g.required });
-  const count = countRow(g);
+  const repeat = h('input', { type: 'checkbox', checked: !!g.repeat });
+  const count = countRow(g, () => syncCount());
   const choices = h('div', { class: 'field' }, (g.choices || []).map(choiceRow));
-  const syncCount = () => { count.el.hidden = !multi.checked; };
+  // Répéter suppose un compte : sans borne, « plusieurs fois le même » n'a rien
+  // pour s'arrêter. La bascule ne s'affiche donc que quand il y en a un.
+  const repeatRow = h('div', { class: 'field' },
+    h('label', { class: 'switch' }, repeat, h('span', { class: 'track' }),
+      h('span', { class: 'muted' }, 'Plusieurs fois le même')),
+    h('div', { class: 'faint', style: 'font-size:12px' },
+      'Les pastilles deviennent des compteurs, et c\'est la somme qui doit faire le compte — '
+      + 'quatre du premier et six du second font un mètre de dix.'));
+  const syncCount = () => {
+    count.el.hidden = !multi.checked;
+    repeatRow.hidden = !multi.checked || count.get() <= 0;
+  };
 
   const box = h('div', { class: 'optgroup-box' },
     h('div', { class: 'row', style: 'align-items:center' },
@@ -292,6 +367,7 @@ function groupBox(g = { name: '', multi: false, required: false, count: 0, choic
       h('label', { class: 'switch' }, multi, h('span', { class: 'track' }), h('span', { class: 'muted' }, 'Plusieurs choix')),
       h('label', { class: 'switch' }, required, h('span', { class: 'track' }), h('span', { class: 'muted' }, 'Obligatoire'))),
     count.el,
+    repeatRow,
   );
   syncCount();
 
@@ -300,6 +376,7 @@ function groupBox(g = { name: '', multi: false, required: false, count: 0, choic
     multi: multi.checked,
     required: required.checked,
     count: multi.checked ? count.get() : 0,
+    repeat: multi.checked && count.get() > 0 && repeat.checked,
     choices: [...choices.children].map((r) => r._get()).filter((c) => c.label),
   });
   return box;
@@ -307,8 +384,9 @@ function groupBox(g = { name: '', multi: false, required: false, count: 0, choic
 
 // Le nombre exact de choix attendus. Séparé de « Obligatoire » : un groupe
 // compté l'est déjà, et l'inverse n'est pas vrai (les sauces, autant qu'on veut).
-function countRow(g) {
-  const input = h('input', { class: 'input', type: 'number', min: 0, step: 1, value: g?.count || 0 });
+function countRow(g, onChange = null) {
+  const input = h('input', { class: 'input', type: 'number', min: 0, step: 1, value: g?.count || 0,
+    oninput: () => onChange && onChange() });
   const el = h('div', { class: 'field' },
     h('label', { class: 'muted' }, 'Nombre exact de choix'),
     input,

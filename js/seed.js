@@ -5,7 +5,7 @@
 // déjà en service y montent par les retouches de migrations.js. Ce numéro vit
 // ici et pas dans migrations.js pour que store.js puisse le lire sans importer
 // migrations.js, qui importe déjà store.js.
-export const CATALOG_REV = 6;
+export const CATALOG_REV = 8;
 
 export const CATEGORIES = [
   {
@@ -44,6 +44,12 @@ export const CATEGORIES = [
     "cuisine": true,
     "au22": true,
     "order": 6
+  },
+  {
+    "id": "evenement",
+    "name": "\u00c9v\u00e9nement",
+    "color": "#B0566A",
+    "order": 7
   }
 ];
 
@@ -82,6 +88,106 @@ export const OPTION_GROUPS = [
       }
     ],
     "order": 0
+  },
+  {
+    "id": "metre-mixte",
+    "name": "Les dix shots du m\u00e8tre",
+    "multi": true,
+    "required": true,
+    "count": 10,
+    "repeat": true,
+    "choices": [
+      {
+        "label": "01 · Bison Futé",
+        "delta": 0
+      },
+      {
+        "label": "11 · Baby Pornstar",
+        "delta": 0
+      },
+      {
+        "label": "14 · Sortie de Route",
+        "delta": 0
+      },
+      {
+        "label": "20 · Tagada Cubain",
+        "delta": 0
+      },
+      {
+        "label": "26 · Bleu Piscine",
+        "delta": 0
+      },
+      {
+        "label": "28 · Pample-Rhum",
+        "delta": 0
+      },
+      {
+        "label": "50 · Coup de Soleil",
+        "delta": 0
+      },
+      {
+        "label": "55 · Poncho Rouge",
+        "delta": 0
+      },
+      {
+        "label": "64 · Parfum de Mamie",
+        "delta": 0
+      },
+      {
+        "label": "67 · Chapeau Melon",
+        "delta": 0
+      }
+    ],
+    "order": 1
+  },
+  {
+    "id": "metre-unique",
+    "name": "Le shot du m\u00e8tre",
+    "multi": false,
+    "required": true,
+    "choices": [
+      {
+        "label": "01 · Bison Futé × 10",
+        "delta": 0
+      },
+      {
+        "label": "11 · Baby Pornstar × 10",
+        "delta": 0
+      },
+      {
+        "label": "14 · Sortie de Route × 10",
+        "delta": 0
+      },
+      {
+        "label": "20 · Tagada Cubain × 10",
+        "delta": 0
+      },
+      {
+        "label": "26 · Bleu Piscine × 10",
+        "delta": 0
+      },
+      {
+        "label": "28 · Pample-Rhum × 10",
+        "delta": 0
+      },
+      {
+        "label": "50 · Coup de Soleil × 10",
+        "delta": 0
+      },
+      {
+        "label": "55 · Poncho Rouge × 10",
+        "delta": 0
+      },
+      {
+        "label": "64 · Parfum de Mamie × 10",
+        "delta": 0
+      },
+      {
+        "label": "67 · Chapeau Melon × 10",
+        "delta": 0
+      }
+    ],
+    "order": 2
   }
 ];
 
@@ -3186,6 +3292,408 @@ export const PRODUCTS = [
     "desc": "Frites + 3 tapas de 4 pièces au choix, sauf les tenders (2 pièces)",
     "available": true,
     "order": 121
+  },
+  {
+    "id": "evenement-metre-mixte",
+    "categoryId": "evenement",
+    "sub": "M\u00e8tres",
+    "name": "Mètre mixte",
+    "variants": [
+      {
+        "label": "",
+        "price": 25
+      }
+    ],
+    "options": [],
+    "optionGroups": [
+      {
+        "ref": "metre-mixte"
+      }
+    ],
+    "happyHour": false,
+    "desc": "Dix shots sur la planche, dix parfums différents — au choix sur la carte du jeudi",
+    "available": true,
+    "order": 122
+  },
+  {
+    "id": "evenement-metre-unique",
+    "categoryId": "evenement",
+    "sub": "M\u00e8tres",
+    "name": "Mètre unique",
+    "variants": [
+      {
+        "label": "",
+        "price": 25
+      }
+    ],
+    "options": [],
+    "optionGroups": [
+      {
+        "ref": "metre-unique"
+      }
+    ],
+    "happyHour": false,
+    "desc": "Dix shots du même parfum — au choix sur la carte du jeudi",
+    "available": true,
+    "order": 123
+  },
+  {
+    "id": "evenement-bison-fute",
+    "categoryId": "evenement",
+    "sub": "Shots",
+    "name": "01 · Bison Futé",
+    "variants": [
+      {
+        "label": "",
+        "price": 3
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "Żubrówka, Jus de pomme",
+    "available": true,
+    "recipe": {
+      "technique": "Build",
+      "verre": "Shot",
+      "ingredients": [
+        {
+          "label": "Żubrówka",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Jus de pomme",
+          "qty": "2 cl"
+        }
+      ]
+    },
+    "order": 124
+  },
+  {
+    "id": "evenement-bison-en-chaleur",
+    "categoryId": "evenement",
+    "sub": "Shots",
+    "name": "11 · Baby Pornstar",
+    "variants": [
+      {
+        "label": "",
+        "price": 3
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "Żubrówka, Passoã, Purée de passion",
+    "available": true,
+    "recipe": {
+      "technique": "Shake",
+      "verre": "Shot",
+      "ingredients": [
+        {
+          "label": "Żubrówka",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Passoã",
+          "qty": "1 cl"
+        },
+        {
+          "label": "Purée de passion",
+          "qty": "1 cl"
+        }
+      ]
+    },
+    "order": 125
+  },
+  {
+    "id": "evenement-sortie-de-route",
+    "categoryId": "evenement",
+    "sub": "Shots",
+    "name": "14 · Sortie de Route",
+    "variants": [
+      {
+        "label": "",
+        "price": 3
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "Żubrówka, Triple sec, Citron vert",
+    "available": true,
+    "recipe": {
+      "technique": "Shake",
+      "verre": "Shot",
+      "finition": "Sucre au bord du verre",
+      "ingredients": [
+        {
+          "label": "Żubrówka",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Triple sec",
+          "qty": "1 cl"
+        },
+        {
+          "label": "Citron vert",
+          "qty": "1 cl"
+        }
+      ]
+    },
+    "order": 126
+  },
+  {
+    "id": "evenement-tagada-cubain",
+    "categoryId": "evenement",
+    "sub": "Shots",
+    "name": "20 · Tagada Cubain",
+    "variants": [
+      {
+        "label": "",
+        "price": 3
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "Havana, Purée de fraise, Citron",
+    "available": true,
+    "recipe": {
+      "technique": "Shake",
+      "verre": "Shot",
+      "ingredients": [
+        {
+          "label": "Havana",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Purée de fraise",
+          "qty": "1,5 cl"
+        },
+        {
+          "label": "Citron",
+          "qty": "0,5 cl"
+        }
+      ]
+    },
+    "order": 127
+  },
+  {
+    "id": "evenement-bleu-piscine",
+    "categoryId": "evenement",
+    "sub": "Shots",
+    "name": "26 · Bleu Piscine",
+    "variants": [
+      {
+        "label": "",
+        "price": 3
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "Havana, Curaçao bleu, Citron vert",
+    "available": true,
+    "recipe": {
+      "technique": "Shake",
+      "verre": "Shot",
+      "ingredients": [
+        {
+          "label": "Havana",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Curaçao bleu",
+          "qty": "1 cl"
+        },
+        {
+          "label": "Citron vert",
+          "qty": "1 cl"
+        }
+      ]
+    },
+    "order": 128
+  },
+  {
+    "id": "evenement-pample-rhum",
+    "categoryId": "evenement",
+    "sub": "Shots",
+    "name": "28 · Pample-Rhum",
+    "variants": [
+      {
+        "label": "",
+        "price": 3
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "Havana, Jus de pamplemousse, Sirop de cassonade",
+    "available": true,
+    "recipe": {
+      "technique": "Shake",
+      "verre": "Shot",
+      "ingredients": [
+        {
+          "label": "Havana",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Jus de pamplemousse",
+          "qty": "1,5 cl"
+        },
+        {
+          "label": "Sirop de cassonade",
+          "qty": "0,5 cl"
+        }
+      ]
+    },
+    "order": 129
+  },
+  {
+    "id": "evenement-coup-de-soleil",
+    "categoryId": "evenement",
+    "sub": "Shots",
+    "name": "50 · Coup de Soleil",
+    "variants": [
+      {
+        "label": "",
+        "price": 3
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "Camino, Jus d’ananas, Grenadine",
+    "available": true,
+    "recipe": {
+      "technique": "Shake",
+      "verre": "Shot",
+      "finition": "Grenadine versée au fond, sans mélanger",
+      "ingredients": [
+        {
+          "label": "Camino",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Jus d’ananas",
+          "qty": "1,5 cl"
+        },
+        {
+          "label": "Grenadine",
+          "qty": "0,5 cl"
+        }
+      ]
+    },
+    "order": 130
+  },
+  {
+    "id": "evenement-poncho-rouge",
+    "categoryId": "evenement",
+    "sub": "Shots",
+    "name": "55 · Poncho Rouge",
+    "variants": [
+      {
+        "label": "",
+        "price": 3
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "Camino, Cranberry, Citron vert",
+    "available": true,
+    "recipe": {
+      "technique": "Shake",
+      "verre": "Shot",
+      "ingredients": [
+        {
+          "label": "Camino",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Cranberry",
+          "qty": "1,5 cl"
+        },
+        {
+          "label": "Citron vert",
+          "qty": "0,5 cl"
+        }
+      ]
+    },
+    "order": 131
+  },
+  {
+    "id": "evenement-parfum-de-mamie",
+    "categoryId": "evenement",
+    "sub": "Shots",
+    "name": "64 · Parfum de Mamie",
+    "variants": [
+      {
+        "label": "",
+        "price": 3
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "Tanqueray, Jus de litchi, Sirop de rose",
+    "available": true,
+    "recipe": {
+      "technique": "Shake",
+      "verre": "Shot",
+      "ingredients": [
+        {
+          "label": "Tanqueray",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Jus de litchi",
+          "qty": "1,5 cl"
+        },
+        {
+          "label": "Sirop de rose",
+          "qty": "0,5 cl"
+        }
+      ]
+    },
+    "order": 132
+  },
+  {
+    "id": "evenement-chapeau-melon",
+    "categoryId": "evenement",
+    "sub": "Shots",
+    "name": "67 · Chapeau Melon",
+    "variants": [
+      {
+        "label": "",
+        "price": 3
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "Tanqueray, Purée de framboise, Citron",
+    "available": true,
+    "recipe": {
+      "technique": "Shake",
+      "verre": "Shot",
+      "ingredients": [
+        {
+          "label": "Tanqueray",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Purée de framboise",
+          "qty": "1,5 cl"
+        },
+        {
+          "label": "Citron",
+          "qty": "0,5 cl"
+        }
+      ]
+    },
+    "order": 133
   }
 ];
 

@@ -121,6 +121,18 @@ body {
    pastilles restantes s'effacent — on ne propose pas un geste qu'on refuse. */
 .chip.opt-full { opacity: .35; }
 
+/* Sous-famille répétable (le mètre de shots) : la pastille est un compteur.
+   Taper ajoute, le « − » retire. La cible du « − » fait 28 px pour rester
+   atteignable au doigt sans agrandir la pastille elle-même. */
+.chip.opt-compteur { display: inline-flex; align-items: center; gap: 8px; padding-right: 7px; }
+.chip.opt-compteur .opt-qty { font-variant-numeric: tabular-nums; opacity: .85; }
+.chip.opt-compteur .opt-moins {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 999px; margin-left: 2px;
+  background: var(--ink-3); font-size: 18px; line-height: 1;
+}
+.chip.opt-compteur:not(.active) { padding-right: 15px; }
+
 /* ── Vue ───────────────────────────────────────────────────── */
 .view { position: absolute; inset: 64px 0 0 0; overflow: auto; -webkit-overflow-scrolling: touch; }
 
@@ -620,3 +632,85 @@ body {
 .gate-input { text-align: center; }
 .gate-btn { width: 100%; }
 .gate-msg { margin: 0; font-size: 13px; font-weight: 600; color: var(--encaisser); }
+
+/* ── Onglet Recettes : le classeur du bar ───────────────────
+   La Carte s'adresse au client, ce classeur au barman. Deux conséquences de
+   mise en page : tout est lisible sans ouvrir de dialogue, et les fiches se
+   rangent en colonnes dès qu'il y a de la place — un iPad en paysage montre
+   trois recettes de front, ce qu'une page centrée à 920 px interdisait. */
+.rec-page { max-width: 1240px; margin: 0 auto; padding: 28px 24px 80px; }
+.rec-hero { text-align: center; padding: 8px 0 20px; }
+.rec-hero h1 { font-family: var(--display); font-size: clamp(38px, 6vw, 60px); font-weight: 600; margin: 0 0 4px; }
+.rec-hero .tag { font-family: var(--display); font-style: italic; font-size: 19px; color: var(--muted); }
+
+.rec-cat { margin-top: 30px; }
+.rec-cat > h2 {
+  font-family: var(--display); font-size: 27px; font-weight: 600; margin: 0 0 12px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--line-2);
+}
+
+/* Le dépliant. La flèche native est masquée au profit d'un chevron qui pivote :
+   sur iPad, le marqueur par défaut est minuscule et pas toujours dessiné. */
+.rec-groupe { border-bottom: 1px solid var(--line); }
+.rec-groupe > summary {
+  display: flex; align-items: center; gap: 12px; cursor: pointer;
+  min-height: var(--tap); padding: 4px 6px; list-style: none;
+  font-size: 13px; letter-spacing: .2em; text-transform: uppercase; color: var(--bluebird);
+  font-weight: 700;
+}
+.rec-groupe > summary::-webkit-details-marker { display: none; }
+.rec-groupe > summary::before {
+  content: '›'; font-size: 22px; line-height: 1; color: var(--brass);
+  transition: transform .15s ease; flex: 0 0 12px; text-align: center;
+}
+.rec-groupe[open] > summary::before { transform: rotate(90deg); }
+.rec-groupe > summary:hover { background: rgba(201,162,75,.06); }
+.rec-groupe > summary:focus-visible { outline: 2px solid var(--bluebird); outline-offset: -2px; }
+.rec-sum-nom { flex: 1; }
+.rec-sum-n {
+  font-family: var(--ui); font-size: 11px; letter-spacing: .06em; color: var(--faint);
+  border: 1px solid var(--line-2); border-radius: 999px; padding: 2px 9px;
+}
+
+.rec-grille {
+  display: grid; gap: 16px; padding: 6px 0 22px;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+}
+
+.rec-card {
+  background: var(--ink-1); border: 1px solid var(--line);
+  border-radius: var(--r); padding: 18px 18px 16px;
+}
+.rec-card-head { margin-bottom: 14px; }
+.rec-card-head h4 { font-family: var(--display); font-size: 24px; font-weight: 600; margin: 0; }
+.rec-card .rec-desc { color: var(--muted); font-size: 14px; line-height: 1.45; margin-top: 4px; }
+/* La fiche est plus dense ici que dans la modale de la Carte : on en lit
+   plusieurs d'affilée, pas une seule en grand. */
+.rec-card .fiche-reps { gap: 8px 22px; padding-bottom: 12px; }
+.rec-card .fiche-rep .v { font-size: 17px; }
+.rec-card .fiche-ing { margin-top: 12px; }
+.rec-card .fiche-ing li { padding: 6px 0; }
+.rec-card .fiche-ing .fi-label { font-size: 14px; }
+.rec-card .fiche-ing .fi-qty { font-size: 17px; }
+
+/* Les prémix, sous la recette au verre dont ils descendent. */
+.rec-premixes { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 16px; }
+.rec-premix {
+  flex: 1 1 150px; background: rgba(79,163,199,.06);
+  border: 1px solid rgba(79,163,199,.22); border-radius: var(--r-sm); padding: 10px 12px 6px;
+}
+.rec-premix-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.rec-premix-head .eyebrow { color: var(--bluebird); font-size: 11px; letter-spacing: .16em; }
+.rec-premix-rendu { font-size: 11px; color: var(--faint); font-variant-numeric: tabular-nums; }
+.rec-premix .fiche-ing { margin-top: 6px; }
+.rec-premix .fiche-ing li { padding: 4px 0; }
+.rec-premix .fiche-ing .fi-label { font-size: 13px; }
+.rec-premix .fiche-ing .fi-qty { font-size: 15px; }
+/* Ce qui ne part pas dans la bouteille (le gazeux, le TOP) se lit tout de
+   suite : c'est l'erreur de prémix la plus coûteuse. */
+.rec-premix .rec-au-verre .fi-qty { color: var(--muted); font-family: var(--ui); font-size: 12px;
+  text-transform: uppercase; letter-spacing: .1em; }
+
+.rec-vide { text-align: center; padding: 60px 0; }
+.rec-vide .big { font-family: var(--display); font-size: 26px; margin-bottom: 6px; }
+.rec-pied { margin-top: 40px; text-align: center; font-size: 12px; color: var(--faint); line-height: 1.6; }

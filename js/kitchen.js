@@ -6,6 +6,7 @@
 import { state, emit, productById, lineUnit } from './state.js';
 import * as store from './store.js';
 import { senderLabel } from './profile.js';
+import { optionLabel } from './options.js';
 
 export const STATUS = {
   nouveau:  { label: 'Nouveau',  next: 'en-cours', nextLabel: 'Je prends' },
@@ -134,7 +135,7 @@ function lineOf(item, qty, section) {
     name: item.name,
     variantLabel: item.variantLabel || '',
     qty,
-    options: (item.options || []).map((o) => o.label),
+    options: (item.options || []).map(optionLabel),
     note: item.note || '',
     section,
     unit: lineUnit(item),
