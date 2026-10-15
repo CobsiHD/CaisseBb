@@ -3,7 +3,7 @@
 // Une ligne part en cuisine quand le serveur touche « Envoyer » : on ne transmet
 // que les quantités pas encore envoyées (item.sent), pour qu'un ajout ultérieur
 // sur la même note ne réimprime pas ce qui est déjà en train de cuire.
-import { state, emit, productById, lineUnit } from './state.js';
+import { state, emit, productById, lineUnit, lineTotal, lineBilledQty } from './state.js';
 import * as store from './store.js';
 import { senderLabel } from './profile.js';
 import { optionLabel } from './options.js';
@@ -68,6 +68,7 @@ export function unsentCount(items) {
 // du papier. Les bons d'avant cette version n'ont pas de blocs : c'étaient des
 // bons de cuisine, ils le restent.
 export function hasCuisineLines(t) {
+  if (t?.kind === 'addition') return false;   // l'addition du client ne se cuisine pas
   return (t?.items || []).some((l) => (l.section || 'cuisine') === 'cuisine');
 }
 
@@ -156,10 +157,10 @@ async function createTicket(lines, meta = {}) {
     tableId: meta.tableId ?? null,
     place: meta.place || 'Sur place',
     area: meta.area || null,
-    kind: 'commande',
+    kind: meta.kind || 'commande',
     // Titre imprimé en tête du bon papier ; l'agent retombe sur « BON n » s'il
     // ne le connaît pas encore.
-    title: 'BON DE COMMANDE',
+    title: meta.title || 'BON DE COMMANDE',
     total: meta.total ?? null,
     // Une réimpression sort le même papier sans repasser commande.
     reprint: !!meta.reprint,
@@ -210,6 +211,25 @@ export async function printTicket(items, meta = {}, { reprint = false } = {}) {
   if (ticket && !reprint) for (const { item } of pending) item.sent = item.qty;
 
   return ticket;
+}
+
+// ── Addition ────────────────────────────────────────────────────────────────
+// La note remise au client : toutes les lignes, chacune avec son prix, et le
+// total. Elle passe par le même agent d'impression mais ne touche ni à
+// `item.sent` (la commande n'est pas repartie) ni à la file de la cuisine.
+export async function printBill(items, meta = {}) {
+  const lines = (items || []).filter((it) => (it.qty || 0) > 0).map((item) => ({
+    name: item.name,
+    variantLabel: item.variantLabel || '',
+    qty: item.qty,
+    options: (item.options || []).map(optionLabel),
+    unit: lineUnit(item),
+    total: lineTotal(item),
+    offered: item.hh ? item.qty - lineBilledQty(item) : 0,
+  }));
+  if (!lines.length) return null;
+  const total = lines.reduce((s, l) => s + l.total, 0);
+  return createTicket(lines, { ...meta, total, kind: 'addition', title: 'ADDITION' });
 }
 
 // Alerte les nouveaux bons apparus depuis le dernier passage. Appelé à chaque

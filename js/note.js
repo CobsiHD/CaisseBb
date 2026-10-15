@@ -10,7 +10,7 @@ import {
 import { h, clear, modal, field, toast, confirmDialog } from './ui.js';
 import * as store from './store.js';
 import { isTableType, TYPE_MAP } from './elements.js';
-import { isCuisineProduct, isCuisineItem, unsentItems, unsentCount, hasCuisineLines, printTicket } from './kitchen.js';
+import { isCuisineProduct, isCuisineItem, unsentItems, unsentCount, hasCuisineLines, printTicket, printBill } from './kitchen.js';
 import { hasGroups, pickOptions, groupsPicker, optionsKey } from './options.js';
 
 // ── Lecture ──────────────────────────────────────────────────
@@ -199,6 +199,17 @@ export async function printOrder(order, { reprint = false } = {}) {
   return ticket;
 }
 
+// L'addition papier du client, toute la note avec les prix.
+export async function printOrderBill(order) {
+  if (!order || !order.items?.length) return null;
+  return printBill(order.items, {
+    orderId: order.id ?? null,
+    tableId: order.tableId ?? null,
+    place: placeLabel(tableEl(order.tableId)),
+    area: order.area || null,
+  });
+}
+
 // ── Encaissement et gestion de la note ───────────────────────
 // Renvoie true si la note a été encaissée.
 export async function payOrder(order) {
@@ -231,6 +242,7 @@ export async function noteMenu(order) {
   await modal({
     title: `Note · ${money(orderSum(order))}`,
     body: h('div', { class: 'modal-body', style: 'padding:0; gap:10px' },
+      h('button', { class: 'btn btn-primary', onclick: () => pick('bill') }, '🧾 Imprimer l\'addition'),
       h('button', { class: 'btn', onclick: () => pick('topay') }, order.toPay ? 'Retirer « à encaisser »' : 'Marquer « à encaisser »'),
       h('button', { class: 'btn', onclick: () => pick('move') }, 'Transférer vers une autre table'),
       h('button', { class: 'btn btn-danger', onclick: () => pick('del') }, 'Supprimer la note')),

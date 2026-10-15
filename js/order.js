@@ -8,7 +8,7 @@ import { catColor, paginate } from './pos.js';
 import { optionLabel } from './options.js';
 import {
   tableEl, placeLabel, orderSum, saveOrder, newOrder, ensureOrder,
-  changeQty, addProduct, editLine, printMark, printOrder, unsentCount, hasCuisineLines,
+  changeQty, addProduct, editLine, printMark, printOrder, printOrderBill, unsentCount, hasCuisineLines,
   payOrder, toggleToPay, deleteOrder, moveOrder, noteMenu,
 } from './note.js';
 import { visibleCategories } from './profile.js';
@@ -222,6 +222,10 @@ async function doPay(order) {
 
 async function doNoteMenu(order) {
   const action = await noteMenu(order);
+  if (action === 'bill') {
+    const t = await printOrderBill(order);
+    toast(t ? `Addition ${placeLabel(tableEl(order.tableId))} envoyée à l'imprimante` : 'Note vide');
+  }
   if (action === 'topay') { await toggleToPay(order); renderTicket(); }
   if (action === 'del') { if (await deleteOrder(order)) afterNoteGone(); }
   if (action === 'move') {
