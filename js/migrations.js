@@ -228,12 +228,13 @@ async function babyPornstar() {
 // que le bar a réglé sur place (rupture, couleur, fiche retouchée) lui reste.
 // Après la soirée, on la retire au comptoir depuis Produits ; une retouche
 // suivante n'aura pas à le faire à sa place.
-async function carteHalloween() {
-  const famille = CATEGORIES.find((c) => c.id === 'halloween');
-  const surPlace = state.categories.find((c) => c.id === 'halloween');
+// Une carte de saison se pose d'un bloc : la famille, puis ses fiches.
+async function poseCarteDeSaison(id) {
+  const famille = CATEGORIES.find((c) => c.id === id);
+  const surPlace = state.categories.find((c) => c.id === id);
   await store.put('categories', { ...famille, ...surPlace, name: famille.name, order: famille.order });
 
-  const fiches = PRODUCTS.filter((p) => p.categoryId === 'halloween');
+  const fiches = PRODUCTS.filter((p) => p.categoryId === id);
   await store.bulkPut('products', fiches.map((p) => {
     const sur = state.products.find((x) => x.id === p.id);
     if (!sur) return { ...p };
@@ -245,6 +246,13 @@ async function carteHalloween() {
     };
   }));
 }
+
+const carteHalloween = () => poseCarteDeSaison('halloween');
+
+// ── 10 · La carte d'hiver ───────────────────────────────────
+// Même famille éphémère que Halloween. Elle s'ouvre avec une seule fiche, The
+// Laughing Heart, posée en touche d'essai avant le reste de la carte.
+const carteHiver = () => poseCarteDeSaison('hiver');
 
 // Le dernier `rev` doit valoir CATALOG_REV : c'est le niveau qu'une base neuve
 // reçoit d'emblée, et ce qu'elle sauterait ici.
@@ -258,6 +266,7 @@ const MIGRATIONS = [
   { rev: 7, run: soireeShots },
   { rev: 8, run: babyPornstar },
   { rev: 9, run: carteHalloween },
+  { rev: 10, run: carteHiver },
 ].filter((m) => m.rev <= CATALOG_REV);
 
 // Applique ce qui manque. À appeler une fois la synchro tentée : avant, les

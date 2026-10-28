@@ -5,7 +5,7 @@ import { state } from './state.js';
 export const CAT_COLORS = {
   'cocktails': '#C9A24B', 'shooters': '#5FA8A0', 'vins': '#9B5A6A',
   'spiritueux': '#C98A4B', 'bieres': '#D8A93F', 'softs': '#4F8AC7', 'snack': '#8AA15A',
-  'evenement': '#B0566A', 'halloween': '#D9752B',
+  'evenement': '#B0566A', 'halloween': '#D9752B', 'hiver': '#6E9BB8',
 };
 // Palette proposée dans les sélecteurs de couleur (édition des touches).
 export const TILE_COLORS = ['#C9A24B', '#4FA3C7', '#5FA8A0', '#9B5A6A', '#C98A4B', '#8AA15A', '#B0566A', '#6E7BB8'];

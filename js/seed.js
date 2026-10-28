@@ -5,7 +5,7 @@
 // déjà en service y montent par les retouches de migrations.js. Ce numéro vit
 // ici et pas dans migrations.js pour que store.js puisse le lire sans importer
 // migrations.js, qui importe déjà store.js.
-export const CATALOG_REV = 9;
+export const CATALOG_REV = 10;
 
 export const CATEGORIES = [
   {
@@ -56,6 +56,12 @@ export const CATEGORIES = [
     "name": "Halloween",
     "color": "#D9752B",
     "order": 8
+  },
+  {
+    "id": "hiver",
+    "name": "Hiver",
+    "color": "#6E9BB8",
+    "order": 9
   }
 ];
 
@@ -3790,6 +3796,51 @@ export const PRODUCTS = [
       ]
     },
     "order": 135
+  },
+  {
+    "id": "hiver-the-laughing-heart",
+    "categoryId": "hiver",
+    "sub": "Gin",
+    "name": "The Laughing Heart",
+    "variants": [
+      {
+        "label": "",
+        "price": 12
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "June Poire & Cardamome, Génépi, Jus de Poire, Sirop de Miel, Citron",
+    "available": true,
+    "recipe": {
+      "technique": "Shake",
+      "verre": "Coupette",
+      "finition": "Branche de romarin roulée dans le sucre, posée sur le verre comme un sapin enneigé",
+      "ingredients": [
+        {
+          "label": "June Poire & Cardamome",
+          "qty": "4 cl"
+        },
+        {
+          "label": "Génépi",
+          "qty": "1 cl"
+        },
+        {
+          "label": "Jus de poire",
+          "qty": "4 cl"
+        },
+        {
+          "label": "Sirop de miel",
+          "qty": "1 cl"
+        },
+        {
+          "label": "Citron",
+          "qty": "2 cl"
+        }
+      ]
+    },
+    "order": 136
   }
 ];
 

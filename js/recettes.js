@@ -25,6 +25,7 @@ const PREMIXABLES = new Map([
   ['evenement', 'shots'],
   ['cocktails', 'verres'],
   ['halloween', 'verres'],
+  ['hiver', 'verres'],
 ]);
 
 // ── Doses ────────────────────────────────────────────────────
