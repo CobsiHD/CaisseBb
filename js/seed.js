@@ -5,7 +5,7 @@
 // déjà en service y montent par les retouches de migrations.js. Ce numéro vit
 // ici et pas dans migrations.js pour que store.js puisse le lire sans importer
 // migrations.js, qui importe déjà store.js.
-export const CATALOG_REV = 8;
+export const CATALOG_REV = 9;
 
 export const CATEGORIES = [
   {
@@ -50,6 +50,12 @@ export const CATEGORIES = [
     "name": "\u00c9v\u00e9nement",
     "color": "#B0566A",
     "order": 7
+  },
+  {
+    "id": "halloween",
+    "name": "Halloween",
+    "color": "#D9752B",
+    "order": 8
   }
 ];
 
@@ -3694,6 +3700,96 @@ export const PRODUCTS = [
       ]
     },
     "order": 133
+  },
+  {
+    "id": "halloween-death-wants-more-death",
+    "categoryId": "halloween",
+    "sub": "Gin",
+    "name": "Death Wants More Death",
+    "variants": [
+      {
+        "label": "",
+        "price": 12
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "Hendrick’s Grand Cabaret, Sirop de Fleur de Cerisier, Jus de Litchi, Citron, Liqueur de Mûre",
+    "available": true,
+    "recipe": {
+      "technique": "Shake",
+      "verre": "Coupette",
+      "finition": "Liqueur de mûre versée au fond après le service, elle coule et fait une couche violet sombre",
+      "ingredients": [
+        {
+          "label": "Hendrick’s Grand Cabaret",
+          "qty": "4 cl"
+        },
+        {
+          "label": "Sirop de fleur de cerisier",
+          "qty": "1,5 cl"
+        },
+        {
+          "label": "Jus de litchi",
+          "qty": "3 cl"
+        },
+        {
+          "label": "Citron",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Liqueur de mûre",
+          "qty": "au fond · 1 cl"
+        }
+      ]
+    },
+    "order": 134
+  },
+  {
+    "id": "halloween-nirvana",
+    "categoryId": "halloween",
+    "sub": "Sans Alcool",
+    "name": "Nirvana",
+    "variants": [
+      {
+        "label": "",
+        "price": 8.5
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "Tanqueray 0%, Purée de framboise, Jus de Litchi, Citron, Tonic Pomelo",
+    "available": true,
+    "recipe": {
+      "technique": "Shake",
+      "verre": "Long drink",
+      "finition": "Œil de litchi flottant (litchi farci d’une griotte)",
+      "ingredients": [
+        {
+          "label": "Tanqueray 0%",
+          "qty": "4 cl"
+        },
+        {
+          "label": "Purée de framboise",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Jus de litchi",
+          "qty": "4 cl"
+        },
+        {
+          "label": "Citron",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Schweppes Soda Pomelo",
+          "qty": "TOP"
+        }
+      ]
+    },
+    "order": 135
   }
 ];
 

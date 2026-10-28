@@ -222,6 +222,30 @@ async function babyPornstar() {
   await soireeShots();
 }
 
+// ── 9 · La carte d'Halloween ────────────────────────────────
+// Une famille éphémère sur le pavé de touches : deux cocktails aux titres de
+// Bukowski, avec leurs fiches. Même geste que la retouche 7 — ce
+// que le bar a réglé sur place (rupture, couleur, fiche retouchée) lui reste.
+// Après la soirée, on la retire au comptoir depuis Produits ; une retouche
+// suivante n'aura pas à le faire à sa place.
+async function carteHalloween() {
+  const famille = CATEGORIES.find((c) => c.id === 'halloween');
+  const surPlace = state.categories.find((c) => c.id === 'halloween');
+  await store.put('categories', { ...famille, ...surPlace, name: famille.name, order: famille.order });
+
+  const fiches = PRODUCTS.filter((p) => p.categoryId === 'halloween');
+  await store.bulkPut('products', fiches.map((p) => {
+    const sur = state.products.find((x) => x.id === p.id);
+    if (!sur) return { ...p };
+    return {
+      ...p,
+      available: sur.available !== false,
+      ...(sur.color ? { color: sur.color } : {}),
+      ...(sur.recipe?.ingredients?.length ? { recipe: sur.recipe } : {}),
+    };
+  }));
+}
+
 // Le dernier `rev` doit valoir CATALOG_REV : c'est le niveau qu'une base neuve
 // reçoit d'emblée, et ce qu'elle sauterait ici.
 const MIGRATIONS = [
@@ -233,6 +257,7 @@ const MIGRATIONS = [
   { rev: 6, run: reposeLesCocktails },
   { rev: 7, run: soireeShots },
   { rev: 8, run: babyPornstar },
+  { rev: 9, run: carteHalloween },
 ].filter((m) => m.rev <= CATALOG_REV);
 
 // Applique ce qui manque. À appeler une fois la synchro tentée : avant, les
