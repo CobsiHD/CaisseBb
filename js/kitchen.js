@@ -132,7 +132,7 @@ export async function setTicketStatus(ticket, status) {
 // Le prix porte sur la quantité imprimée : sur un bon partiel, le total du
 // papier est celui de ce papier-là.
 function lineOf(item, qty, section) {
-  return {
+  const line = {
     name: item.name,
     variantLabel: item.variantLabel || '',
     qty,
@@ -141,6 +141,23 @@ function lineOf(item, qty, section) {
     section,
     unit: lineUnit(item),
     total: lineUnit(item) * (item.hh ? Math.ceil(qty / 2) : qty),
+  };
+  const recette = recetteDuBon(productById(item.productId));
+  if (recette) line.recette = recette;
+  return line;
+}
+
+// La fiche d'un produit qui demande à l'imprimer, mise à plat pour le papier :
+// l'agent n'a qu'à écrire les lignes. Lue au moment d'imprimer et non figée à
+// l'ajout — c'est la recette du jour qu'on veut sous les yeux, pas celle d'il y
+// a deux heures. Une fiche sans ingrédient n'apprendrait rien au barman.
+function recetteDuBon(product) {
+  const r = product?.printRecipe && product.recipe;
+  if (!r?.ingredients?.length) return null;
+  return {
+    geste: [r.technique, r.verre].filter(Boolean).join(' · '),
+    ingredients: r.ingredients.map((i) => [i.qty, i.label].filter(Boolean).join('  ')),
+    finition: r.finition || '',
   };
 }
 

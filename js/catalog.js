@@ -231,6 +231,8 @@ async function editProduct(p, container) {
   const avail = h('input', { type: 'checkbox', checked: p.available !== false });
   // Par défaut le produit suit sa famille ; cette case fige son cas particulier.
   const cuisine = h('input', { type: 'checkbox', checked: isCuisineProduct(p) });
+  // La fiche part sur le bon : n'importe qui au bar peut faire le cocktail.
+  const printRecipe = h('input', { type: 'checkbox', checked: !!p.printRecipe });
 
   const body = h('div', { class: 'modal-body', style: 'padding:0' },
     field('Nom', name),
@@ -243,6 +245,7 @@ async function editProduct(p, container) {
     h('label', { class: 'switch' }, hh, h('span', { class: 'track' }), h('span', { class: 'muted' }, 'Éligible Bluebird\'s Hour (1+1)')),
     h('label', { class: 'switch' }, avail, h('span', { class: 'track' }), h('span', { class: 'muted' }, 'Disponible')),
     h('label', { class: 'switch' }, cuisine, h('span', { class: 'track' }), h('span', { class: 'muted' }, 'Bon de cuisine (part au Bluebird)')),
+    h('label', { class: 'switch' }, printRecipe, h('span', { class: 'track' }), h('span', { class: 'muted' }, 'Recette imprimée sur le bon')),
   );
 
   const actions = [{ label: 'Annuler', value: null }, { label: isNew ? 'Créer' : 'Enregistrer', kind: 'primary', value: 'save' }];
@@ -281,6 +284,7 @@ async function editProduct(p, container) {
     options: [], optionGroups: groups.get(),
     happyHour: hh.checked, available: avail.checked,
     cuisine: cuisine.checked,
+    printRecipe: printRecipe.checked,
   };
   // Fiche vidée de ses ingrédients : on retire la clé plutôt que d'en laisser
   // une coquille, que la carte prendrait pour une recette à afficher.
