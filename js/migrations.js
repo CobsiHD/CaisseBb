@@ -282,6 +282,15 @@ async function placesDeLHiver() {
   await store.setSetting('homeSlots', slots);
 }
 
+// ── 13 · La carte d'hiver imprime ses recettes ─────────────
+// Les cocktails d'hiver sont neufs pour toute l'équipe : leur fiche sort sur le
+// bon. On allume l'interrupteur sur ce que porte la famille sur l'iPad, ajouts
+// faits au comptoir compris, sans rien réécrire d'autre.
+async function recettesDeLHiver() {
+  const hiver = state.products.filter((p) => p.categoryId === 'hiver' && !p.printRecipe);
+  if (hiver.length) await store.bulkPut('products', hiver.map((p) => ({ ...p, printRecipe: true })));
+}
+
 // Le dernier `rev` doit valoir CATALOG_REV : c'est le niveau qu'une base neuve
 // reçoit d'emblée, et ce qu'elle sauterait ici.
 const MIGRATIONS = [
@@ -297,6 +306,7 @@ const MIGRATIONS = [
   { rev: 10, run: carteHiver },
   { rev: 11, run: carteHiverEtoffee },
   { rev: 12, run: placesDeLHiver },
+  { rev: 13, run: recettesDeLHiver },
 ].filter((m) => m.rev <= CATALOG_REV);
 
 // Applique ce qui manque. À appeler une fois la synchro tentée : avant, les

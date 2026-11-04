@@ -5,7 +5,7 @@
 // déjà en service y montent par les retouches de migrations.js. Ce numéro vit
 // ici et pas dans migrations.js pour que store.js puisse le lire sans importer
 // migrations.js, qui importe déjà store.js.
-export const CATALOG_REV = 12;
+export const CATALOG_REV = 13;
 
 export const CATEGORIES = [
   {
@@ -727,6 +727,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "Liqueur de Mandarine, Cognac, Sirop de Noisette, Jus de Pomme, Sirop de Vanille",
     "available": true,
+    "printRecipe": true,
     "recipe": {
       "technique": "Shake",
       "verre": "Old Fashioned",
@@ -3723,6 +3724,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "Hendrick’s Grand Cabaret, Sirop de Fleur de Cerisier, Jus de Litchi, Citron, Liqueur de Mûre",
     "available": true,
+    "printRecipe": true,
     "recipe": {
       "technique": "Shake",
       "verre": "Coupette",
@@ -3813,6 +3815,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "June Poire & Cardamome, Génépi, Jus de Poire, Sirop de Miel, Citron",
     "available": true,
+    "printRecipe": true,
     "recipe": {
       "technique": "Shake",
       "verre": "Coupette",
@@ -3858,6 +3861,7 @@ export const PRODUCTS = [
     "happyHour": false,
     "desc": "Ciroc Red Berry, Liqueur de Mandarine, Sirop de Miel, Citron, Ginger Beer",
     "available": true,
+    "printRecipe": true,
     "recipe": {
       "technique": "Build",
       "verre": "Verre à mule",
