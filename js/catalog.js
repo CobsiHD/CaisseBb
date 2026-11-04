@@ -288,6 +288,15 @@ async function editProduct(p, container) {
   if (fiche) obj.recipe = fiche; else delete obj.recipe;
   if (isNew) { obj.id = `${categoryId}-${slug(obj.name)}-${Date.now().toString(36).slice(-4)}`; obj.order = state.products.length; }
   await store.put('products', obj);
+  // Une touche qui change de famille oublie sa place : celle-ci valait dans
+  // l'ancienne grille, et posée telle quelle dans la nouvelle elle y creuserait
+  // des cases vides, jusqu'à pousser la famille sur une deuxième page.
+  const slots = state.settings.homeSlots || {};
+  if (!isNew && p.categoryId !== categoryId && `prod:${p.id}` in slots) {
+    const { [`prod:${p.id}`]: _, ...reste } = slots;
+    state.settings.homeSlots = reste;
+    await store.setSetting('homeSlots', reste);
+  }
   await reloadCatalog();
   renderCatalog(container);
   toast(isNew ? 'Produit créé' : 'Produit enregistré');

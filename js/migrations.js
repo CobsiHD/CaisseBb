@@ -263,6 +263,25 @@ const carteHiver = () => poseCarteDeSaison('hiver');
 // Reposer la carte d'hiver suffit : catégorie, nom et ordre viennent du seed.
 const carteHiverEtoffee = () => poseCarteDeSaison('hiver');
 
+// ── 12 · Jane et Death Wants More Death reprennent une place ─
+// Les places des touches vivent dans une seule carte (`homeSlots`), clé par
+// produit et non par famille. Jane gardait la case qu'elle avait chez les
+// Cocktails, Death Wants More Death celle d'Halloween : posées si loin dans la
+// grille d'hiver, elles y creusaient des cases vides jusqu'à une deuxième page.
+// On oublie leur place, elles prennent les premières libres de l'hiver.
+const DEMENAGES = ['cocktails-i-will-remember', 'halloween-death-wants-more-death'];
+
+async function placesDeLHiver() {
+  const slots = { ...(state.settings.homeSlots || {}) };
+  let change = false;
+  for (const id of DEMENAGES) {
+    if (`prod:${id}` in slots) { delete slots[`prod:${id}`]; change = true; }
+  }
+  if (!change) return;
+  state.settings.homeSlots = slots;
+  await store.setSetting('homeSlots', slots);
+}
+
 // Le dernier `rev` doit valoir CATALOG_REV : c'est le niveau qu'une base neuve
 // reçoit d'emblée, et ce qu'elle sauterait ici.
 const MIGRATIONS = [
@@ -277,6 +296,7 @@ const MIGRATIONS = [
   { rev: 9, run: carteHalloween },
   { rev: 10, run: carteHiver },
   { rev: 11, run: carteHiverEtoffee },
+  { rev: 12, run: placesDeLHiver },
 ].filter((m) => m.rev <= CATALOG_REV);
 
 // Applique ce qui manque. À appeler une fois la synchro tentée : avant, les
