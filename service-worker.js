@@ -1,5 +1,5 @@
 // service-worker.js — cache applicatif pour fonctionnement hors-ligne.
-const CACHE = 'bluebird-v48';
+const CACHE = 'bluebird-v49';
 const ASSETS_EXT = [
   'arche_pierre', 'caniveau', 'chaise_noire', 'chaise_verte', 'deck_tile',
   'enseigne_bluebird', 'enseigne_neon_b', 'guirlande_lumineuse', 'jardiniere',

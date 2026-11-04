@@ -5,7 +5,7 @@
 // déjà en service y montent par les retouches de migrations.js. Ce numéro vit
 // ici et pas dans migrations.js pour que store.js puisse le lire sans importer
 // migrations.js, qui importe déjà store.js.
-export const CATALOG_REV = 10;
+export const CATALOG_REV = 11;
 
 export const CATEGORIES = [
   {
@@ -713,9 +713,9 @@ export const PRODUCTS = [
   },
   {
     "id": "cocktails-i-will-remember",
-    "categoryId": "cocktails",
+    "categoryId": "hiver",
     "sub": "Whisky & Cognac",
-    "name": "I Will Remember",
+    "name": "Jane",
     "variants": [
       {
         "label": "",
@@ -753,7 +753,7 @@ export const PRODUCTS = [
         }
       ]
     },
-    "order": 12
+    "order": 137
   },
   {
     "id": "cocktails-melancholia",
@@ -3709,7 +3709,7 @@ export const PRODUCTS = [
   },
   {
     "id": "halloween-death-wants-more-death",
-    "categoryId": "halloween",
+    "categoryId": "hiver",
     "sub": "Gin",
     "name": "Death Wants More Death",
     "variants": [
@@ -3750,7 +3750,7 @@ export const PRODUCTS = [
         }
       ]
     },
-    "order": 134
+    "order": 138
   },
   {
     "id": "halloween-nirvana",
@@ -3841,6 +3841,51 @@ export const PRODUCTS = [
       ]
     },
     "order": 136
+  },
+  {
+    "id": "hiver-come-on-in",
+    "categoryId": "hiver",
+    "sub": "Vodka",
+    "name": "Come On In!",
+    "variants": [
+      {
+        "label": "",
+        "price": 11
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "Ciroc Red Berry, Liqueur de Mandarine, Sirop de Miel, Citron, Ginger Beer",
+    "available": true,
+    "recipe": {
+      "technique": "Build",
+      "verre": "Verre à mule",
+      "finition": "Feuille de menthe et quartier de citron",
+      "ingredients": [
+        {
+          "label": "Ciroc Red Berry",
+          "qty": "4 cl"
+        },
+        {
+          "label": "Liqueur de mandarine",
+          "qty": "1,5 cl"
+        },
+        {
+          "label": "Sirop de miel",
+          "qty": "1 cl"
+        },
+        {
+          "label": "Citron",
+          "qty": "2 cl"
+        },
+        {
+          "label": "Schweppes Ginger Beer",
+          "qty": "TOP"
+        }
+      ]
+    },
+    "order": 139
   }
 ];
 

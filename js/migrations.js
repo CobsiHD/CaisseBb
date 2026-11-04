@@ -254,6 +254,15 @@ const carteHalloween = () => poseCarteDeSaison('halloween');
 // Laughing Heart, posée en touche d'essai avant le reste de la carte.
 const carteHiver = () => poseCarteDeSaison('hiver');
 
+// ── 11 · Jane et Death Wants More Death passent l'hiver ─────
+// Deux fiches existantes changent de famille : Death Wants More Death quitte
+// Halloween, et I Will Remember quitte les Cocktails sous le nom de Jane. Les
+// identifiants ne bougent PAS (même raison que la retouche 8) : on déplace la
+// fiche, on n'en pose pas une seconde, et le classeur ne la montre qu'une fois.
+// Come On In!, un mule à la Ciroc Red Berry, entre par la même retouche.
+// Reposer la carte d'hiver suffit : catégorie, nom et ordre viennent du seed.
+const carteHiverEtoffee = () => poseCarteDeSaison('hiver');
+
 // Le dernier `rev` doit valoir CATALOG_REV : c'est le niveau qu'une base neuve
 // reçoit d'emblée, et ce qu'elle sauterait ici.
 const MIGRATIONS = [
@@ -267,6 +276,7 @@ const MIGRATIONS = [
   { rev: 8, run: babyPornstar },
   { rev: 9, run: carteHalloween },
   { rev: 10, run: carteHiver },
+  { rev: 11, run: carteHiverEtoffee },
 ].filter((m) => m.rev <= CATALOG_REV);
 
 // Applique ce qui manque. À appeler une fois la synchro tentée : avant, les
