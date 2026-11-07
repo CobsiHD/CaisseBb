@@ -714,3 +714,44 @@ body {
 .rec-vide { text-align: center; padding: 60px 0; }
 .rec-vide .big { font-family: var(--display); font-size: 26px; margin-bottom: 6px; }
 .rec-pied { margin-top: 40px; text-align: center; font-size: 12px; color: var(--faint); line-height: 1.6; }
+
+/* ============================================================
+   MODE DÉBUTANT — visite guidée (js/tuto.js)
+   Au-dessus des modales (60), des feuilles du bas (70) et du toast (80) :
+   le tuto peut commenter un formulaire ouvert. Sous le verrou d'entrée (100).
+   ============================================================ */
+.tuto-layer { position: fixed; inset: 0; z-index: 90; }
+.tuto-layer.dim { background: rgba(6,12,20,.72); }
+/* Le projecteur : un trou dans un voile, fait d'une ombre immense. */
+.tuto-spot {
+  position: fixed; border-radius: 12px; pointer-events: none;
+  box-shadow: 0 0 0 9999px rgba(6,12,20,.72), 0 0 0 2px var(--brass), 0 0 24px 4px rgba(201,162,75,.35);
+  transition: left .22s ease, top .22s ease, width .22s ease, height .22s ease;
+}
+.tuto-card {
+  position: fixed; max-height: 46vh; overflow: auto;
+  background: var(--ink-1); border: 1px solid var(--brass); border-radius: 16px;
+  box-shadow: var(--shadow); padding: 16px 18px 14px; user-select: text;
+  transition: left .22s ease, top .22s ease;
+}
+.tuto-card.centre {
+  left: 50% !important; top: 50% !important; transform: translate(-50%, -50%);
+  width: min(440px, calc(100vw - 24px)) !important; transition: none;
+}
+.tuto-prog { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); font-weight: 700; font-variant-numeric: tabular-nums; }
+.tuto-bar { flex: 1; height: 3px; border-radius: 999px; background: var(--ink-3); overflow: hidden; }
+.tuto-bar > span { display: block; height: 100%; background: var(--brass); transition: width .2s ease; }
+.tuto-title { font-family: var(--display); font-size: 24px; font-weight: 600; margin: 8px 0 4px; line-height: 1.15; }
+.tuto-text p { margin: 0 0 8px; color: var(--text); font-size: 15px; line-height: 1.45; }
+.tuto-text p + p { color: var(--muted); font-size: 14px; }
+.tuto-foot { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.tuto-foot .spacer { flex: 1; }
+.tuto-foot .btn { min-height: 44px; }
+.tuto-btn { font-weight: 800; font-family: var(--ui); color: var(--brass); }
+
+body.mobile .tuto-card { border-radius: 18px; padding: 14px 16px 12px; max-height: 50vh; }
+body.mobile .tuto-title { font-size: 22px; }
+body.mobile .tuto-foot .btn { min-height: 48px; padding-left: 16px; padding-right: 16px; }
+@media (prefers-reduced-motion: reduce) {
+  .tuto-spot, .tuto-card, .tuto-bar > span { transition: none; }
+}

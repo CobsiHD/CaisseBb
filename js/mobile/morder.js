@@ -13,6 +13,7 @@ import {
   payOrder, toggleToPay, deleteOrder, moveOrder, noteMenu,
 } from '../note.js';
 import { visibleCategories } from '../profile.js';
+import { tutoView } from '../tuto.js';
 
 let tableId = null;
 let activeOrderId = null;
@@ -38,6 +39,8 @@ export function openMOrder(id) {
   document.body.append(screenEl);
 
   renderAll();
+  // La salle du téléphone ouvre la note directement, sans openorder.js.
+  tutoView('note');
 }
 
 export function closeMOrder() {

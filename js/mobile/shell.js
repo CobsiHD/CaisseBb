@@ -70,7 +70,7 @@ const moreAllowed = () => MORE.filter((m) => tabAllowed(m.view));
 
 // `navigate` et `openSettings` sont injectés par app.js : la coque ne connaît
 // pas le routeur, elle ne fait que l'appeler (pas d'import circulaire).
-export function mountMobileShell({ navigate, openSettings }) {
+export function mountMobileShell({ navigate, openSettings, tuto }) {
   document.body.classList.add('mobile');
 
   const nav = document.getElementById('m-nav');
@@ -85,7 +85,7 @@ export function mountMobileShell({ navigate, openSettings }) {
     const btn = h('button', {
       class: n.view === '__more' ? 'm-tab' : 'm-tab tab',
       dataset: n.view === '__more' ? {} : { view: n.view },
-      onclick: () => (n.view === '__more' ? openMore({ navigate, openSettings }) : navigate(n.view)),
+      onclick: () => (n.view === '__more' ? openMore({ navigate, openSettings, tuto }) : navigate(n.view)),
     },
       h('span', { class: 'm-tab-ico' }, n.icon),
       h('span', { class: 'm-tab-lbl' }, n.label));
@@ -93,7 +93,7 @@ export function mountMobileShell({ navigate, openSettings }) {
   });
 }
 
-function openMore({ navigate, openSettings }) {
+function openMore({ navigate, openSettings, tuto }) {
   const body = h('div', { class: 'm-more' });
   const s = sheet({ title: 'Plus', body });
 
@@ -103,6 +103,13 @@ function openMore({ navigate, openSettings }) {
 
   body.append(h('button', { class: 'm-more-row', onclick: () => { s.close(); openSettings(); } },
     h('span', { class: 'm-more-ico' }, '⚙'), h('span', {}, 'Réglages'), h('span', { class: 'm-more-chev' }, '›')));
+
+  // Le mode débutant se bascule d'une touche : c'est souvent le premier geste
+  // d'un nouveau, et il n'a pas à chercher l'interrupteur dans les Réglages.
+  if (tuto) body.append(h('button', { class: 'm-more-row', onclick: () => { s.close(); tuto.setTutoOn(!tuto.tutoOn()); } },
+    h('span', { class: 'm-more-ico' }, '🎓'),
+    h('span', {}, tuto.tutoOn() ? 'Mode débutant · activé' : 'Mode débutant'),
+    h('span', { class: 'm-more-chev' }, tuto.tutoOn() ? 'Éteindre' : 'Allumer')));
 
   body.append(h('div', { class: 'm-more-sep' }, 'Interface'));
   body.append(uiModeSelector());

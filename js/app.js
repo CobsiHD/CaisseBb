@@ -18,6 +18,7 @@ import { isMobileUI } from './uimode.js';
 import { MOBILE_VIEWS, MOBILE_HOME_VIEW } from './mobile/views.js';
 import { isListMode } from './mobile/mfloor.js';
 import { unlock } from './gate.js';
+import { tutoView, tutoOn, setTutoOn, mountHelp } from './tuto.js';
 
 const PAD_VIEWS = {
   home: renderHome,
@@ -59,6 +60,7 @@ function navigate(view) {
   const container = document.getElementById('view');
   clear(container);
   VIEWS[view](container);
+  tutoView(view);
 }
 
 // Re-render la vue courante quand les données changent.
@@ -99,6 +101,7 @@ export async function openSettings() {
   const hhFrom = h('input', { class: 'input', type: 'time', value: s.happyHour?.from || '17:00' });
   const hhTo = h('input', { class: 'input', type: 'time', value: s.happyHour?.to || '21:00' });
   const fileInput = h('input', { type: 'file', accept: 'application/json', style: 'display:none' });
+  const debutant = h('input', { type: 'checkbox', checked: tutoOn() });
 
   fileInput.addEventListener('change', async () => {
     const f = fileInput.files[0]; if (!f) return;
@@ -122,6 +125,11 @@ export async function openSettings() {
         h('div', { class: 'row', style: 'margin-top:10px' },
           field('De', hhFrom), field('À', hhTo)),
       )),
+    field('Mode débutant',
+      h('div', {},
+        h('label', { class: 'switch' }, debutant, h('span', { class: 'track' }), h('span', { class: 'muted' }, 'Un tuto guide chaque onglet à sa première ouverture')),
+        h('div', { class: 'faint', style: 'font-size:12px; margin-top:6px' },
+          'Propre à cet appareil. Le bouton « ? » de la barre du haut rejoue le tuto de l\'écran affiché.'))),
     field('Profil de cet appareil',
       h('div', {},
         h('div', { class: 'row' }, PROFILES.map((pr) => h('button', {
@@ -183,6 +191,8 @@ export async function openSettings() {
     state.settings.pin = pinInput.value.trim();
     state.settings.happyHour = { enabled: hhEnabled.checked, from: hhFrom.value, to: hhTo.value };
     toast('Réglages enregistrés');
+    // Après la fermeture de la modale : le tuto attend un écran libre.
+    if (debutant.checked !== tutoOn()) setTutoOn(debutant.checked);
   }
 }
 
@@ -217,8 +227,9 @@ async function boot() {
   await unlock();
   await loadAll();
   bindNav();
+  mountHelp();
   applyProfile();
-  if (MOBILE) mountMobileShell({ navigate, openSettings });
+  if (MOBILE) mountMobileShell({ navigate, openSettings, tuto: { tutoOn, setTutoOn } });
   navigate(current);
   refreshCuisineBadge();
   // Synchro (si configurée) : répercute en direct ce que font les autres iPads.

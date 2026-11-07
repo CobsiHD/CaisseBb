@@ -6,8 +6,10 @@
 import { isMobileUI } from './uimode.js';
 import { openNote as openPadNote } from './order.js';
 import { openMOrder } from './mobile/morder.js';
+import { tutoView } from './tuto.js';
 
 export function openNote(tableId) {
   if (isMobileUI()) openMOrder(tableId);
   else openPadNote(tableId);
+  tutoView('note');
 }

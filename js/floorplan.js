@@ -135,6 +135,18 @@ function buildViewbar(container) {
       h('div', { style: 'font-weight:800; font-variant-numeric:tabular-nums' }, rev)));
 }
 
+// Le tuto du mode débutant montre les poignées d'un élément : il lui faut
+// une table sélectionnée, ce qu'un clic simulé ne sait pas faire (la
+// sélection passe par les Pointer Events). Sans effet hors du mode Édition.
+export function tutoSelectTable() {
+  if (state.planMode !== 'edition' || !stageEl?.isConnected) return false;
+  const els = areaElements();
+  const el = els.find((e) => isTableType(e.type)) || els[0];
+  if (!el) return false;
+  selectedId = el.id; drawElements();
+  return true;
+}
+
 function areaElements() { return state.layout.filter((el) => el.area === state.area); }
 
 function drawElements() {
