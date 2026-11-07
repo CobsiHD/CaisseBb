@@ -19,6 +19,11 @@ import { state } from './state.js';
 import { h, clear } from './ui.js';
 import { isMobileUI } from './uimode.js';
 import { tutoSelectTable } from './floorplan.js';
+import { tabAllowed } from './profile.js';
+import { isTableType } from './elements.js';
+import { openNote } from './openorder.js';
+import { closeOrder } from './order.js';
+import { closeMOrder } from './mobile/morder.js';
 
 const KEY = 'bb.tuto';
 
@@ -30,12 +35,12 @@ function write(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch 
 
 export const tutoOn = () => read().on;
 
-/** Allumer remet le compteur à zéro : chaque onglet se présentera de nouveau. */
+/** Allumer remet le compteur à zéro et lance la visite complète. */
 export function setTutoOn(on) {
   write({ on, vus: [] });
-  if (!on) stop();
+  if (!on) { parcours = null; stop(); }
   refreshHelpBtn();
-  if (on) tutoView(lastView);
+  if (on) startParcours();
 }
 
 function markSeen(key) {
@@ -115,6 +120,27 @@ const SCENES = {
       if (!this.switched) return;
       this.switched = false;
       byText('.floor-bar .chip', 'Service')?.click();
+    },
+  },
+  // La note d'une table, ouverte pour la visite puis refermée. Ouvrir une
+  // note ne crée rien : la commande n'existe qu'au premier produit ajouté.
+  // Si quelqu'un a déjà ouvert une note, on la laisse telle quelle.
+  note: {
+    opened: false,
+    async open() {
+      this.opened = false;
+      if (orderScreenOpen()) return;
+      const t = state.layout.find((e) => isTableType(e.type) && e.area === state.area)
+        || state.layout.find((e) => isTableType(e.type));
+      if (!t) return;
+      openNote(t.id);
+      this.opened = true;
+      await waitFor(() => orderScreenOpen());
+    },
+    close() {
+      if (!this.opened) return;
+      this.opened = false;
+      if (isMobileUI()) closeMOrder(); else closeOrder();
     },
   },
   // L'écran d'accueil en mode Édition des tuiles.
@@ -253,29 +279,73 @@ const TOURS = {
     { el: '.open-row', optional: true, title: 'Les notes ouvertes', text: ['Les notes pas encore encaissées, la plus ancienne en premier. Touche-en une pour l\'ouvrir.'] },
   ],
 
+  // ── Fin de la visite complète ──
+  fin: () => [
+    { title: 'Visite terminée 🎉', text: ['Tu as fait le tour de la caisse.',
+      'Le bouton « ? » rejoue le tuto de l\'écran affiché. Pour refaire toute la visite, ou éteindre le mode débutant : ⚙ Réglages.'] },
+  ],
+
   // ── Note d'une table (pas un onglet : s'ouvre depuis la salle) ──
   note: () => P() ? [
-    { el: '.m-order .m-order-top', title: 'La note de la table', text: ['Le nom de la table en haut. La flèche ‹ revient à la salle.'] },
-    { el: '.m-order .m-grid', title: 'Ajouter des produits', text: ['Touche une famille puis un produit. Formats et sous-choix sont demandés au besoin.'] },
-    { el: '.m-order .m-tick', title: 'La note', text: ['Touche la barre du bas pour déplier la note : quantités, plusieurs notes pour une même table, et les boutons Encaisser, 🖨 Imprimer et ⋯ (déplacer, supprimer…).'] },
+    { scene: 'note', el: '.m-order .m-order-top', title: 'La note de la table', text: ['Le nom de la table en haut. La flèche ‹ revient à la salle.'] },
+    { scene: 'note', el: '.m-order .m-grid', title: 'Ajouter des produits', text: ['Touche une famille puis un produit. Formats et sous-choix sont demandés au besoin.'] },
+    { scene: 'note', el: '.m-order .m-tick', title: 'La note', text: ['Touche la barre du bas pour déplier la note : quantités, plusieurs notes pour une même table, et les boutons Encaisser, 🖨 Imprimer et ⋯ (déplacer, supprimer…).'] },
   ] : [
-    { el: '.order-screen .ticket-head', title: 'La note de la table', text: ['Le nom de la table et ses couverts. ‹ revient à la salle.'] },
-    { el: '.order-screen .ticket-notetabs', optional: true, title: 'Plusieurs notes', text: ['« ＋ Note » ouvre une seconde note sur la même table, pour faire payer séparément.'] },
-    { el: '.order-screen .pos-right', title: 'Ajouter des produits', text: ['Touche une famille puis un produit. S\'il a plusieurs formats ou des sous-choix, la caisse les demande.'] },
-    { el: '.order-screen .ticket-lines', title: 'Les lignes', text: ['− / ＋ ajustent les quantités. Une ligne 1+1 est comptée selon le Bluebird\'s Hour.'] },
-    { el: '.order-screen .ticket-foot', title: 'Encaisser, imprimer', text: ['« 🖨 » envoie au bar et en cuisine ce qui n\'a pas encore été imprimé. « Encaisser » clôt la note. « ⋯ » : addition, déplacer vers une autre table, supprimer.'] },
+    { scene: 'note', el: '.order-screen .ticket-head', title: 'La note de la table', text: ['Le nom de la table et ses couverts. ‹ revient à la salle.'] },
+    { scene: 'note', el: '.order-screen .ticket-notetabs', optional: true, title: 'Plusieurs notes', text: ['« ＋ Note » ouvre une seconde note sur la même table, pour faire payer séparément.'] },
+    { scene: 'note', el: '.order-screen .pos-right', title: 'Ajouter des produits', text: ['Touche une famille puis un produit. S\'il a plusieurs formats ou des sous-choix, la caisse les demande.'] },
+    { scene: 'note', el: '.order-screen .ticket-lines', title: 'Les lignes', text: ['− / ＋ ajustent les quantités. Une ligne 1+1 est comptée selon le Bluebird\'s Hour.'] },
+    { scene: 'note', el: '.order-screen .ticket-foot', title: 'Encaisser, imprimer', text: ['« 🖨 » envoie au bar et en cuisine ce qui n\'a pas encore été imprimé. « Encaisser » clôt la note. « ⋯ » : addition, déplacer vers une autre table, supprimer.'] },
   ],
 };
 
 // ── Moteur ───────────────────────────────────────────────────
 let lastView = null;
 let run = null;     // { key, steps, i, scene, layer, spot, card, timer, onKey }
+let navigateTo = null;   // injecté par app.js (mountHelp)
+let parcours = null;     // visite complète : { pages, i }
+
+// La visite complète enchaîne les écrans dans l'ordre du service. Le
+// téléphone commence par la salle, l'iPad par le comptoir ; les onglets
+// masqués par le profil de l'appareil sont sautés. La note de table suit la
+// salle : c'est là qu'on en ouvre une.
+const NOMS = { home: 'Accueil', floor: 'Salle', note: 'Note de table', menu: 'Carte', recettes: 'Recettes',
+  catalog: 'Produits', cuisine: 'Cuisine', dashboard: 'Tableau de bord' };
+function pagesParcours() {
+  const ordre = isMobileUI()
+    ? ['floor', 'note', 'home', 'cuisine', 'menu', 'catalog', 'dashboard']
+    : ['home', 'floor', 'note', 'menu', 'recettes', 'catalog', 'cuisine', 'dashboard'];
+  return ordre.filter((v) => (v === 'note' ? tabAllowed('floor') : tabAllowed(v)));
+}
+
+/** Lance la visite complète : bienvenue, puis chaque écran l'un après l'autre. */
+export function startParcours() {
+  stop();
+  parcours = { pages: pagesParcours(), i: -1 };
+  launch('bienvenue', null, { force: true });
+}
+
+function pageSuivante() {
+  if (!parcours) return;
+  parcours.i++;
+  const v = parcours.pages[parcours.i];
+  if (!v) {
+    // Retour au premier écran pour le mot de la fin.
+    const first = parcours.pages.find((p) => p !== 'note');
+    parcours = null;
+    if (first && navigateTo) navigateTo(first);
+    launch('fin', null, { force: true });
+    return;
+  }
+  if (v !== 'note' && navigateTo) navigateTo(v);
+  launch(v, v, { force: true });
+}
 
 /** Appelé par app.js à chaque changement d'onglet (et par openorder.js). */
 export function tutoView(view) {
   if (view !== 'note') lastView = view;
   const s = read();
-  if (!s.on || run) return;
+  if (!s.on || run || parcours) return;
   if (!s.vus.includes('bienvenue')) { launch('bienvenue', view); return; }
   if (TOURS[view] && !s.vus.includes(view)) launch(view, view);
 }
@@ -296,12 +366,12 @@ async function launch(key, view, { force = false } = {}) {
     if (!force && view && key !== 'bienvenue' && key !== 'note' && lastView !== view) { run = null; return; }
     if (!read().on && !force) { run = null; return; }
     const modalOpen = !!$('#modal-layer:not([hidden])') || !!$('.m-sheet-layer');
-    const blocked = key !== 'note' && key !== 'bienvenue' && orderScreenOpen();
+    const blocked = !['note', 'bienvenue', 'fin'].includes(key) && orderScreenOpen();
     if (!modalOpen && !blocked) break;
     await sleep(250);
   }
   const steps = (TOURS[key]?.() || []).filter(Boolean);
-  if (!steps.length) { run = null; return; }
+  if (!steps.length) { run = null; if (parcours) pageSuivante(); return; }
   start(key, steps);
 }
 
@@ -312,7 +382,7 @@ function start(key, steps) {
   document.body.append(layer);
   run = { key, steps, i: -1, scene: null, layer, spot, card, timer: null, el: null };
   run.onKey = (e) => {
-    if (e.key === 'Escape') finish();
+    if (e.key === 'Escape') quit();
     else if (e.key === 'ArrowRight' || e.key === 'Enter') go(1);
     else if (e.key === 'ArrowLeft') go(-1);
   };
@@ -377,18 +447,26 @@ function render(st, el) {
   const n = run.steps.length, i = run.i;
   const last = i === n - 1;
   const paras = (el || !st.fallback ? st.text : [st.fallback]).filter(Boolean);
+  // Dans la visite complète, la dernière étape d'un écran mène au suivant.
+  const enVisite = !!parcours && run.key !== 'fin';
+  const page = enVisite && parcours.i >= 0 ? parcours.pages[parcours.i] : null;
+  const derniere = !parcours || parcours.i >= parcours.pages.length - 1;
+  const suite = !last ? 'Suivant ›' : !enVisite ? 'Terminer' : derniere ? 'Suivant ›' : 'Écran suivant ›';
 
   clear(card).append(
+    enVisite ? h('div', { class: 'tuto-page' },
+      h('span', {}, page ? `${NOMS[page] || page} · écran ${parcours.i + 1}/${parcours.pages.length}` : 'Visite guidée'),
+      h('button', { class: 'tuto-quit', onclick: quit, 'aria-label': 'Quitter la visite' }, '✕')) : null,
     h('div', { class: 'tuto-prog' },
       h('span', {}, `${i + 1} / ${n}`),
       h('div', { class: 'tuto-bar' }, h('span', { style: `width:${((i + 1) / n) * 100}%` }))),
     h('div', { class: 'tuto-title' }, st.title),
     h('div', { class: 'tuto-text' }, paras.map((t) => h('p', {}, t))),
     h('div', { class: 'tuto-foot' },
-      last ? null : h('button', { class: 'btn btn-sm btn-ghost tuto-skip', onclick: finish }, 'Passer'),
+      last ? null : h('button', { class: 'btn btn-sm btn-ghost tuto-skip', onclick: finish }, enVisite ? 'Passer l\'écran' : 'Passer'),
       h('div', { class: 'spacer' }),
       i > 0 ? h('button', { class: 'btn btn-sm btn-ghost', onclick: () => go(-1), 'aria-label': 'Étape précédente' }, '‹') : null,
-      h('button', { class: 'btn btn-sm btn-primary', onclick: () => go(1) }, last ? 'Terminer' : 'Suivant ›')),
+      h('button', { class: 'btn btn-sm btn-primary', onclick: () => go(1) }, suite)),
   );
 
   run.el = st.el || null;
@@ -476,8 +554,15 @@ function finish() {
   const key = run.key;
   stop();
   markSeen(key);
+  if (parcours) { pageSuivante(); return; }
   // Après la bienvenue, l'onglet où l'on se trouve se présente à son tour.
   if (key === 'bienvenue') tutoView(orderScreenOpen() ? 'note' : lastView);
+}
+
+/** ✕ ou Échap : on sort de la visite complète, sans enchaîner. */
+function quit() {
+  parcours = null;
+  finish();
 }
 
 function stop() {
@@ -494,7 +579,8 @@ function stop() {
 // ── Bouton « ? » ─────────────────────────────────────────────
 // Dans la barre du haut, à côté des Réglages : présent sur iPad comme sur
 // téléphone, et seulement quand le mode débutant est actif.
-export function mountHelp() {
+export function mountHelp({ navigate } = {}) {
+  if (navigate) navigateTo = navigate;
   const actions = $('.topbar-actions');
   if (!actions || $('#tuto-btn')) { refreshHelpBtn(); return; }
   actions.prepend(h('button', {

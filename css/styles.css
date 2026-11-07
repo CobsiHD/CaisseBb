@@ -738,6 +738,11 @@ body {
   left: 50% !important; top: 50% !important; transform: translate(-50%, -50%);
   width: min(440px, calc(100vw - 24px)) !important; transition: none;
 }
+.tuto-page { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: -4px -6px 8px 0;
+  font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--brass); }
+.tuto-quit { appearance: none; border: 0; background: transparent; color: var(--muted); font-size: 18px;
+  width: 40px; height: 40px; border-radius: 10px; cursor: pointer; flex: 0 0 auto; }
+.tuto-quit:hover { background: var(--ink-3); color: var(--text); }
 .tuto-prog { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); font-weight: 700; font-variant-numeric: tabular-nums; }
 .tuto-bar { flex: 1; height: 3px; border-radius: 999px; background: var(--ink-3); overflow: hidden; }
 .tuto-bar > span { display: block; height: 100%; background: var(--brass); transition: width .2s ease; }

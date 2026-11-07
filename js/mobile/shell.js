@@ -110,6 +110,8 @@ function openMore({ navigate, openSettings, tuto }) {
     h('span', { class: 'm-more-ico' }, '🎓'),
     h('span', {}, tuto.tutoOn() ? 'Mode débutant · activé' : 'Mode débutant'),
     h('span', { class: 'm-more-chev' }, tuto.tutoOn() ? 'Éteindre' : 'Allumer')));
+  if (tuto?.tutoOn()) body.append(h('button', { class: 'm-more-row', onclick: () => { s.close(); tuto.startParcours(); } },
+    h('span', { class: 'm-more-ico' }, '▶'), h('span', {}, 'Visite guidée complète'), h('span', { class: 'm-more-chev' }, '›')));
 
   body.append(h('div', { class: 'm-more-sep' }, 'Interface'));
   body.append(uiModeSelector());

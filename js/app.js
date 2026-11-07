@@ -18,7 +18,7 @@ import { isMobileUI } from './uimode.js';
 import { MOBILE_VIEWS, MOBILE_HOME_VIEW } from './mobile/views.js';
 import { isListMode } from './mobile/mfloor.js';
 import { unlock } from './gate.js';
-import { tutoView, tutoOn, setTutoOn, mountHelp } from './tuto.js';
+import { tutoView, tutoOn, setTutoOn, mountHelp, startParcours } from './tuto.js';
 
 const PAD_VIEWS = {
   home: renderHome,
@@ -128,8 +128,13 @@ export async function openSettings() {
     field('Mode débutant',
       h('div', {},
         h('label', { class: 'switch' }, debutant, h('span', { class: 'track' }), h('span', { class: 'muted' }, 'Un tuto guide chaque onglet à sa première ouverture')),
+        tutoOn() ? h('button', { class: 'btn btn-sm btn-ghost', style: 'margin-top:8px', onclick: (e) => {
+          // On referme les Réglages d'abord : la visite attend un écran libre.
+          e.currentTarget.closest('.modal').querySelector('.modal-foot .btn-ghost')?.click();
+          startParcours();
+        } }, '▶ Lancer la visite complète') : null,
         h('div', { class: 'faint', style: 'font-size:12px; margin-top:6px' },
-          'Propre à cet appareil. Le bouton « ? » de la barre du haut rejoue le tuto de l\'écran affiché.'))),
+          'Propre à cet appareil. Allumé, il fait visiter tous les écrans un par un. Le bouton « ? » de la barre du haut rejoue le tuto de l\'écran affiché.'))),
     field('Profil de cet appareil',
       h('div', {},
         h('div', { class: 'row' }, PROFILES.map((pr) => h('button', {
@@ -227,9 +232,9 @@ async function boot() {
   await unlock();
   await loadAll();
   bindNav();
-  mountHelp();
+  mountHelp({ navigate });
   applyProfile();
-  if (MOBILE) mountMobileShell({ navigate, openSettings, tuto: { tutoOn, setTutoOn } });
+  if (MOBILE) mountMobileShell({ navigate, openSettings, tuto: { tutoOn, setTutoOn, startParcours } });
   navigate(current);
   refreshCuisineBadge();
   // Synchro (si configurée) : répercute en direct ce que font les autres iPads.
