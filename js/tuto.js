@@ -245,9 +245,18 @@ const TOURS = {
 
   // ── Produits ──
   catalog: () => [
-    { title: 'Les Produits', text: ['Le catalogue de la caisse : noms, prix, formats, recettes. Tout ce qui est modifié ici change la carte, les touches et les autres iPads.'] },
-    { el: () => byText('.viewbar button', 'Nouveau produit'), title: 'Ajouter un produit', text: ['Ce bouton ouvre le formulaire d\'un nouveau produit. Ouvrons-le ensemble — rien ne sera enregistré.'],
-      fallback: 'Les produits sont verrouillés par le code PIN : déverrouille-les pour suivre la suite du tuto.' },
+    { title: 'Les Produits', text: ['Deux modes : « Fiches », pour répondre aux questions des clients, et « Gestion », le catalogue de la caisse (prix, formats, recettes).'] },
+    { el: '.fi-search', optional: true, title: 'Chercher', text: ['Tape un nom ou un goût : « fumé », « sans alcool », « vanille »… La recherche fouille aussi le texte des fiches.'] },
+    { el: '.fi-chips', optional: true, title: 'Les familles', text: ['Pour ne voir qu\'une famille : Bières, Spiritueux, Vins…'] },
+    { el: '.fi-list', optional: true, title: 'La liste', text: ['Touche un produit pour ouvrir sa fiche. Le point vert : la fiche est remplie ; le point vide : pas encore.'] },
+    { el: '.fi-pitch', optional: true, enter: () => { if (!$('.fi-pitch')) $('.fi-item')?.click(); }, title: 'À dire au client', text: ['Deux ou trois phrases toutes prêtes. En dessous : les infos clés, la dégustation, le profil de goût, et quoi proposer s\'il hésite — touche une proposition pour ouvrir sa fiche.'] },
+    { el: () => byText('.fi-edit button', 'fiche'), optional: true, title: 'Modifier une fiche', text: ['Une fiche se corrige ici, derrière le code PIN. La correction part sur les autres iPads. Le badge « À vérifier » signale un fait à confirmer.'] },
+    { el: () => byText('.fi-seg button', 'Gestion'), title: 'Le mode Gestion', text: ['« Gestion » ouvre le catalogue : prix, ruptures, nouveaux produits. Il demande le code PIN. Ouvrons-le.'],
+      // Sans PIN on bascule pour la suite du tuto ; avec PIN, le code ne se
+      // demande pas en pleine visite : l'étape suivante affiche son repli.
+      enter: () => { const b = byText('.fi-seg button', 'Gestion'); if (b && !b.classList.contains('active') && !b.textContent.includes('🔒')) b.click(); } },
+    { el: () => byText('.viewbar button', 'Nouveau produit'),title: 'Ajouter un produit', text: ['Ce bouton ouvre le formulaire d\'un nouveau produit. Ouvrons-le ensemble — rien ne sera enregistré.'],
+      fallback: 'La Gestion est verrouillée par le code PIN : ouvre-la (bouton « Gestion ») pour suivre la suite du tuto.' },
     { scene: 'productForm', el: () => fieldOf('Nom'), optional: true, title: 'Le nom', text: ['Le nom tel qu\'il apparaît sur la touche, la note et la carte.'] },
     { scene: 'productForm', el: () => [fieldOf('Catégorie'), fieldOf('Sous-catégorie')], optional: true, title: 'Catégorie et sous-catégorie', text: ['La catégorie est la famille (Cocktails, Bières…). Choisis « ＋ Nouvelle catégorie… » pour en créer une. La sous-catégorie range les produits dans la famille (Classiques, Créations…).'] },
     { scene: 'productForm', el: () => fieldOf('Formats & prix'), optional: true, title: 'Formats et prix', text: ['Un seul prix : laisse le format vide. Plusieurs (Verre / Bouteille, 25 / 50 cl) : « ＋ Format » pour chacun, la caisse demandera lequel à l\'ajout.'] },

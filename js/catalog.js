@@ -7,22 +7,55 @@ import { requirePin } from './app.js';
 import { colorPicker } from './pos.js';
 import { isCuisineProduct } from './kitchen.js';
 import { groupsEditor, manageLibrary } from './options.js';
+import { renderFiches } from './fiches.js';
 
 const slug = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
-export async function renderCatalog(container) {
+// Deux modes : « Fiches », lisible par toute l'équipe pour répondre au client,
+// et « Gestion » (prix, ruptures, création), derrière le code PIN. Le PIN est
+// demandé une fois en passant en Gestion, pas à chaque redessin après un
+// enregistrement ; revenir sur l'onglet repart en Fiches, verrouillé.
+let mode = 'fiches';
+let gestionOuverte = false;
+
+export function renderCatalog(container) {
+  mode = 'fiches';
+  gestionOuverte = false;
+  return dessiner(container);
+}
+
+async function passerEn(m, container) {
+  if (m === 'gestion' && !gestionOuverte) {
+    if (state.settings.pin && !(await requirePin('Gestion des produits'))) return;
+    gestionOuverte = true;
+  }
+  mode = m;
+  dessiner(container);
+}
+
+function dessiner(container) {
   clear(container);
-  if (state.settings.pin && !(await requirePin('Accès aux produits'))) {
-    container.append(h('div', { class: 'empty' },
-      h('div', { class: 'big' }, 'Produits verrouillés'),
-      h('button', { class: 'btn btn-primary', onclick: () => renderCatalog(container) }, 'Déverrouiller')));
+  const seg = h('div', { class: 'segment fi-seg' },
+    [['fiches', 'Fiches'], ['gestion', state.settings.pin && !gestionOuverte ? 'Gestion 🔒' : 'Gestion']].map(([id, label]) =>
+      h('button', { class: `chip ${mode === id ? 'active' : ''}`, onclick: () => passerEn(id, container) }, label)));
+
+  if (mode === 'fiches') {
+    const corps = h('div', { class: 'fi-body' });
+    container.append(h('div', { class: 'fi-screen' },
+      h('div', { class: 'viewbar' }, h('h2', {}, 'Produits'), seg, h('div', { class: 'spacer' })),
+      corps));
+    renderFiches(corps);
     return;
   }
+  renderGestion(container, seg);
+}
 
+function renderGestion(container, seg) {
   container.append(h('div', { class: 'viewbar' },
     h('h2', {}, 'Produits'),
+    seg,
     h('div', { class: 'spacer' }),
-    h('button', { class: 'btn', onclick: async () => { await manageLibrary(); renderCatalog(container); } }, '🔗 Sous-familles'),
+    h('button', { class: 'btn', onclick: async () => { await manageLibrary(); dessiner(container); } }, '🔗 Sous-familles'),
     h('button', { class: 'btn btn-primary', onclick: () => editProduct(null, container) }, '＋ Nouveau produit'),
   ));
 
@@ -61,7 +94,7 @@ async function toggleAvail(p, container) {
   p.available = !p.available;
   await store.put('products', p);
   await reloadCatalog();
-  renderCatalog(container);
+  dessiner(container);
 }
 
 function variantRow(v = { label: '', price: 0 }) {
@@ -264,7 +297,7 @@ async function editProduct(p, container) {
 
   if (v === 'del') {
     if (await confirmDialog(`Supprimer « ${p.name} » du catalogue ?`, { okLabel: 'Supprimer', danger: true })) {
-      await store.del('products', p.id); await reloadCatalog(); renderCatalog(container); toast('Produit supprimé');
+      await store.del('products', p.id); await reloadCatalog(); dessiner(container); toast('Produit supprimé');
     }
     return;
   }
@@ -313,6 +346,6 @@ async function editProduct(p, container) {
     await store.setSetting('homeSlots', reste);
   }
   await reloadCatalog();
-  renderCatalog(container);
+  dessiner(container);
   toast(isNew ? 'Produit créé' : 'Produit enregistré');
 }

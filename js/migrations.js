@@ -332,6 +332,62 @@ async function rangeLesCocktails() {
   if (retouches.length) await store.bulkPut('products', retouches);
 }
 
+// ── 15 · La caisse s'aligne sur la carte (questionnaire du 21/11) ─
+// La cuisine prend les noms de la carte (avec le nombre de pièces, tenders à 4),
+// le Plateau Mix (charcuterie & fromage, 14,50 €) entre en caisse, le Bluebird's
+// Hour ne vaut plus que pour les cocktails classiques, le Chardonnay Bphr devient
+// Les Jamelles, le Pastis des Alpes
+// devient Ricard, et la Syrah, le Studio Blanc et le Lallier quittent la carte
+// (le Moët Impérial, déjà en caisse, remplace le Lallier). Seuls les champs
+// visés changent : prix et réglages faits au comptoir restent.
+const RETIRES = ['vins-syrah', 'vins-studio-blanc', 'vins-lallier'];
+const RENOMMES = {
+  'spiritueux-pastis-des-alpes': 'Ricard',
+  'vins-chardonnay-bphr': 'Les Jamelles',
+  'snack-la-barquette': 'Frites maison',
+  'snack-frites-xxl': 'Frites maison XXL',
+  'snack-tenders-3-pieces': 'Tenders de poulet (4 pièces)',
+  'snack-nuggets-de-poulet-6-pieces': 'Nuggets (6 pièces)',
+  'snack-oignons-rings-8-pieces': 'Oignons rings (8 pièces)',
+  'snack-camemberts-panes-6-pieces': 'Camembert pané (6 pièces)',
+  'snack-chili-cheese-6-pieces': 'Chilli cheese (6 pièces)',
+};
+const SANS_HH = [
+  'cocktails-aperol-spritz', 'cocktails-campari-spritz', 'cocktails-italicus-spritz',
+  'cocktails-st-germain-spritz', 'cocktails-limoncello-spritz', 'cocktails-melonade-spritz',
+  'bieres-bud', 'bieres-hoegarden-blanche', 'bieres-kasteel-framboise', 'bieres-mont-blanc-rousse',
+  'bieres-la-bagarre', 'bieres-delirium-tremens', 'bieres-floris-peche',
+];
+
+async function carteAlignee() {
+  for (const id of RETIRES) {
+    if (state.products.some((p) => p.id === id)) await store.del('products', id);
+  }
+  for (const t of state.tiles) {
+    if (RETIRES.includes(t.productId)) await store.del('tiles', t.id);
+  }
+
+  const retouches = [];
+  for (const p of state.products) {
+    if (RETIRES.includes(p.id)) continue;
+    const patch = {};
+    if (RENOMMES[p.id] && p.name !== RENOMMES[p.id]) patch.name = RENOMMES[p.id];
+    if (SANS_HH.includes(p.id) && p.happyHour) patch.happyHour = false;
+    if (p.id === 'snack-planche-tapas') {
+      const neuve = PRODUCTS.find((x) => x.id === p.id);
+      if (neuve) patch.optionGroups = neuve.optionGroups;
+    }
+    if (Object.keys(patch).length) retouches.push({ ...p, ...patch });
+  }
+  if (retouches.length) await store.bulkPut('products', retouches);
+
+  if (!state.products.some((p) => p.id === 'snack-plateau-mix')) {
+    const plateau = PRODUCTS.find((x) => x.id === 'snack-plateau-mix');
+    const planche = state.products.find((p) => p.id === 'snack-planche-tapas');
+    await store.put('products', { ...plateau, order: planche ? Number(planche.order) + 0.5 : plateau.order });
+  }
+}
+
 // Le dernier `rev` doit valoir CATALOG_REV : c'est le niveau qu'une base neuve
 // reçoit d'emblée, et ce qu'elle sauterait ici.
 const MIGRATIONS = [
@@ -349,6 +405,7 @@ const MIGRATIONS = [
   { rev: 12, run: placesDeLHiver },
   { rev: 13, run: recettesDeLHiver },
   { rev: 14, run: rangeLesCocktails },
+  { rev: 15, run: carteAlignee },
 ].filter((m) => m.rev <= CATALOG_REV);
 
 // Applique ce qui manque. À appeler une fois la synchro tentée : avant, les

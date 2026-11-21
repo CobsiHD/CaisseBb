@@ -1,5 +1,5 @@
 // service-worker.js — cache applicatif pour fonctionnement hors-ligne.
-const CACHE = 'bluebird-v60';
+const CACHE = 'bluebird-v62';
 const ASSETS_EXT = [
   'arche_pierre', 'caniveau', 'chaise_noire', 'chaise_verte', 'deck_tile',
   'enseigne_bluebird', 'enseigne_neon_b', 'guirlande_lumineuse', 'jardiniere',
@@ -20,7 +20,8 @@ const CORE = [
   'js/app.js', 'js/state.js', 'js/store.js', 'js/seed.js', 'js/migrations.js',
   'js/ui.js', 'js/pos.js',
   'js/floorplan.js', 'js/elements.js', 'js/order.js', 'js/home.js',
-  'js/catalog.js', 'js/menu.js', 'js/recettes.js', 'js/dashboard.js', 'js/stats.js',
+  'js/catalog.js', 'js/fiches.js', 'js/fiches/cocktails.js', 'js/fiches/spiritueux-bruns.js', 'js/fiches/spiritueux-blancs.js', 'js/fiches/bieres-softs.js', 'js/fiches/vins-cuisine.js',
+  'js/menu.js', 'js/recettes.js', 'js/dashboard.js', 'js/stats.js',
   'js/kitchen.js', 'js/cuisine.js', 'js/menage.js', 'js/classement.js', 'js/rangement.js', 'js/note.js', 'js/openorder.js', 'js/options.js',
   'js/mobile/shell.js', 'js/mobile/views.js', 'js/mobile/mfloor.js',
   'js/mobile/morder.js', 'js/mobile/mhome.js',

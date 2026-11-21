@@ -1029,3 +1029,80 @@ body.mobile .tuto-foot .btn { min-height: 48px; padding-left: 16px; padding-righ
 /* Note de frais : aperçu de la TVA dans la fenêtre d'impression. */
 .frais-tva { display: grid; gap: 6px; font-variant-numeric: tabular-nums; }
 .frais-tva > div { display: flex; justify-content: space-between; gap: 12px; font-weight: 600; }
+
+/* ── Produits · Fiches ── */
+.fi-screen { height: 100%; display: flex; flex-direction: column; }
+.fi-screen .viewbar { position: static; flex: none; }
+.fi-seg { margin-left: 14px; }
+.fi-body { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.fi-tools { flex: none; display: flex; align-items: center; gap: 12px; padding: 0 18px 12px; }
+.fi-search { flex: 0 0 360px; }
+.fi-chips { display: flex; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+.fi-chips::-webkit-scrollbar { display: none; }
+.fi-chips .chip { flex: none; }
+.fi-chips .chip.active { background: var(--text); color: var(--ink); border-color: var(--text); }
+.fi-main { flex: 1; min-height: 0; display: grid; grid-template-columns: 380px 1fr; border-top: 1px solid var(--line); }
+.fi-list { overflow-y: auto; -webkit-overflow-scrolling: touch; border-right: 1px solid var(--line); padding: 4px 12px 24px; }
+.fi-group { margin: 16px 6px 6px; font-size: 11px; }
+.fi-item {
+  appearance: none; width: 100%; text-align: left; font-family: var(--ui); color: var(--text); cursor: pointer;
+  display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 10px 12px;
+  background: transparent; border: 1px solid transparent; border-radius: 11px;
+}
+.fi-item:active { background: var(--ink-1); }
+.fi-item.on { background: var(--ink-2); border-color: var(--line-2); }
+.fi-item.unavail { opacity: .5; }
+.fi-item .n { font-weight: 700; font-size: 15px; }
+.fi-item .p { color: var(--brass-soft); font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.fi-item .s { grid-column: 1 / -1; font-size: 12.5px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fi-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--libre); margin-left: 7px; vertical-align: middle; }
+.fi-dot.vide { background: transparent; border: 1px solid var(--faint); }
+.fi-rien { padding: 30px 10px; color: var(--muted); text-align: center; }
+.fi-fiche { overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 22px 28px 32px; user-select: text; }
+.fi-retour { display: none; margin-bottom: 10px; }
+.fi-head { display: flex; align-items: flex-start; gap: 16px; }
+.fi-fam { color: var(--muted); font-size: 14px; }
+.fi-head h1 { font-family: var(--display); font-size: 42px; line-height: 1; margin: 4px 0 8px; font-weight: 700; }
+.fi-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+.badge.fi-verif { color: var(--orange); border: 1px solid rgba(242,145,61,.45); }
+.fi-prix { margin-left: auto; text-align: right; display: grid; gap: 2px; }
+.fi-prix div { font-weight: 700; color: var(--brass-soft); font-size: 17px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.fi-prix small { color: var(--faint); font-weight: 500; margin-right: 6px; font-size: 13px; }
+.fi-desc { color: var(--muted); }
+.fi-vide { margin: 22px 0; padding: 18px; border: 1px dashed var(--line-2); border-radius: 14px; color: var(--muted); text-align: center; }
+.fi-pitch { margin: 18px 0 6px; padding: 16px 18px; background: linear-gradient(135deg, rgba(141,184,242,.14), rgba(141,184,242,.04)); border: 1px solid rgba(141,184,242,.3); border-radius: 14px; }
+.fi-pitch .lbl { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--bluebird); font-weight: 700; margin-bottom: 6px; }
+.fi-pitch p { margin: 0; font-size: 18px; line-height: 1.45; }
+.fi-faits { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 16px 0; }
+.fi-fait { background: var(--ink-1); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; min-width: 0; }
+.fi-fait .k { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); font-weight: 700; }
+.fi-fait .v { font-size: 16px; font-weight: 700; margin-top: 3px; }
+.fi-cols { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; }
+.fi-card { background: var(--ink-1); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+.fi-card h4 { margin: 0 0 10px; font-family: var(--display); font-size: 19px; font-weight: 600; letter-spacing: .02em; }
+.fi-deg { display: grid; grid-template-columns: 96px 1fr; gap: 8px 12px; font-size: 14.5px; line-height: 1.4; }
+.fi-deg b { color: var(--brass-soft); font-weight: 600; }
+.fi-service { margin-top: 8px; }
+.fi-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.fi-tag { padding: 5px 10px; border-radius: 99px; background: var(--ink-3); font-size: 13px; font-weight: 600; }
+.fi-jauges { margin-top: 12px; font-size: 13px; color: var(--muted); }
+.fi-jauge { display: grid; grid-template-columns: 90px 1fr; align-items: center; gap: 10px; margin-top: 6px; }
+.fi-bar { height: 7px; border-radius: 9px; background: var(--ink-3); overflow: hidden; }
+.fi-bar i { display: block; height: 100%; background: var(--brass); }
+.fi-alt { margin-top: 16px; display: grid; gap: 8px; }
+.fi-alt h4 { margin-bottom: 2px; }
+.fi-alt-item {
+  appearance: none; display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 10px 12px; border-radius: 10px; background: var(--ink-2); border: 0; color: var(--text);
+  font-family: var(--ui); font-size: 14px; text-align: left; cursor: pointer;
+}
+.fi-alt-item:active { background: var(--ink-3); }
+.fi-alt-item span { color: var(--faint); font-size: 12.5px; text-align: right; }
+.fi-alt-item:disabled { opacity: .5; cursor: default; }
+.fi-infos { margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap; }
+.fi-info { padding: 7px 12px; border-radius: 9px; font-size: 13px; font-weight: 600; border: 1px solid var(--line-2); color: var(--muted); }
+.fi-info.alerte { border-color: rgba(242,135,123,.5); color: var(--encaisser); }
+.fi-edit { margin-top: 18px; display: flex; justify-content: flex-end; }
+.fi-ed-lignes { display: grid; gap: 8px; }
+.fi-ed-pitch { height: auto; padding: 10px 14px; line-height: 1.4; resize: vertical; }
+.fi-ed-alerte { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); white-space: nowrap; }

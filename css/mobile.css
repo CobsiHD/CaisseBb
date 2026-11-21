@@ -326,3 +326,19 @@ body.mobile .st-periodes { max-width: 100%; }
 body.mobile .cards.st-kpis { grid-template-columns: 1fr 1fr; }
 body.mobile .st-cols, body.mobile .st-panel:not(.large) .st-cols { height: 150px; }
 body.mobile .st-col-lbl { font-size: 10px; }
+
+/* ── Produits · Fiches : la liste, puis la fiche en plein écran ── */
+body.mobile .fi-tools { flex-direction: column; align-items: stretch; padding: 0 14px 10px; }
+body.mobile .fi-search { flex: none; }
+body.mobile .fi-main { grid-template-columns: 1fr; }
+body.mobile .fi-list { border-right: 0; padding-bottom: calc(24px + var(--safe-b)); }
+body.mobile .fi-fiche { display: none; padding: 14px 14px calc(24px + var(--safe-b)); }
+body.mobile .fi-main.detail .fi-list { display: none; }
+body.mobile .fi-main.detail .fi-fiche { display: block; }
+body.mobile .fi-retour { display: inline-flex; }
+body.mobile .fi-head { flex-direction: column; gap: 8px; }
+body.mobile .fi-head h1 { font-size: 34px; }
+body.mobile .fi-prix { margin-left: 0; text-align: left; display: flex; gap: 14px; flex-wrap: wrap; }
+body.mobile .fi-faits { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+body.mobile .fi-cols { grid-template-columns: 1fr; }
+body.mobile .fi-pitch p { font-size: 17px; }

@@ -7,7 +7,7 @@
 // migrations.js, qui importe déjà store.js.
 import { classeCocktail } from './classement.js';
 
-export const CATALOG_REV = 14;
+export const CATALOG_REV = 15;
 
 export const CATEGORIES = [
   {
@@ -816,7 +816,7 @@ export const PRODUCTS = [
     ],
     "options": [],
     "optionGroups": [],
-    "happyHour": true,
+    "happyHour": false,
     "desc": "Apérol, Prosecco, Eau Pétillante",
     "available": true,
     "order": 14,
@@ -856,7 +856,7 @@ export const PRODUCTS = [
     ],
     "options": [],
     "optionGroups": [],
-    "happyHour": true,
+    "happyHour": false,
     "desc": "Campari, Prosecco, Eau Pétillante",
     "available": true,
     "order": 15,
@@ -896,7 +896,7 @@ export const PRODUCTS = [
     ],
     "options": [],
     "optionGroups": [],
-    "happyHour": true,
+    "happyHour": false,
     "desc": "Italicus, Prosecco, Eau Pétillante",
     "available": true,
     "order": 16,
@@ -936,7 +936,7 @@ export const PRODUCTS = [
     ],
     "options": [],
     "optionGroups": [],
-    "happyHour": true,
+    "happyHour": false,
     "desc": "St Germain, Prosecco, Eau Pétillante",
     "available": true,
     "order": 17,
@@ -976,7 +976,7 @@ export const PRODUCTS = [
     ],
     "options": [],
     "optionGroups": [],
-    "happyHour": true,
+    "happyHour": false,
     "desc": "Limoncello, Prosecco, Eau Pétillante",
     "available": true,
     "order": 18,
@@ -1016,7 +1016,7 @@ export const PRODUCTS = [
     ],
     "options": [],
     "optionGroups": [],
-    "happyHour": true,
+    "happyHour": false,
     "desc": "Melonade, Prosecco, Eau Pétillante",
     "available": true,
     "order": 19,
@@ -1181,7 +1181,7 @@ export const PRODUCTS = [
     ],
     "options": [],
     "optionGroups": [],
-    "happyHour": true,
+    "happyHour": false,
     "desc": "",
     "available": true,
     "order": 23
@@ -1203,7 +1203,7 @@ export const PRODUCTS = [
     ],
     "options": [],
     "optionGroups": [],
-    "happyHour": true,
+    "happyHour": false,
     "desc": "Bière blanche belge légère et rafraîchissante, aux notes d’agrumes et d’épices, avec une douce touche de coriandre.",
     "available": true,
     "order": 24
@@ -1225,7 +1225,7 @@ export const PRODUCTS = [
     ],
     "options": [],
     "optionGroups": [],
-    "happyHour": true,
+    "happyHour": false,
     "desc": "",
     "available": true,
     "order": 25
@@ -1247,7 +1247,7 @@ export const PRODUCTS = [
     ],
     "options": [],
     "optionGroups": [],
-    "happyHour": true,
+    "happyHour": false,
     "desc": "",
     "available": true,
     "order": 26
@@ -1269,7 +1269,7 @@ export const PRODUCTS = [
     ],
     "options": [],
     "optionGroups": [],
-    "happyHour": true,
+    "happyHour": false,
     "desc": "",
     "available": true,
     "order": 27
@@ -1291,7 +1291,7 @@ export const PRODUCTS = [
     ],
     "options": [],
     "optionGroups": [],
-    "happyHour": true,
+    "happyHour": false,
     "desc": "",
     "available": true,
     "order": 28
@@ -1313,7 +1313,7 @@ export const PRODUCTS = [
     ],
     "options": [],
     "optionGroups": [],
-    "happyHour": true,
+    "happyHour": false,
     "desc": "Bière belge fruitée et rafraîchissante, aux arômes généreux de pêche. Douce, légère et sucrée, avec une finale fraîche et gourmande.",
     "available": true,
     "order": 29
@@ -2714,7 +2714,7 @@ export const PRODUCTS = [
     "id": "spiritueux-pastis-des-alpes",
     "categoryId": "spiritueux",
     "sub": "Liqueurs & Autres",
-    "name": "Pastis des Alpes",
+    "name": "Ricard",
     "variants": [
       {
         "label": "2cl",
@@ -2827,28 +2827,6 @@ export const PRODUCTS = [
     "order": 100
   },
   {
-    "id": "vins-syrah",
-    "categoryId": "vins",
-    "sub": "Rouges",
-    "name": "Syrah",
-    "variants": [
-      {
-        "label": "Verre",
-        "price": 4.5
-      },
-      {
-        "label": "Bouteille",
-        "price": 23
-      }
-    ],
-    "options": [],
-    "optionGroups": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 101
-  },
-  {
     "id": "vins-studio-rose",
     "categoryId": "vins",
     "sub": "Rosé",
@@ -2896,7 +2874,7 @@ export const PRODUCTS = [
     "id": "vins-chardonnay-bphr",
     "categoryId": "vins",
     "sub": "Blancs",
-    "name": "Chardonnay Bphr",
+    "name": "Les Jamelles",
     "variants": [
       {
         "label": "Verre",
@@ -2959,46 +2937,6 @@ export const PRODUCTS = [
     "order": 106
   },
   {
-    "id": "vins-studio-blanc",
-    "categoryId": "vins",
-    "sub": "Blancs",
-    "name": "Studio Blanc",
-    "variants": [
-      {
-        "label": "Verre",
-        "price": 6
-      },
-      {
-        "label": "Bouteille",
-        "price": 28
-      }
-    ],
-    "options": [],
-    "optionGroups": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 107
-  },
-  {
-    "id": "vins-lallier",
-    "categoryId": "vins",
-    "sub": "Champagne",
-    "name": "Lallier",
-    "variants": [
-      {
-        "label": "Bouteille",
-        "price": 100
-      }
-    ],
-    "options": [],
-    "optionGroups": [],
-    "happyHour": false,
-    "desc": "",
-    "available": true,
-    "order": 108
-  },
-  {
     "id": "vins-veuve-clicquot",
     "categoryId": "vins",
     "sub": "Champagne",
@@ -3056,7 +2994,7 @@ export const PRODUCTS = [
     "id": "snack-tenders-3-pieces",
     "categoryId": "snack",
     "sub": "The Tapas",
-    "name": "Tenders (3 pièces)",
+    "name": "Tenders de poulet (4 pièces)",
     "variants": [
       {
         "label": "",
@@ -3078,7 +3016,7 @@ export const PRODUCTS = [
     "id": "snack-nuggets-de-poulet-6-pieces",
     "categoryId": "snack",
     "sub": "The Tapas",
-    "name": "Nuggets de Poulet (6 pièces)",
+    "name": "Nuggets (6 pièces)",
     "variants": [
       {
         "label": "",
@@ -3122,7 +3060,7 @@ export const PRODUCTS = [
     "id": "snack-oignons-rings-8-pieces",
     "categoryId": "snack",
     "sub": "The Tapas",
-    "name": "Oignons Rings (8 pièces)",
+    "name": "Oignons rings (8 pièces)",
     "variants": [
       {
         "label": "",
@@ -3144,7 +3082,7 @@ export const PRODUCTS = [
     "id": "snack-camemberts-panes-6-pieces",
     "categoryId": "snack",
     "sub": "The Tapas",
-    "name": "Camemberts Panés (6 pièces)",
+    "name": "Camembert pané (6 pièces)",
     "variants": [
       {
         "label": "",
@@ -3166,7 +3104,7 @@ export const PRODUCTS = [
     "id": "snack-chili-cheese-6-pieces",
     "categoryId": "snack",
     "sub": "The Tapas",
-    "name": "Chili Cheese (6 pièces)",
+    "name": "Chilli cheese (6 pièces)",
     "variants": [
       {
         "label": "",
@@ -3210,7 +3148,7 @@ export const PRODUCTS = [
     "id": "snack-la-barquette",
     "categoryId": "snack",
     "sub": "The Frites",
-    "name": "La Barquette",
+    "name": "Frites maison",
     "variants": [
       {
         "label": "",
@@ -3232,7 +3170,7 @@ export const PRODUCTS = [
     "id": "snack-frites-xxl",
     "categoryId": "snack",
     "sub": "The Frites",
-    "name": "Frites XXL",
+    "name": "Frites maison XXL",
     "variants": [
       {
         "label": "",
@@ -3274,7 +3212,7 @@ export const PRODUCTS = [
             "delta": 0
           },
           {
-            "label": "Nuggets de Poulet",
+            "label": "Nuggets",
             "delta": 0
           },
           {
@@ -3282,15 +3220,15 @@ export const PRODUCTS = [
             "delta": 0
           },
           {
-            "label": "Oignons Rings",
+            "label": "Oignons rings",
             "delta": 0
           },
           {
-            "label": "Camemberts Panés",
+            "label": "Camembert pané",
             "delta": 0
           },
           {
-            "label": "Chili Cheese",
+            "label": "Chilli cheese",
             "delta": 0
           },
           {
@@ -3307,6 +3245,24 @@ export const PRODUCTS = [
     "desc": "Frites + 3 tapas de 4 pièces au choix, sauf les tenders (2 pièces)",
     "available": true,
     "order": 121
+  },
+  {
+    "id": "snack-plateau-mix",
+    "categoryId": "snack",
+    "sub": "Pas Mal",
+    "name": "Plateau Mix",
+    "variants": [
+      {
+        "label": "2 pers.",
+        "price": 14.5
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "Charcuterie & fromage pour 2 : cornichons, olives et pain",
+    "available": true,
+    "order": 121.5
   },
   {
     "id": "evenement-metre-mixte",
