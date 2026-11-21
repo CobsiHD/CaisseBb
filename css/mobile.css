@@ -305,3 +305,12 @@ body.mobile .mg-total { min-width: 0; width: 100%; }
 body.mobile .mg-grid { display: block; padding: 12px 14px calc(14px + var(--safe-b)); }
 body.mobile .mg-panel { margin-bottom: 12px; }
 body.mobile .mg-panel-body { overflow: visible; }
+
+/* ── Tableau de bord : statistiques en une colonne ── */
+body.mobile .st-grid { grid-template-columns: 1fr; }
+body.mobile .st-label { flex: 1; font-size: 13px; }
+body.mobile .viewbar:has(.st-periodes) .spacer { display: none; }
+body.mobile .st-periodes { max-width: 100%; }
+body.mobile .cards.st-kpis { grid-template-columns: 1fr 1fr; }
+body.mobile .st-cols, body.mobile .st-panel:not(.large) .st-cols { height: 150px; }
+body.mobile .st-col-lbl { font-size: 10px; }

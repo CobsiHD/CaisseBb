@@ -283,7 +283,10 @@ const TOURS = {
 
   // ── Tableau de bord ──
   dashboard: () => [
-    { el: '.dash .cards', title: 'Le Tableau de bord', text: ['Les chiffres du service en un coup d\'œil.'] },
+    { el: '.dash .st-live', title: 'Le Tableau de bord', text: ['En haut, le service en cours : chiffre des notes ouvertes, tables occupées, notes à encaisser.'] },
+    { el: '.viewbar .st-periodes', title: 'La période', text: ['Jour, semaine, mois ou tout : les statistiques dessous suivent. Les flèches ◀ ▶ remontent dans le temps.'] },
+    { el: '.dash .st-kpis', title: 'Encaissé', text: ['Chiffre d\'affaires, nombre de notes, ticket moyen… avec l\'évolution par rapport à la période d\'avant.'] },
+    { el: '.st-grid', optional: true, title: 'Le détail', text: ['Le chiffre dans le temps, les produits les plus vendus, la part de chaque famille et de chaque zone. Touche une colonne pour lire sa valeur.'] },
     { el: '.open-row', optional: true, title: 'Les notes ouvertes', text: ['Les notes pas encore encaissées, la plus ancienne en premier. Touche-en une pour l\'ouvrir.'] },
   ],
 
