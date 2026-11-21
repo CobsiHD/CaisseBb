@@ -4,7 +4,10 @@ import { state, emit, money, lineUnit, lineTotal, reloadTiles, reloadCatalog, ta
 import { h, clear, toast, modal, field, confirmDialog } from './ui.js';
 import * as store from './store.js';
 import { isTableType } from './elements.js';
-import { catColor, colorPicker, paginate } from './pos.js';
+import { catColor, colorPicker, paginate, tileStyle } from './pos.js';
+import {
+  familyProducts, enterFamily, matches, prodColor, productTileParts, groupPage, crumbs, classFields,
+} from './rangement.js';
 import { unsentCount, hasCuisineLines, printTicket } from './kitchen.js';
 import { addProductToItems } from './note.js';
 import { groupsEditor, optionLabel } from './options.js';
@@ -13,7 +16,7 @@ import { visibleCategories } from './profile.js';
 const slug = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'x';
 
 let selection = [];
-let nav = { level: 'cats', catId: null, sub: null, page: 0 };
+let nav = { level: 'cats', catId: null, group: null, page: 0 };
 let editMode = false;
 let leftEl = null, rightEl = null;
 
@@ -40,13 +43,14 @@ function renderSelection() {
   const total = selection.reduce((s, it) => s + lineTotal(it), 0);
   const toPrint = unsentCount(selection);
   leftEl.append(h('div', { class: 'ticket-foot' },
-    h('div', { class: 'total-row' }, h('span', { class: 'lbl' }, 'Total'), h('span', { class: 'val' }, money(total))),
     h('div', { class: 'row' },
-      h('button', { class: 'btn btn-primary', style: 'flex:2', disabled: selection.length === 0, onclick: sendToTable }, 'Envoyer vers une table'),
       h('button', {
-        class: 'btn btn-send-inline', style: 'flex:1', disabled: selection.length === 0, onclick: printBon,
+        class: 'btn btn-send-inline', style: 'flex:2', disabled: selection.length === 0, onclick: printBon,
       }, `🖨 Imprimer · ${toPrint}`),
       h('button', { class: 'btn btn-ghost', disabled: selection.length === 0, onclick: () => { selection = []; renderSelection(); } }, 'Vider')),
+    // Le geste principal porte le total : un seul endroit à regarder.
+    h('button', { class: 'btn btn-pay', disabled: selection.length === 0, onclick: sendToTable },
+      h('span', { class: 'lbl' }, 'Envoyer vers une table'), h('span', { class: 'val' }, money(total))),
   ));
 }
 
@@ -136,7 +140,23 @@ async function saveGrid(grid) {
 // ── Dashboard / produits (droite) ────────────────────────────
 function renderRight() {
   clear(rightEl);
-  if (nav.level === 'cats') renderCats(); else renderProducts();
+  if (nav.level === 'cats') renderCats();
+  else if (nav.level === 'groups') renderGroups();
+  else renderProducts();
+}
+
+const go = (n) => { nav = n; renderRight(); };
+const boutonEdition = () => h('button', { class: `chip ${editMode ? 'active' : ''}`,
+  onclick: () => { editMode = !editMode; renderRight(); } }, editMode ? '✓ Terminer' : '✎ Édition');
+
+// La page des rangements d'une famille (Signature, Créations… Gin, Rhum…).
+function renderGroups() {
+  const cat = state.categories.find((c) => c.id === nav.catId);
+  rightEl.append(h('div', { class: 'pos-bar' },
+    crumbs(nav, go), h('div', { class: 'spacer' }),
+    editMode && cat ? h('button', { class: 'chip', onclick: () => editCategory(cat) }, '✎ Famille') : null,
+    boutonEdition()));
+  rightEl.append(groupPage(nav.catId, (g) => go({ level: 'products', catId: nav.catId, group: g, page: 0 })));
 }
 
 function renderCats() {
@@ -152,16 +172,16 @@ function renderCats() {
   // Ce qui a droit à une case, et comment le dessiner.
   const rendus = new Map();
   for (const c of visibleCategories()) {
-    const has = state.products.some((p) => p.categoryId === c.id);
-    if (!has && !editMode) continue;   // en service : on masque les familles vides
-    const count = state.products.filter((p) => p.categoryId === c.id && p.available !== false).length;
-    rendus.set(slotKey('cat', c.id), () => h('button', { class: 'tile cat-tile', style: `--c:${catColor(c.id)}`,
-      onclick: editMode ? null : () => { nav = { level: 'products', catId: c.id, sub: null, page: 0 }; renderRight(); } },
+    const dedans = familyProducts(c.id);
+    if (!dedans.length && !editMode) continue;   // en service : on masque les familles vides
+    const count = dedans.filter((p) => p.available !== false).length;
+    rendus.set(slotKey('cat', c.id), () => h('button', { class: 'tile cat-tile', style: tileStyle(catColor(c.id)),
+      onclick: editMode ? null : () => go(enterFamily(c.id)) },
       editMode ? h('span', { class: 'tedit' }, '⠿') : null,
       h('span', { class: 'tcount' }, `${count}`), h('div', { class: 'tt' }, c.name)));
   }
   for (const t of state.tiles) {
-    rendus.set(slotKey('tile', t.id), () => h('button', { class: 'tile custom-tile', style: `--c:${t.color || '#4FA3C7'}`,
+    rendus.set(slotKey('tile', t.id), () => h('button', { class: 'tile custom-tile', style: tileStyle(t.color),
       onclick: editMode ? null : () => tapCustom(t) },
       editMode ? h('span', { class: 'tedit' }, '⠿') : null,
       h('div', { class: 'tt' }, t.label || 'Tuile'),
@@ -202,31 +222,25 @@ function trou(i, visible) {
 
 function renderProducts() {
   const cat = state.categories.find((c) => c.id === nav.catId);
-  const all = state.products.filter((p) => p.categoryId === nav.catId);
-  const subs = [...new Set(all.map((p) => p.sub).filter(Boolean))];
+  const all = familyProducts(nav.catId);
   const pager = h('div', { class: 'pos-pager' });
 
   rightEl.append(h('div', { class: 'pos-bar' },
-    h('button', { class: 'chip', onclick: () => { nav = { level: 'cats' }; renderRight(); } }, '‹ Familles'),
-    h('h3', {}, cat?.name || ''), h('div', { class: 'spacer' }),
+    crumbs(nav, go), h('div', { class: 'spacer' }),
     editMode && cat ? h('button', { class: 'chip', onclick: () => editCategory(cat) }, '✎ Famille') : null,
-    h('button', { class: `chip ${editMode ? 'active' : ''}`, onclick: () => { editMode = !editMode; renderRight(); } }, editMode ? '✓ Terminer' : '✎ Édition'),
+    boutonEdition(),
     pager));
-
-  if (subs.length > 1) rightEl.append(h('div', { class: 'pos-subs' },
-    h('button', { class: `chip ${nav.sub == null ? 'active' : ''}`, onclick: () => { nav.sub = null; nav.page = 0; renderRight(); } }, 'Tous'),
-    subs.map((s) => h('button', { class: `chip ${nav.sub === s ? 'active' : ''}`, onclick: () => { nav.sub = s; nav.page = 0; renderRight(); } }, s))));
 
   const grid = h('div', { class: 'tile-grid' });
   rightEl.append(grid);
 
   // Les places valent pour la famille entière, jamais pour la vue filtrée : une
-  // sous-famille ne montre qu'une partie des touches, et si on enregistrait
+  // rangement ne montre qu'une partie des touches, et si on enregistrait
   // d'après elle, les places des touches masquées seraient écrasées.
   const parCle = new Map(all.map((p) => [slotKey('prod', p.id), p]));
   const cases = placeTiles([...parCle.keys()], savedSlots());
   // Vue filtrée : on resserre, il n'y a pas de case vide où viser.
-  const visibles = nav.sub ? new Set(all.filter((p) => p.sub === nav.sub).map((p) => slotKey('prod', p.id))) : null;
+  const visibles = nav.group ? new Set(all.filter((p) => matches(p, nav.group)).map((p) => slotKey('prod', p.id))) : null;
 
   const tiles = [];
   cases.forEach((key, i) => {
@@ -234,11 +248,10 @@ function renderProducts() {
     if (visibles && !visibles.has(key)) return;
     const p = parCle.get(key);
     const el = h('button', { class: `tile prod-tile ${p.available === false ? 'unavail' : ''}`,
-      style: `--c:${p.color || catColor(nav.catId)}`, dataset: { slot: String(i) },
+      style: tileStyle(prodColor(p)), dataset: { slot: String(i) },
       onclick: editMode ? null : () => p.available !== false && addProduct(p) },
       editMode ? h('span', { class: 'tedit' }, '⠿') : null,
-      h('div', { class: 'tt' }, p.name),
-      h('div', { class: 'tp' }, p.variants.map((v) => `${v.label ? v.label + ' ' : ''}${money(v.price)}`).join(' · ')));
+      productTileParts(p, nav.group, nav.catId, money));
     if (editMode) enableSlotDrag(el, key, i, cases);
     tiles.push(el);
   });
@@ -265,7 +278,7 @@ async function addProduct(product) {
 
 function tapCustom(t) {
   if (t.productId) { const p = state.products.find((x) => x.id === t.productId); if (p) addProduct(p); else toast('Produit introuvable'); }
-  else if (t.categoryId) { nav = { level: 'products', catId: t.categoryId, sub: null, page: 0 }; renderRight(); }
+  else if (t.categoryId) go(enterFamily(t.categoryId));
 }
 
 // ── Déplacement des tuiles au doigt (Pointer Events) ─────────
@@ -343,8 +356,7 @@ function tapEnEdition(key) {
     // Toucher une famille y entre, en édition comme en service : c'est le seul
     // chemin pour aller ranger ses touches. Son formulaire reste sur la
     // pastille « ✎ Famille » de la barre du dessus.
-    nav = { level: 'products', catId: id, sub: null, page: 0 };
-    renderRight();
+    go(enterFamily(id));
   }
 }
 
@@ -403,7 +415,7 @@ async function editCategory(cat) {
     const count = state.products.filter((p) => p.categoryId === cat.id).length;
     if (count) { toast(`Videz d'abord ses ${count} touche(s)`); return; }
     if (await confirmDialog(`Supprimer la famille « ${cat.name} » ?`, { okLabel: 'Supprimer', danger: true })) {
-      await store.del('categories', cat.id); await reloadCatalog(); nav = { level: 'cats' }; renderRight(); toast('Famille supprimée');
+      await store.del('categories', cat.id); await reloadCatalog(); nav = { level: 'cats', catId: null, group: null, page: 0 }; renderRight(); toast('Famille supprimée');
     }
     return;
   }
@@ -419,7 +431,7 @@ async function editCategory(cat) {
     await store.put('categories', { ...cat, name: name.value.trim(), color: picker.get(), cuisine: cuisine.checked, au22: au22.checked });
   }
   await reloadCatalog();
-  if (newId) nav = { level: 'products', catId: newId, sub: null, page: 0 }; // on entre dans la famille pour y ajouter des touches
+  if (newId) nav = { level: 'products', catId: newId, group: null, page: 0 }; // on entre dans la famille pour y ajouter des touches
   renderRight();
   toast(isNew ? 'Famille créée' : 'Famille enregistrée');
 }
@@ -428,12 +440,18 @@ async function editCategory(cat) {
 async function editTouch(product) {
   const isNew = !product;
   const catId = product?.categoryId || nav.catId;
-  product = product || { name: '', categoryId: catId, sub: '', variants: [{ label: '', price: 0 }], options: [], happyHour: false, available: true, desc: '', color: '' };
+  // Une touche créée depuis un rangement y naît : dans « Créations » elle est
+  // une création, dans « Vodka » elle est à la vodka.
+  const g = nav.group;
+  product = product || { name: '', categoryId: catId, sub: '', variants: [{ label: '', price: 0 }], options: [], happyHour: false, available: true, desc: '', color: '',
+    type: g?.key === 'type' ? g.value : '', alcools: g?.key === 'alcool' ? [g.value] : [] };
   const multi = (product.variants || []).length > 1;
 
   const name = h('input', { class: 'input', value: product.name || '', placeholder: 'ex. Mojito' });
   const price = h('input', { class: 'input', type: 'number', step: '0.1', min: 0, value: product.variants?.[0]?.price ?? 0, placeholder: 'Prix €' });
-  const picker = colorPicker(product.color || catColor(catId));
+  const couleurAuto = prodColor({ ...product, color: '' });
+  const picker = colorPicker(product.color || couleurAuto);
+  const rangement = classFields(product, catId);
   // Sous-familles de choix (Sauce, Cuisson…) : éditables ici, au comptoir,
   // sans passer par l'onglet Produits.
   const groups = groupsEditor(product);
@@ -442,6 +460,7 @@ async function editTouch(product) {
     field('Nom de la touche', name),
     field(multi ? 'Prix (1er format)' : 'Prix', price),
     multi ? h('div', { class: 'faint', style: 'font-size:12px; margin:-4px 0 6px' }, 'Plusieurs formats : gérez-les dans l\'onglet Produits.') : null,
+    rangement.el,
     field('Couleur', picker.el),
     field('Sous-choix (sauces, cuisson…)', groups.el));
 
@@ -464,7 +483,12 @@ async function editTouch(product) {
 
   // `options: []` : l'éditeur a repris l'ancienne liste plate dans ses
   // sous-familles, la garder ferait apparaître les choix en double.
-  const obj = { ...product, name: name.value.trim(), categoryId: catId, variants, color: picker.get(),
+  // La couleur n'est retenue que si on l'a vraiment choisie : laissée telle
+  // quelle, la touche continue de suivre son alcool ou sa famille.
+  const choisie = picker.get();
+  const obj = { ...product, name: name.value.trim(), categoryId: catId, variants,
+    color: !product.color && choisie === couleurAuto ? '' : choisie,
+    ...rangement.get(),
     options: [], optionGroups: groups.get() };
   if (isNew) { obj.id = `${catId}-${slug(name.value)}-${state.products.length}`; obj.order = state.products.length; }
   await store.put('products', obj);
@@ -475,9 +499,9 @@ async function editTouch(product) {
 // ── Édition d'une tuile personnalisée ────────────────────────
 async function editTile(tile) {
   const isNew = !tile;
-  tile = tile || { label: '', color: '#4FA3C7', productId: null, categoryId: null };
+  tile = tile || { label: '', color: '#8DB8F2', productId: null, categoryId: null };
   const label = h('input', { class: 'input', value: tile.label || '', placeholder: 'ex. Mojito, Pression 50cl…' });
-  const picker = colorPicker(tile.color || '#4FA3C7');
+  const picker = colorPicker(tile.color || '#8DB8F2');
 
   // Le libellé se remplit tout seul depuis le produit/famille, tant que l'utilisateur n'a pas tapé le sien.
   let labelAuto = isNew && !tile.label;
@@ -499,7 +523,7 @@ async function editTile(tile) {
   function applyLink() {
     const it = linkedItem();
     if (!it) return;
-    const color = link.type === 'prod' ? (it.color || catColor(it.categoryId)) : catColor(it.id);
+    const color = link.type === 'prod' ? prodColor(it) : catColor(it.id);
     if (labelAuto || !label.value.trim()) { label.value = it.name; labelAuto = true; }
     if (color) picker.set(color);
   }
@@ -528,9 +552,9 @@ async function editTile(tile) {
       h('button', { class: 'chip', onclick: closePicker }, '‹ Retour')));
     const grid = pickerGrid();
     for (const c of visibleCategories()) {
-      const count = state.products.filter((p) => p.categoryId === c.id).length;
+      const count = familyProducts(c.id).length;
       if (!count) continue;
-      grid.append(h('button', { class: 'tile cat-tile', style: `--c:${catColor(c.id)}`, onclick: () => pickerProds(c.id) },
+      grid.append(h('button', { class: 'tile cat-tile', style: tileStyle(catColor(c.id)), onclick: () => pickerProds(c.id) },
         h('span', { class: 'tcount' }, `${count}`), h('div', { class: 'tt' }, c.name)));
     }
     pickerView.append(grid);
@@ -542,12 +566,11 @@ async function editTile(tile) {
       h('button', { class: 'chip', onclick: pickerCats }, '‹ Familles'),
       h('h3', {}, cat?.name || ''), h('div', { class: 'spacer' })));
     const grid = pickerGrid();
-    grid.append(h('button', { class: 'tile custom-tile', style: `--c:${catColor(cid)}`, onclick: () => choose({ type: 'cat', id: cid }) },
+    grid.append(h('button', { class: 'tile custom-tile', style: tileStyle(catColor(cid)), onclick: () => choose({ type: 'cat', id: cid }) },
       h('div', { class: 'tt' }, 'Toute la famille'), h('div', { class: 'ts' }, cat?.name || '')));
-    for (const p of state.products.filter((p) => p.categoryId === cid)) {
-      grid.append(h('button', { class: 'tile prod-tile', style: `--c:${p.color || catColor(cid)}`, onclick: () => choose({ type: 'prod', id: p.id }) },
-        h('div', { class: 'tt' }, p.name),
-        h('div', { class: 'tp' }, p.variants.map((v) => `${v.label ? v.label + ' ' : ''}${money(v.price)}`).join(' · '))));
+    for (const p of familyProducts(cid)) {
+      grid.append(h('button', { class: 'tile prod-tile', style: tileStyle(prodColor(p)), onclick: () => choose({ type: 'prod', id: p.id }) },
+        productTileParts(p, null, cid, money)));
     }
     pickerView.append(grid);
   }

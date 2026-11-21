@@ -39,7 +39,7 @@ body.mobile .view {
   height: calc(var(--mnav) + var(--safe-b));
   padding-bottom: var(--safe-b);
   border-top: 1px solid var(--line-2);
-  background: linear-gradient(180deg, rgba(19,36,58,.94), rgba(14,27,42,.98));
+  background: var(--ink-1);
   backdrop-filter: blur(12px);
 }
 .m-tab {
@@ -183,8 +183,11 @@ body.mobile .floor-bar { gap: 8px; padding: 10px 12px; }
   overflow-x: hidden;
 }
 .m-grid .tile { padding: 12px; border-radius: var(--r); gap: 4px; }
-.m-grid .tile .tt { font-size: 16px; }
-.m-grid .cat-tile .tt { font-size: 23px; }
+.m-grid .tile .tt { font-size: 21px; }
+.m-grid .cat-tile .tt, .m-grid .group-tile .tt { font-size: 24px; }
+/* La page des rangements occupe toute la largeur ; ses tuiles vont par deux. */
+.m-grid .group-page { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px; }
+.m-grid .group-grid { flex: none; max-height: none; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 84px; }
 .m-grid .tile .tp { font-size: 13px; }
 .m-grid .tile .ts { font-size: 11px; }
 

@@ -1,4 +1,5 @@
 // catalog.js — gestion du catalogue (produits, prix, variantes, options, dispo).
+import { classFields } from './rangement.js';
 import { state, reloadCatalog, money } from './state.js';
 import { h, clear, toast, modal, field, confirmDialog } from './ui.js';
 import * as store from './store.js';
@@ -217,7 +218,13 @@ async function editProduct(p, container) {
   const newCatColor = colorPicker('#4FA3C7');
   const newCatWrap = h('div', { hidden: p.categoryId !== '__new__', style: 'margin-top:8px; display:grid; gap:8px' },
     newCatName, newCatColor.el);
-  const sub = h('input', { class: 'input', value: p.sub || '', placeholder: 'Sous-catégorie (ex. Classiques)' });
+  const sub = h('input', { class: 'input', value: p.sub || '', placeholder: 'Sous-catégorie (titre sur la carte)' });
+  // Où la touche se range sur le pavé : son type, ses alcools, et une seconde
+  // famille (un cocktail d'hiver se montre aussi dans Cocktails).
+  const rangement = classFields(p, p.categoryId);
+  const aussi = h('select', { class: 'input' },
+    h('option', { value: '' }, 'Aucune'),
+    state.categories.map((c) => h('option', { value: c.id, selected: (p.aussi || [])[0] === c.id }, c.name)));
   const desc = h('input', { class: 'input', value: p.desc || '', placeholder: 'Composition / description (optionnel)' });
 
   const variantsBox = h('div', { class: 'field' }, p.variants.map(variantRow));
@@ -238,6 +245,8 @@ async function editProduct(p, container) {
     field('Nom', name),
     h('div', { class: 'row' }, field('Catégorie', catSel), field('Sous-catégorie', sub)),
     newCatWrap,
+    rangement.el,
+    field('Aussi visible dans la famille', aussi),
     field('Description', desc),
     field('Formats & prix', h('div', {}, variantsBox, addVariant)),
     field('Sous-choix demandés à l\'ajout (sauce, parfum, cuisson…)', groups.el),
@@ -278,6 +287,8 @@ async function editProduct(p, container) {
   const obj = {
     ...p,
     name: name.value.trim(), categoryId, sub: sub.value.trim(), desc: desc.value.trim(),
+    ...rangement.get(),
+    aussi: aussi.value && aussi.value !== categoryId ? [aussi.value] : [],
     variants,
     // L'éditeur a repris l'ancienne liste plate dans ses sous-familles : on la
     // vide ici, sinon les choix apparaîtraient en double.

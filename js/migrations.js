@@ -17,6 +17,7 @@
 import * as store from './store.js';
 import { state, reloadCatalog, reloadTiles } from './state.js';
 import { CATEGORIES, PRODUCTS, OPTION_GROUPS, CATALOG_REV } from './seed.js';
+import { classeCocktail } from './classement.js';
 
 const KEY = 'catalogRev';
 
@@ -291,6 +292,46 @@ async function recettesDeLHiver() {
   if (hiver.length) await store.bulkPut('products', hiver.map((p) => ({ ...p, printRecipe: true })));
 }
 
+// ── 14 · Les cocktails rangés par type ET par alcool ─────────
+// Chaque cocktail reçoit un type (Signature, Création, Classique, Spritz, Sans
+// alcool) et ses alcools ; ceux des cartes de saison se montrent aussi dans
+// Cocktails. On ne touche qu'aux fiches pas encore rangées : ce qui a été réglé
+// au comptoir depuis reste.
+//
+// Les couleurs changent avec le nouveau style. Une touche ou une famille qui
+// portait la couleur par défaut de son ancienne famille la perd : elle suivra
+// la nouvelle palette (et, pour un cocktail, la couleur de son alcool). Une
+// couleur choisie exprès — donc différente de l'ancien défaut — est gardée.
+const ANCIENNES_COULEURS = {
+  'cocktails': '#C9A24B', 'shooters': '#5FA8A0', 'vins': '#9B5A6A',
+  'spiritueux': '#C98A4B', 'bieres': '#D8A93F', 'softs': '#4F8AC7', 'snack': '#8AA15A',
+  'evenement': '#B0566A', 'halloween': '#D9752B', 'hiver': '#6E9BB8',
+};
+const ancienne = (catId, couleur) => {
+  const c = String(couleur || '').toUpperCase();
+  return !!c && (c === ANCIENNES_COULEURS[catId] || c === '#4FA3C7');
+};
+
+async function rangeLesCocktails() {
+  const anciennesFamilles = new Map(state.categories.map((c) => [c.id, c.color]));
+  for (const c of state.categories) {
+    if (ancienne(c.id, c.color)) await store.put('categories', { ...c, color: '' });
+  }
+  const retouches = [];
+  for (const p of state.products) {
+    const patch = {};
+    const classe = classeCocktail(p);
+    if (classe) {
+      if (p.type == null && !Array.isArray(p.alcools)) { patch.type = classe.type; patch.alcools = classe.alcools; }
+      if (classe.aussi && !Array.isArray(p.aussi)) patch.aussi = classe.aussi;
+    }
+    const c = String(p.color || '').toUpperCase();
+    if (c && (ancienne(p.categoryId, c) || c === String(anciennesFamilles.get(p.categoryId) || '').toUpperCase())) patch.color = '';
+    if (Object.keys(patch).length) retouches.push({ ...p, ...patch });
+  }
+  if (retouches.length) await store.bulkPut('products', retouches);
+}
+
 // Le dernier `rev` doit valoir CATALOG_REV : c'est le niveau qu'une base neuve
 // reçoit d'emblée, et ce qu'elle sauterait ici.
 const MIGRATIONS = [
@@ -307,6 +348,7 @@ const MIGRATIONS = [
   { rev: 11, run: carteHiverEtoffee },
   { rev: 12, run: placesDeLHiver },
   { rev: 13, run: recettesDeLHiver },
+  { rev: 14, run: rangeLesCocktails },
 ].filter((m) => m.rev <= CATALOG_REV);
 
 // Applique ce qui manque. À appeler une fois la synchro tentée : avant, les

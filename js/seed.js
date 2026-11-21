@@ -5,7 +5,9 @@
 // déjà en service y montent par les retouches de migrations.js. Ce numéro vit
 // ici et pas dans migrations.js pour que store.js puisse le lire sans importer
 // migrations.js, qui importe déjà store.js.
-export const CATALOG_REV = 13;
+import { classeCocktail } from './classement.js';
+
+export const CATALOG_REV = 14;
 
 export const CATEGORIES = [
   {
@@ -48,19 +50,19 @@ export const CATEGORIES = [
   {
     "id": "evenement",
     "name": "\u00c9v\u00e9nement",
-    "color": "#B0566A",
+    "color": "#E58FB8",
     "order": 7
   },
   {
     "id": "halloween",
     "name": "Halloween",
-    "color": "#D9752B",
+    "color": "#F2913D",
     "order": 8
   },
   {
     "id": "hiver",
     "name": "Hiver",
-    "color": "#6E9BB8",
+    "color": "#A9D4E8",
     "order": 9
   }
 ];
@@ -3892,6 +3894,11 @@ export const PRODUCTS = [
     "order": 139
   }
 ];
+
+// Le rangement des cocktails (type, alcools, seconde famille) se déduit de la
+// carte ci-dessus plutôt que de s'y écrire fiche par fiche : la retouche 14
+// (migrations.js) applique la même règle aux iPads déjà en service.
+for (const p of PRODUCTS) Object.assign(p, classeCocktail(p) || {});
 
 export const DEMO_LAYOUT = [
   {

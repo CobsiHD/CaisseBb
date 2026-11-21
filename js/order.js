@@ -4,7 +4,8 @@
 // toute la logique de note est partagée dans note.js.
 import { state, money, lineUnit, lineTotal, lineBilledQty, openOrdersForTable, tableLabel } from './state.js';
 import { h, clear, toast } from './ui.js';
-import { catColor, paginate } from './pos.js';
+import { catColor, paginate, tileStyle } from './pos.js';
+import { familyProducts, enterFamily, productsIn, prodColor, productTileParts, groupPage, crumbs } from './rangement.js';
 import { optionLabel } from './options.js';
 import {
   tableEl, placeLabel, orderSum, saveOrder, newOrder, ensureOrder,
@@ -15,7 +16,7 @@ import { visibleCategories } from './profile.js';
 
 let activeTableId = null;
 let activeOrderId = null;
-let nav = { level: 'cats', catId: null, sub: null, page: 0 };
+let nav = { level: 'cats', catId: null, group: null, page: 0 };
 let screenEl = null, leftEl = null, rightEl = null;
 let onResize = null;
 
@@ -33,7 +34,7 @@ export function openNote(tableId) {
   activeTableId = tableId;
   const open = openOrdersForTable(tableId);
   activeOrderId = open[0]?.id ?? null;
-  nav = { level: 'cats', catId: null, sub: null, page: 0 };
+  nav = { level: 'cats', catId: null, group: null, page: 0 };
   screenEl.hidden = false;
   onResize = () => renderRight();
   window.addEventListener('resize', onResize);
@@ -88,15 +89,16 @@ function renderTicket() {
   // réimpression, pour le jour où le papier bourre.
   const toPrint = unsentCount(order?.items);
   leftEl.append(h('div', { class: 'ticket-foot' },
-    h('div', { class: 'total-row' }, h('span', { class: 'lbl' }, 'Total'), h('span', { class: 'val' }, money(total))),
     h('div', { class: 'row' },
-      h('button', { class: 'btn btn-primary', style: 'flex:2', disabled: empty, onclick: () => doPay(order) }, 'Encaisser'),
       h('button', {
         class: `btn ${toPrint > 0 ? 'btn-send-inline' : ''}`, style: 'flex:1', disabled: empty,
         onclick: () => doPrint(order, toPrint === 0),
       }, toPrint > 0 ? `🖨 Imprimer · ${toPrint}` : '🖨 Réimprimer'),
       h('button', { class: 'btn btn-ghost', style: 'flex:0 0 52px', onclick: () => doNoteMenu(order) }, '⋯'),
     ),
+    // Le geste principal porte le total : un seul endroit à regarder.
+    h('button', { class: 'btn btn-pay', disabled: empty, onclick: () => doPay(order) },
+      h('span', { class: 'lbl' }, 'Encaisser'), h('span', { class: 'val' }, money(total))),
   ));
 }
 
@@ -136,7 +138,16 @@ async function doPrint(order, reprint) {
 function renderRight() {
   clear(rightEl);
   if (nav.level === 'cats') renderCats();
+  else if (nav.level === 'groups') renderGroups();
   else renderProducts();
+}
+
+const go = (n) => { nav = n; renderRight(); };
+
+// La page des rangements d'une famille (Signature, Créations… Gin, Rhum…).
+function renderGroups() {
+  rightEl.append(h('div', { class: 'pos-bar' }, crumbs(nav, go), h('div', { class: 'spacer' })));
+  rightEl.append(groupPage(nav.catId, (g) => go({ level: 'products', catId: nav.catId, group: g, page: 0 })));
 }
 
 function renderCats() {
@@ -148,10 +159,10 @@ function renderCats() {
   const grid = h('div', { class: 'tile-grid' });
   rightEl.append(grid);
 
-  const cats = visibleCategories().filter((c) => state.products.some((p) => p.categoryId === c.id));
+  const cats = visibleCategories().filter((c) => familyProducts(c.id).length);
   const tiles = cats.map((c) => {
-    const count = state.products.filter((p) => p.categoryId === c.id && p.available !== false).length;
-    return h('button', { class: 'tile cat-tile', style: `--c:${catColor(c.id)}`, onclick: () => { nav = { level: 'products', catId: c.id, sub: null, page: 0 }; renderRight(); } },
+    const count = familyProducts(c.id).filter((p) => p.available !== false).length;
+    return h('button', { class: 'tile cat-tile', style: tileStyle(catColor(c.id)), onclick: () => go(enterFamily(c.id)) },
       h('span', { class: 'tcount' }, `${count}`),
       h('div', { class: 'tt' }, c.name));
   });
@@ -159,37 +170,16 @@ function renderCats() {
 }
 
 function renderProducts() {
-  const cat = state.categories.find((c) => c.id === nav.catId);
-  const all = state.products.filter((p) => p.categoryId === nav.catId);
-  const subs = [...new Set(all.map((p) => p.sub).filter(Boolean))];
-
   const pager = h('div', { class: 'pos-pager' });
-  const bar = h('div', { class: 'pos-bar' },
-    h('button', { class: 'chip', onclick: () => { nav = { level: 'cats' }; renderRight(); } }, '‹ Familles'),
-    h('h3', {}, cat?.name || ''),
-    h('div', { class: 'spacer' }),
-    pager,
-  );
-  rightEl.append(bar);
-
-  if (subs.length > 1) {
-    rightEl.append(h('div', { class: 'pos-subs' },
-      h('button', { class: `chip ${nav.sub == null ? 'active' : ''}`, onclick: () => { nav.sub = null; nav.page = 0; renderRight(); } }, 'Tous'),
-      subs.map((s) => h('button', { class: `chip ${nav.sub === s ? 'active' : ''}`, onclick: () => { nav.sub = s; nav.page = 0; renderRight(); } }, s)),
-    ));
-  }
+  rightEl.append(h('div', { class: 'pos-bar' }, crumbs(nav, go), h('div', { class: 'spacer' }), pager));
 
   const grid = h('div', { class: 'tile-grid' });
   rightEl.append(grid);
 
-  const list = (nav.sub ? all.filter((p) => p.sub === nav.sub) : all);
-  const tiles = list.map((p) => h('button', {
-    class: `tile prod-tile ${p.available === false ? 'unavail' : ''}`, style: `--c:${p.color || catColor(nav.catId)}`,
+  const tiles = productsIn(nav.catId, nav.group).map((p) => h('button', {
+    class: `tile prod-tile ${p.available === false ? 'unavail' : ''}`, style: tileStyle(prodColor(p)),
     onclick: () => p.available !== false && quickAdd(p),
-  },
-    h('div', { class: 'tt' }, p.name),
-    h('div', { class: 'tp' }, p.variants.map((v) => `${v.label ? v.label + ' ' : ''}${money(v.price)}`).join(' · ')),
-  ));
+  }, productTileParts(p, nav.group, nav.catId, money)));
   paginate(grid, tiles, pager, nav);
 }
 

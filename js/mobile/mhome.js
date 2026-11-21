@@ -5,13 +5,16 @@
 // familles reste réservée à l'iPad — au comptoir on compose, on n'administre pas.
 import { state, money, lineUnit, lineTotal, tableLabel } from '../state.js';
 import { h, clear, toast } from '../ui.js';
-import { catColor } from '../pos.js';
+import { catColor, tileStyle } from '../pos.js';
+import {
+  familyProducts, enterFamily, hasGroups, productsIn, prodColor, productTileParts, groupPage, groupLabel,
+} from '../rangement.js';
 import { addProductToItems, pickTable, saveOrder } from '../note.js';
 import { unsentCount, hasCuisineLines, printTicket } from '../kitchen.js';
 import { visibleCategories, tabAllowed } from '../profile.js';
 
 let selection = [];
-let nav = { level: 'cats', catId: null };
+let nav = { level: 'cats', catId: null, group: null };
 let query = '';
 let searchOn = false;
 let tickOpen = false;
@@ -34,22 +37,31 @@ function renderTop() {
   // Dans une famille, l'en-tête porte tout : la flèche de retour à gauche du
   // titre, et la famille en sous-titre. Plus de seconde barre en dessous —
   // sur un écran de téléphone, chaque rangée gagnée est une rangée de touches.
-  const cat = nav.level === 'products'
+  const cat = nav.level !== 'cats'
     ? state.categories.find((c) => c.id === nav.catId) : null;
   clear(topEl).append(
     cat ? h('button', { class: 'm-iconbtn', onclick: retourFamilles, 'aria-label': 'Retour aux familles' }, '‹') : null,
     h('div', { class: 'm-order-ttl' },
       h('div', { class: 'm-order-name' }, 'Comptoir'),
-      h('div', { class: 'm-order-sub2' }, cat ? cat.name : tabAllowed('floor')
+      h('div', { class: 'm-order-sub2' }, cat ? fil(cat) : tabAllowed('floor')
         ? 'Compose puis envoie vers une table'
         : 'Compose puis imprime le bon')),
     h('button', { class: `m-iconbtn ${searchOn ? 'on' : ''}`, onclick: toggleSearch, 'aria-label': 'Rechercher' }, '🔍'),
   );
 }
 
+// La flèche recule d'un cran : des produits vers les rangements de la famille
+// (si elle en a), des rangements vers les familles.
 function retourFamilles() {
-  nav = { level: 'cats', catId: null };
+  nav = nav.level === 'products' && hasGroups(nav.catId)
+    ? { level: 'groups', catId: nav.catId, group: null }
+    : { level: 'cats', catId: null, group: null };
   renderTop(); renderSub(); renderGrid();
+}
+function entre(n) { nav = n; renderTop(); renderSub(); renderGrid(); }
+// Sous-titre : « Cocktails » sur la page des rangements, « Cocktails › Créations » dedans.
+function fil(cat) {
+  return nav.level === 'products' && hasGroups(nav.catId) ? `${cat.name} › ${groupLabel(nav.group)}` : cat.name;
 }
 
 function toggleSearch() {
@@ -101,9 +113,12 @@ function renderGrid() {
     return;
   }
 
+  if (nav.level === 'groups') {
+    gridEl.append(groupPage(nav.catId, (g) => entre({ level: 'products', catId: nav.catId, group: g })));
+    return;
+  }
   if (nav.level === 'products') {
-    state.products.filter((p) => p.categoryId === nav.catId)
-      .forEach((p) => gridEl.append(productTile(p)));
+    productsIn(nav.catId, nav.group).forEach((p) => gridEl.append(productTile(p)));
     return;
   }
 
@@ -111,18 +126,18 @@ function renderGrid() {
   // puis les familles.
   const tiles = [...state.tiles].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   tiles.forEach((t) => gridEl.append(h('button', {
-    class: 'tile custom-tile', style: `--c:${t.color || '#4FA3C7'}`,
+    class: 'tile custom-tile', style: tileStyle(t.color),
     onclick: () => tapCustom(t),
   },
     h('div', { class: 'tt' }, t.label || 'Tuile'),
     h('div', { class: 'ts' }, t.productId ? 'Produit' : t.categoryId ? 'Famille' : ''))));
 
-  const cats = visibleCategories().filter((c) => state.products.some((p) => p.categoryId === c.id));
+  const cats = visibleCategories().filter((c) => familyProducts(c.id).length);
   cats.forEach((c) => {
-    const count = state.products.filter((p) => p.categoryId === c.id && p.available !== false).length;
+    const count = familyProducts(c.id).filter((p) => p.available !== false).length;
     gridEl.append(h('button', {
-      class: 'tile cat-tile', style: `--c:${catColor(c.id)}`,
-      onclick: () => { nav = { level: 'products', catId: c.id }; renderTop(); renderSub(); renderGrid(); },
+      class: 'tile cat-tile', style: tileStyle(catColor(c.id)),
+      onclick: () => entre(enterFamily(c.id)),
     },
       h('span', { class: 'tcount' }, `${count}`),
       h('div', { class: 'tt' }, c.name)));
@@ -132,11 +147,9 @@ function renderGrid() {
 function productTile(p) {
   return h('button', {
     class: `tile prod-tile ${p.available === false ? 'unavail' : ''}`,
-    style: `--c:${p.color || catColor(p.categoryId)}`,
+    style: tileStyle(prodColor(p)),
     onclick: () => p.available !== false && addToSelection(p),
-  },
-    h('div', { class: 'tt' }, p.name),
-    h('div', { class: 'tp' }, p.variants.map((v) => `${v.label ? v.label + ' ' : ''}${money(v.price)}`).join(' · ')));
+  }, productTileParts(p, query.trim() ? null : nav.group, query.trim() ? null : nav.catId, money));
 }
 
 function tapCustom(t) {
@@ -144,8 +157,7 @@ function tapCustom(t) {
     const p = state.products.find((x) => x.id === t.productId);
     if (p) addToSelection(p); else toast('Produit introuvable');
   } else if (t.categoryId) {
-    nav = { level: 'products', catId: t.categoryId };
-    renderTop(); renderSub(); renderGrid();
+    entre(enterFamily(t.categoryId));
   }
 }
 

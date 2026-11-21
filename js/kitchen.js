@@ -9,7 +9,7 @@ import { senderLabel } from './profile.js';
 import { optionLabel } from './options.js';
 
 export const STATUS = {
-  nouveau:  { label: 'Nouveau',  next: 'en-cours', nextLabel: 'Je prends' },
+  nouveau:  { label: 'Pas pris',  next: 'en-cours', nextLabel: 'Je prends' },
   'en-cours': { label: 'En cours', next: 'pret',   nextLabel: 'Prêt' },
   pret:     { label: 'Prêt',     next: 'servi',    nextLabel: 'Servi' },
   servi:    { label: 'Servi',    next: null,       nextLabel: null },
