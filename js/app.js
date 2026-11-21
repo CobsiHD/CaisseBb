@@ -10,6 +10,7 @@ import { renderDashboard } from './dashboard.js';
 import { renderHome } from './home.js';
 import { renderCuisine } from './cuisine.js';
 import { renderMenage, menageEnRetard } from './menage.js';
+import { renderTutos } from './tutos-video.js';
 import { notifyNewTickets, newTicketCount } from './kitchen.js';
 import { initCloud, syncActive, clearToken, cloudEnabled } from './cloud.js';
 import { runMigrations } from './migrations.js';
@@ -35,7 +36,10 @@ const PAD_VIEWS = {
 // L'iPad garde son écran paysage ; le téléphone a ses propres vues Salle et
 // Comptoir (mobile/views.js) et réutilise les autres.
 const MOBILE = isMobileUI();
-const VIEWS = MOBILE ? MOBILE_VIEWS : PAD_VIEWS;
+// « Tutos » n'a pas d'onglet : la page s'ouvre depuis les Réglages, sur tous
+// les appareils et quel que soit leur profil.
+const VIEWS = { ...(MOBILE ? MOBILE_VIEWS : PAD_VIEWS), tutos: renderTutos };
+const HORS_ONGLETS = new Set(['tutos']);
 
 let current = MOBILE ? MOBILE_HOME_VIEW : 'home';
 
@@ -51,11 +55,11 @@ function applyProfile() {
 function firstAllowedView() {
   const home = MOBILE ? MOBILE_HOME_VIEW : 'home';
   if (tabAllowed(home)) return home;
-  return Object.keys(VIEWS).find(tabAllowed) || home;
+  return Object.keys(VIEWS).find((v) => !HORS_ONGLETS.has(v) && tabAllowed(v)) || home;
 }
 
 function navigate(view) {
-  if (!tabAllowed(view)) view = firstAllowedView();
+  if (!HORS_ONGLETS.has(view) && !tabAllowed(view)) view = firstAllowedView();
   current = view;
   document.querySelectorAll('.tab').forEach((t) =>
     t.classList.toggle('active', t.dataset.view === view));
@@ -69,6 +73,9 @@ function navigate(view) {
 on('tickets', () => { notifyNewTickets(); refreshCuisineBadge(); });
 
 on('*', (evt) => {
+  // La page Tutos n'affiche aucune donnée de la caisse : la redessiner à chaque
+  // note encaissée ailleurs couperait la vidéo en pleine lecture.
+  if (current === 'tutos') { if (evt === 'menage') refreshMenageBadge(); return; }
   // Une coche de ménage ne concerne que son écran : inutile de redessiner le
   // comptoir ou la salle chaque fois qu'un autre iPad coche une tâche.
   if (evt === 'menage') {
@@ -153,6 +160,14 @@ export async function openSettings() {
         } }, '▶ Lancer la visite complète') : null,
         h('div', { class: 'faint', style: 'font-size:12px; margin-top:6px' },
           'Propre à cet appareil. Allumé, il fait visiter tous les écrans un par un. Le bouton « ? » de la barre du haut rejoue le tuto de l\'écran affiché.'))),
+    field('Tutos vidéo',
+      h('div', {},
+        h('button', { class: 'btn btn-sm', onclick: (e) => {
+          e.currentTarget.closest('.modal').querySelector('.modal-foot .btn-ghost')?.click();
+          navigate('tutos');
+        } }, '▶ Ouvrir les tutos'),
+        h('div', { class: 'faint', style: 'font-size:12px; margin-top:6px' },
+          'Les gestes filmés, avec leurs étapes à cocher. Pour l\'instant : le nettoyage de la friteuse.'))),
     field('Profil de cet appareil',
       h('div', {},
         h('div', { class: 'row' }, PROFILES.map((pr) => h('button', {

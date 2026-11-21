@@ -1,5 +1,5 @@
 // service-worker.js — cache applicatif pour fonctionnement hors-ligne.
-const CACHE = 'bluebird-v58';
+const CACHE = 'bluebird-v59';
 const ASSETS_EXT = [
   'arche_pierre', 'caniveau', 'chaise_noire', 'chaise_verte', 'deck_tile',
   'enseigne_bluebird', 'enseigne_neon_b', 'guirlande_lumineuse', 'jardiniere',
@@ -24,7 +24,7 @@ const CORE = [
   'js/kitchen.js', 'js/cuisine.js', 'js/menage.js', 'js/classement.js', 'js/rangement.js', 'js/note.js', 'js/openorder.js', 'js/options.js',
   'js/mobile/shell.js', 'js/mobile/views.js', 'js/mobile/mfloor.js',
   'js/mobile/morder.js', 'js/mobile/mhome.js',
-  'js/cloud.js', 'js/cloud-config.js', 'js/gate.js', 'js/profile.js', 'js/uimode.js', 'js/tuto.js',
+  'js/cloud.js', 'js/cloud-config.js', 'js/gate.js', 'js/profile.js', 'js/uimode.js', 'js/tuto.js', 'js/tutos-video.js',
   'manifest.webmanifest',
   'favicon.ico',
   'assets/icons/icon-16.png', 'assets/icons/icon-32.png',
@@ -57,6 +57,10 @@ self.addEventListener('fetch', (e) => {
   // La page de connexion est la porte de secours : jamais interceptée, jamais
   // mise en cache. Servie périmée, elle enfermerait dehors.
   if (reqUrl.pathname === '/connexion.html') return;
+  // Les vidéos tuto : le lecteur les demande par morceaux (requêtes « Range »),
+  // ce qu'un cache ne sait pas resservir, et elles pèsent trop lourd pour lui.
+  // On laisse le navigateur parler directement au serveur.
+  if (reqUrl.pathname.startsWith('/assets/tutos/')) return;
 
   const sameOrigin = reqUrl.origin === self.location.origin;
 

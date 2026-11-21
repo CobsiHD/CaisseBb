@@ -102,6 +102,9 @@ function openMore({ navigate, openSettings, tuto }) {
     h('button', { class: 'm-more-row', onclick: () => { s.close(); navigate(m.view); } },
       h('span', { class: 'm-more-ico' }, m.icon), h('span', {}, m.label), h('span', { class: 'm-more-chev' }, '›'))));
 
+  body.append(h('button', { class: 'm-more-row', onclick: () => { s.close(); navigate('tutos'); } },
+    h('span', { class: 'm-more-ico' }, '🎬'), h('span', {}, 'Tutos vidéo'), h('span', { class: 'm-more-chev' }, '›')));
+
   body.append(h('button', { class: 'm-more-row', onclick: () => { s.close(); openSettings(); } },
     h('span', { class: 'm-more-ico' }, '⚙'), h('span', {}, 'Réglages'), h('span', { class: 'm-more-chev' }, '›')));
 
