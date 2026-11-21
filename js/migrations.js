@@ -341,7 +341,7 @@ async function rangeLesCocktails() {
 // (le Moët Impérial, déjà en caisse, remplace le Lallier). Seuls les champs
 // visés changent : prix et réglages faits au comptoir restent.
 const RETIRES = ['vins-syrah', 'vins-studio-blanc', 'vins-lallier'];
-const RENOMMES = {
+const NOMS_DE_LA_CARTE = {
   'spiritueux-pastis-des-alpes': 'Ricard',
   'vins-chardonnay-bphr': 'Les Jamelles',
   'snack-la-barquette': 'Frites maison',
@@ -371,7 +371,7 @@ async function carteAlignee() {
   for (const p of state.products) {
     if (RETIRES.includes(p.id)) continue;
     const patch = {};
-    if (RENOMMES[p.id] && p.name !== RENOMMES[p.id]) patch.name = RENOMMES[p.id];
+    if (NOMS_DE_LA_CARTE[p.id] && p.name !== NOMS_DE_LA_CARTE[p.id]) patch.name = NOMS_DE_LA_CARTE[p.id];
     if (SANS_HH.includes(p.id) && p.happyHour) patch.happyHour = false;
     if (p.id === 'snack-planche-tapas') {
       const neuve = PRODUCTS.find((x) => x.id === p.id);
