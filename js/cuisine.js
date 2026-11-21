@@ -126,7 +126,7 @@ function card(t, container) {
     lines,
     h('div', { class: 'k-foot' },
       t.kind === 'addition'
-        ? h('span', { class: 'k-badge papier' }, 'Addition')
+        ? h('span', { class: 'k-badge papier' }, t.frais ? 'Note de frais' : 'Addition')
         : t.reprint
         ? h('span', { class: 'k-badge papier' }, 'Réimpression')
         : boissonsSeules

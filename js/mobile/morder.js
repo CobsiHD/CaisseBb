@@ -12,7 +12,7 @@ import {
 } from '../rangement.js';
 import {
   tableEl, placeLabel, orderSum, saveOrder, newOrder, ensureOrder,
-  changeQty, addProduct, editLine, printMark, printOrder, printOrderBill, unsentCount, hasCuisineLines,
+  changeQty, addProduct, editLine, printMark, printOrder, printOrderBill, printOrderExpense, unsentCount, hasCuisineLines,
   payOrder, toggleToPay, deleteOrder, moveOrder, noteMenu,
 } from '../note.js';
 import { visibleCategories } from '../profile.js';
@@ -304,6 +304,10 @@ async function doNoteMenu(order) {
   if (action === 'bill') {
     const t = await printOrderBill(order);
     toast(t ? `Addition ${placeLabel(tableEl(order.tableId))} envoyée à l'imprimante` : 'Note vide');
+  }
+  if (action === 'frais') {
+    const t = await printOrderExpense(order);
+    if (t) toast(`Note de frais ${placeLabel(tableEl(order.tableId))} envoyée à l'imprimante`);
   }
   if (action === 'topay') { await toggleToPay(order); renderTick(); }
   if (action === 'del') { if (await deleteOrder(order)) afterNoteGone(); }

@@ -7,10 +7,10 @@
 import {
   state, emit, money, lineTotal, openOrdersForTable, productById, tableLabel, areaName,
 } from './state.js';
-import { h, clear, modal, field, toast, confirmDialog } from './ui.js';
+import { h, clear, modal, closeModal, field, toast, confirmDialog } from './ui.js';
 import * as store from './store.js';
 import { isTableType, TYPE_MAP } from './elements.js';
-import { isCuisineProduct, isCuisineItem, unsentItems, unsentCount, hasCuisineLines, printTicket, printBill } from './kitchen.js';
+import { isCuisineProduct, isCuisineItem, unsentItems, unsentCount, hasCuisineLines, printTicket, printBill, printExpenseNote, ventileTva } from './kitchen.js';
 import { hasGroups, pickOptions, groupsPicker, optionsKey } from './options.js';
 
 // ── Lecture ──────────────────────────────────────────────────
@@ -210,6 +210,33 @@ export async function printOrderBill(order) {
   });
 }
 
+// La note de frais d'un client : on demande ce qu'elle doit porter, puis elle
+// part à l'imprimante. Renvoie le bon créé, ou null si on a renoncé.
+export async function printOrderExpense(order) {
+  if (!order || !order.items?.length) return null;
+  const el = tableEl(order.tableId);
+  const detail = h('input', { type: 'checkbox', checked: true });
+  const couverts = h('input', { class: 'input', type: 'number', inputmode: 'numeric', min: 0, value: el?.capacity || '', placeholder: 'Facultatif' });
+  const nom = h('input', { class: 'input', placeholder: 'Facultatif — sinon une ligne à remplir à la main' });
+  const tva = ventileTva(order.items);
+
+  const v = await modal({
+    title: `Note de frais · ${money(orderSum(order))}`,
+    body: h('div', { class: 'modal-body', style: 'padding:0' },
+      h('label', { class: 'switch' }, detail, h('span', { class: 'track' }),
+        h('span', { class: 'muted' }, 'Détailler les consommations (éteint : une seule ligne « Consommations »)')),
+      h('div', { class: 'row' }, field('Couverts', couverts), field('Nom ou société', nom)),
+      field('TVA portée sur la note', h('div', { class: 'frais-tva' }, tva.map((l) =>
+        h('div', {}, h('span', {}, `TVA ${String(l.taux).replace('.', ',')} %`), h('span', { class: 'muted' }, `HT ${money(l.ht)} · TVA ${money(l.tva)}`)))))),
+    actions: [{ label: 'Annuler', value: null }, { label: '🧾 Imprimer', kind: 'primary', value: 'ok' }],
+  });
+  if (v !== 'ok') return null;
+  return printExpenseNote(order.items, {
+    orderId: order.id ?? null, tableId: order.tableId ?? null,
+    place: placeLabel(el), area: order.area || null,
+  }, { detail: detail.checked, nom: nom.value, couverts: couverts.value });
+}
+
 // ── Encaissement et gestion de la note ───────────────────────
 // Renvoie true si la note a été encaissée.
 export async function payOrder(order) {
@@ -234,7 +261,7 @@ export async function deleteOrder(order) {
 }
 
 // Menu « ⋯ » d'une note. Renvoie l'action choisie sans l'exécuter :
-// 'topay' | 'move' | 'del' | null. C'est l'écran appelant qui sait ce qu'il
+// 'bill' | 'frais' | 'topay' | 'move' | 'del' | null. C'est l'écran appelant qui sait ce qu'il
 // doit redessiner ou fermer ensuite.
 export async function noteMenu(order) {
   if (!order) return null;
@@ -243,6 +270,7 @@ export async function noteMenu(order) {
     title: `Note · ${money(orderSum(order))}`,
     body: h('div', { class: 'modal-body', style: 'padding:0; gap:10px' },
       h('button', { class: 'btn btn-primary', onclick: () => pick('bill') }, '🧾 Imprimer l\'addition'),
+      h('button', { class: 'btn', onclick: () => pick('frais') }, '🧾 Note de frais (justificatif client)'),
       h('button', { class: 'btn', onclick: () => pick('topay') }, order.toPay ? 'Retirer « à encaisser »' : 'Marquer « à encaisser »'),
       h('button', { class: 'btn', onclick: () => pick('move') }, 'Transférer vers une autre table'),
       h('button', { class: 'btn btn-danger', onclick: () => pick('del') }, 'Supprimer la note')),
@@ -250,11 +278,7 @@ export async function noteMenu(order) {
   });
   return action;
 
-  function pick(a) {
-    action = a;
-    const layer = document.getElementById('modal-layer');
-    layer.hidden = true; clear(layer);
-  }
+  function pick(a) { action = a; closeModal(); }
 }
 
 // Toutes les tables du plan, dans l'ordre de numérotation.
@@ -276,11 +300,7 @@ export async function pickTable(title = 'Choisir une table', excludeId = null) {
   await modal({ title, body: grid, actions: [{ label: 'Annuler', value: null }] });
   return chosen;
 
-  function pick(t) {
-    chosen = t;
-    const layer = document.getElementById('modal-layer');
-    layer.hidden = true; clear(layer);
-  }
+  function pick(t) { chosen = t; closeModal(); }
 }
 
 // Transfère la note vers une autre table. Renvoie la table d'arrivée ou null.

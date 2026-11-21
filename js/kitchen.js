@@ -191,6 +191,8 @@ async function createTicket(lines, meta = {}) {
     // Renseignés par l'agent d'impression sur le Raspberry Pi, plus tard.
     printedAt: null,
     printError: null,
+    // Note de frais : ce que le justificatif doit porter en plus de l'addition.
+    ...(meta.frais ? { frais: meta.frais } : {}),
   };
   await saveTicket(ticket);
   return ticket;
@@ -247,6 +249,59 @@ export async function printBill(items, meta = {}) {
   if (!lines.length) return null;
   const total = lines.reduce((s, l) => s + l.total, 0);
   return createTicket(lines, { ...meta, total, kind: 'addition', title: 'ADDITION' });
+}
+
+// ── Note de frais ───────────────────────────────────────────────────────────
+// Le justificatif qu'un client demande pour se faire rembourser : l'addition,
+// plus la ventilation de la TVA, le nombre de couverts et de quoi inscrire son
+// nom. Au choix, le détail des consommations ou une seule ligne.
+//
+// Elle voyage comme une addition (`kind: 'addition'`) : un agent d'impression
+// pas encore mis à jour sort une addition ordinaire plutôt qu'un bon de
+// cuisine. C'est le champ `frais` qui en fait une note de frais.
+//
+// Taux de TVA sur place : 20 % pour l'alcool, 10 % pour le reste (softs,
+// cuisine, cocktails sans alcool). Une famille peut imposer le sien (`tva`).
+const FAMILLES_A_10 = ['softs', 'snack'];
+export function tauxTva(item) {
+  const p = productById(item.productId);
+  const cat = state.categories.find((c) => c.id === p?.categoryId);
+  if (Number(cat?.tva) > 0) return Number(cat.tva);
+  if (p?.type === 'Sans alcool' || /^sans alcool$/i.test(item.sub || '')) return 10;
+  if (FAMILLES_A_10.includes(p?.categoryId) || cat?.cuisine) return 10;
+  return 20;
+}
+
+const centimes = (v) => Math.round(v * 100) / 100;
+
+/** La TVA d'une note, taux par taux : [{ taux, ht, tva, ttc }], du plus fort au plus faible. */
+export function ventileTva(items) {
+  const parTaux = new Map();
+  for (const it of items || []) {
+    const t = tauxTva(it);
+    parTaux.set(t, (parTaux.get(t) || 0) + lineTotal(it));
+  }
+  return [...parTaux.entries()].filter(([, ttc]) => ttc > 0).sort((a, b) => b[0] - a[0]).map(([taux, ttc]) => {
+    const ht = centimes(ttc / (1 + taux / 100));
+    return { taux, ht, tva: centimes(ttc - ht), ttc: centimes(ttc) };
+  });
+}
+
+export async function printExpenseNote(items, meta = {}, { detail = true, nom = '', couverts = 0 } = {}) {
+  const gardes = (items || []).filter((it) => (it.qty || 0) > 0);
+  const lines = gardes.map((item) => ({
+    name: item.name,
+    variantLabel: item.variantLabel || '',
+    qty: item.qty,
+    options: (item.options || []).map(optionLabel),
+    unit: lineUnit(item),
+    total: lineTotal(item),
+    offered: item.hh ? item.qty - lineBilledQty(item) : 0,
+  }));
+  if (!lines.length) return null;
+  const total = lines.reduce((s, l) => s + l.total, 0);
+  return createTicket(lines, { ...meta, total, kind: 'addition', title: 'NOTE DE FRAIS',
+    frais: { detail: !!detail, nom: String(nom || '').trim(), couverts: Number(couverts) || 0, tva: ventileTva(gardes) } });
 }
 
 // Alerte les nouveaux bons apparus depuis le dernier passage. Appelé à chaque

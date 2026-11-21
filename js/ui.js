@@ -30,11 +30,22 @@ export function toast(msg) {
   toastTimer = setTimeout(() => { t.hidden = true; }, 2200);
 }
 
+// Ferme la modale ouverte depuis son propre contenu (une tuile, un bouton du
+// corps) en rendant `val` à celui qui l'attend. Vider la couche à la main ne
+// suffit pas : la promesse de modal() ne se résoudrait jamais, et tout ce qui
+// suit son `await` — imprimer l'addition, transférer la note — ne partirait pas.
+let fermeCourante = null;
+export function closeModal(val) { if (fermeCourante) fermeCourante(val); }
+
 // Modale générique. actions: [{label, kind, value, autofocus}]. Renvoie une Promise.
 export function modal({ title, body, actions = [], onMount }) {
   return new Promise((resolve) => {
     const layer = document.getElementById('modal-layer');
-    const close = (val) => { layer.hidden = true; clear(layer); resolve(val); };
+    const close = (val) => {
+      if (fermeCourante === close) fermeCourante = null;
+      layer.hidden = true; clear(layer); resolve(val);
+    };
+    fermeCourante = close;
 
     const foot = h('div', { class: 'modal-foot' },
       actions.map((a) =>

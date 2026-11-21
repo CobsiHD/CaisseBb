@@ -306,7 +306,7 @@ const TOURS = {
     { scene: 'note', el: '.order-screen .ticket-notetabs', optional: true, title: 'Plusieurs notes', text: ['« ＋ Note » ouvre une seconde note sur la même table, pour faire payer séparément.'] },
     { scene: 'note', el: '.order-screen .pos-right', title: 'Ajouter des produits', text: ['Touche une famille puis un produit. S\'il a plusieurs formats ou des sous-choix, la caisse les demande.'] },
     { scene: 'note', el: '.order-screen .ticket-lines', title: 'Les lignes', text: ['− / ＋ ajustent les quantités. Une ligne 1+1 est comptée selon le Bluebird\'s Hour.'] },
-    { scene: 'note', el: '.order-screen .ticket-foot', title: 'Encaisser, imprimer', text: ['« 🖨 » envoie au bar et en cuisine ce qui n\'a pas encore été imprimé. « Encaisser » clôt la note. « ⋯ » : addition, déplacer vers une autre table, supprimer.'] },
+    { scene: 'note', el: '.order-screen .ticket-foot', title: 'Encaisser, imprimer', text: ['« 🖨 » envoie au bar et en cuisine ce qui n\'a pas encore été imprimé. « Encaisser » clôt la note. « ⋯ » : addition, note de frais, déplacer vers une autre table, supprimer.'] },
   ],
 };
 

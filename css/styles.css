@@ -934,3 +934,7 @@ body.mobile .tuto-foot .btn { min-height: 48px; padding-left: 16px; padding-righ
 .st-table th { color: var(--muted); font-weight: 600; border-top: 0; }
 .st-table th:first-child, .st-table td:first-child { text-align: left; }
 .st-table td:first-child::first-letter { text-transform: uppercase; }
+
+/* Note de frais : aperçu de la TVA dans la fenêtre d'impression. */
+.frais-tva { display: grid; gap: 6px; font-variant-numeric: tabular-nums; }
+.frais-tva > div { display: flex; justify-content: space-between; gap: 12px; font-weight: 600; }
