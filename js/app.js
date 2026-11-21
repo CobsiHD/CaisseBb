@@ -1,6 +1,6 @@
 // app.js — amorçage, navigation entre vues, réglages, service worker.
 import { state, loadAll, reloadCatalog, reloadLayout, reloadOrders, reloadTiles, reloadTickets, reloadPrints, reloadMenage, on } from './state.js';
-import { h, clear, toast, modal, field, confirmDialog } from './ui.js';
+import { h, clear, toast, modal, field } from './ui.js';
 import * as store from './store.js';
 import { renderFloor } from './floorplan.js';
 import { renderCatalog } from './catalog.js';
@@ -11,11 +11,12 @@ import { renderHome } from './home.js';
 import { renderCuisine } from './cuisine.js';
 import { renderMenage, menageEnRetard } from './menage.js';
 import { renderTutos } from './tutos-video.js';
+import { renderReglages } from './reglages.js';
 import { notifyNewTickets, newTicketCount } from './kitchen.js';
-import { initCloud, syncActive, clearToken, cloudEnabled } from './cloud.js';
+import { initCloud } from './cloud.js';
 import { runMigrations } from './migrations.js';
-import { PROFILES, profile, profileId, setProfile, tabAllowed } from './profile.js';
-import { mountMobileShell, uiModeSelector } from './mobile/shell.js';
+import { tabAllowed } from './profile.js';
+import { mountMobileShell } from './mobile/shell.js';
 import { isMobileUI } from './uimode.js';
 import { MOBILE_VIEWS, MOBILE_HOME_VIEW } from './mobile/views.js';
 import { isListMode } from './mobile/mfloor.js';
@@ -36,10 +37,14 @@ const PAD_VIEWS = {
 // L'iPad garde son écran paysage ; le téléphone a ses propres vues Salle et
 // Comptoir (mobile/views.js) et réutilise les autres.
 const MOBILE = isMobileUI();
-// « Tutos » n'a pas d'onglet : la page s'ouvre depuis les Réglages, sur tous
-// les appareils et quel que soit leur profil.
-const VIEWS = { ...(MOBILE ? MOBILE_VIEWS : PAD_VIEWS), tutos: renderTutos };
-const HORS_ONGLETS = new Set(['tutos']);
+// Réglages et Tutos n'ont pas d'onglet : ⚙ ouvre les Réglages, qui mènent aux
+// Tutos, sur tous les appareils et quel que soit leur profil.
+const VIEWS = {
+  ...(MOBILE ? MOBILE_VIEWS : PAD_VIEWS),
+  reglages: (c) => renderReglages(c, { navigate, retour: fermerReglages }),
+  tutos: (c) => renderTutos(c, { retour: () => navigate('reglages') }),
+};
+const HORS_ONGLETS = new Set(['reglages', 'tutos']);
 
 let current = MOBILE ? MOBILE_HOME_VIEW : 'home';
 
@@ -66,16 +71,18 @@ function navigate(view) {
   const container = document.getElementById('view');
   clear(container);
   VIEWS[view](container);
-  tutoView(view);
+  document.getElementById('settings-btn')?.classList.toggle('active', HORS_ONGLETS.has(view));
+  // Ces pages n'ont pas de tuto : le « ? » continue de rejouer celui du dernier onglet.
+  if (!HORS_ONGLETS.has(view)) tutoView(view);
 }
 
 // Re-render la vue courante quand les données changent.
 on('tickets', () => { notifyNewTickets(); refreshCuisineBadge(); });
 
 on('*', (evt) => {
-  // La page Tutos n'affiche aucune donnée de la caisse : la redessiner à chaque
-  // note encaissée ailleurs couperait la vidéo en pleine lecture.
-  if (current === 'tutos') { if (evt === 'menage') refreshMenageBadge(); return; }
+  // Réglages et Tutos n'affichent aucune donnée de service : les redessiner à
+  // chaque note encaissée ailleurs couperait la vidéo ou une saisie en cours.
+  if (HORS_ONGLETS.has(current)) { if (evt === 'menage') refreshMenageBadge(); return; }
   // Une coche de ménage ne concerne que son écran : inutile de redessiner le
   // comptoir ou la salle chaque fois qu'un autre iPad coche une tâche.
   if (evt === 'menage') {
@@ -118,130 +125,14 @@ function bindNav() {
   document.getElementById('settings-btn').addEventListener('click', openSettings);
 }
 
-// ── Réglages (PIN, happy hour, sauvegarde, réinitialisation) ──
-export async function openSettings() {
-  const s = state.settings;
-  const pinInput = h('input', { class: 'input', type: 'tel', inputmode: 'numeric', maxlength: 6, value: s.pin || '', placeholder: 'Aucun' });
-  const hhEnabled = h('input', { type: 'checkbox', checked: !!s.happyHour?.enabled });
-  const hhFrom = h('input', { class: 'input', type: 'time', value: s.happyHour?.from || '17:00' });
-  const hhTo = h('input', { class: 'input', type: 'time', value: s.happyHour?.to || '21:00' });
-  const fileInput = h('input', { type: 'file', accept: 'application/json', style: 'display:none' });
-  const debutant = h('input', { type: 'checkbox', checked: tutoOn() });
-
-  fileInput.addEventListener('change', async () => {
-    const f = fileInput.files[0]; if (!f) return;
-    try {
-      const dump = JSON.parse(await f.text());
-      // Un import efface puis réécrit toutes les tables, et la synchro propage
-      // l'effacement : ça ne restaure pas cet iPad, ça restaure le bar entier.
-      if (!(await confirmDialog('Remplacer toutes les données par cette sauvegarde ? Avec la synchro, cela remplace aussi celles des autres appareils.', { okLabel: 'Importer', danger: true }))) return;
-      await store.importAll(dump);
-      await loadAll();
-      reloadCatalog(); reloadLayout(); reloadOrders(); reloadTickets(); reloadMenage();
-      toast('Sauvegarde importée');
-    } catch (e) { toast('Fichier invalide'); }
-  });
-
-  const body = h('div', { class: 'modal-body', style: 'padding:0' },
-    field('Code PIN (verrouille Produits & édition du plan)', pinInput),
-    field('Happy Hour — « Bluebird\'s Hour »',
-      h('div', {},
-        h('label', { class: 'switch' }, hhEnabled, h('span', { class: 'track' }), h('span', { class: 'muted' }, '1 acheté = 1 offert')),
-        h('div', { class: 'row', style: 'margin-top:10px' },
-          field('De', hhFrom), field('À', hhTo)),
-      )),
-    field('Mode débutant',
-      h('div', {},
-        h('label', { class: 'switch' }, debutant, h('span', { class: 'track' }), h('span', { class: 'muted' }, 'Un tuto guide chaque onglet à sa première ouverture')),
-        tutoOn() ? h('button', { class: 'btn btn-sm btn-ghost', style: 'margin-top:8px', onclick: (e) => {
-          // On referme les Réglages d'abord : la visite attend un écran libre.
-          e.currentTarget.closest('.modal').querySelector('.modal-foot .btn-ghost')?.click();
-          startParcours();
-        } }, '▶ Lancer la visite complète') : null,
-        h('div', { class: 'faint', style: 'font-size:12px; margin-top:6px' },
-          'Propre à cet appareil. Allumé, il fait visiter tous les écrans un par un. Le bouton « ? » de la barre du haut rejoue le tuto de l\'écran affiché.'))),
-    field('Tutos vidéo',
-      h('div', {},
-        h('button', { class: 'btn btn-sm', onclick: (e) => {
-          e.currentTarget.closest('.modal').querySelector('.modal-foot .btn-ghost')?.click();
-          navigate('tutos');
-        } }, '▶ Ouvrir les tutos'),
-        h('div', { class: 'faint', style: 'font-size:12px; margin-top:6px' },
-          'Les gestes filmés, avec leurs étapes à cocher. Pour l\'instant : le nettoyage de la friteuse.'))),
-    field('Profil de cet appareil',
-      h('div', {},
-        h('div', { class: 'row' }, PROFILES.map((pr) => h('button', {
-          class: `btn btn-sm ${pr.id === profileId() ? 'btn-blue' : 'btn-ghost'}`,
-          onclick: async () => {
-            if (pr.id === profileId()) return;
-            if (!(await confirmDialog(`Passer cet appareil en profil « ${pr.label} » ? ${pr.hint}`, { okLabel: 'Changer' }))) return;
-            setProfile(pr.id);
-            toast(`Profil « ${pr.label} »`);
-            location.reload();   // le plus simple pour réappliquer onglets et pavés
-          },
-        }, pr.label))),
-        h('div', { class: 'faint', style: 'font-size:12px; margin-top:6px' }, profile().hint),
-        h('div', { class: 'faint', style: 'font-size:12px; margin-top:4px' },
-          'Propre à cet iPad : ce choix ne se synchronise pas. Il signe aussi les bons envoyés en cuisine.'))),
-    field('Accès et synchronisation',
-      h('div', {},
-        h('div', { class: 'muted' }, cloudEnabled()
-          ? (syncActive() ? '\u2713 Connecté à la caisse partagée' : 'Hors ligne — données locales seulement')
-          : 'Désactivée dans la configuration'),
-        // Verrouiller ne coupe pas la synchro : ça efface le seul jeton d'accès
-        // de cet iPad. Au prochain lancement, le verrou d'entrée (gate.js)
-        // redemande le mot de passe du bar. La file d'attente d'écritures et
-        // l'avancement de la synchro sont conservés — rien n'est perdu.
-        cloudEnabled() ? h('button', { class: 'btn btn-sm btn-ghost', style: 'margin-top:8px', onclick: async () => {
-          if (await confirmDialog('Verrouiller la caisse sur cet iPad ? Il faudra ressaisir le mot de passe du bar pour la rouvrir.', { okLabel: 'Verrouiller', danger: true })) {
-            clearToken(); location.reload();
-          }
-        } }, '\u{1F512} Verrouiller cet iPad') : null,
-        h('div', { class: 'faint', style: 'font-size:12px; margin-top:6px' },
-          'La caisse ne s\'ouvre qu\'avec le mot de passe du bar. Une fois saisi sur cet iPad, il n\'est plus redemandé.'))),
-    field('Interface',
-      h('div', {},
-        uiModeSelector(),
-        h('div', { class: 'faint', style: 'font-size:12px; margin-top:6px' },
-          'Auto choisit selon la largeur de l\'écran (téléphone sous 560 px). Forcer un mode recharge la page ; le choix est mémorisé sur cet appareil.'))),
-    field('Sauvegarde',
-      h('div', { class: 'row' },
-        h('button', { class: 'btn btn-sm', onclick: doExport }, '⤓ Exporter (.json)'),
-        h('button', { class: 'btn btn-sm', onclick: () => fileInput.click() }, '⤒ Importer'),
-        fileInput,
-      )),
-    // Pas de bouton « recharger la carte / le plan par défaut » : avec la
-    // synchro, il n'efface pas cet appareil mais TOUS les autres — la remise à
-    // zéro se propage comme n'importe quelle écriture. Un appareil en retard se
-    // remet à jour tout seul en se connectant. Le seul filet restant est
-    // l'import d'une sauvegarde, qui porte le même avertissement.
-  );
-
-  const v = await modal({
-    title: 'Réglages',
-    body,
-    actions: [{ label: 'Fermer', value: 'close' }, { label: 'Enregistrer', kind: 'primary', value: 'save' }],
-  });
-
-  if (v === 'save') {
-    await store.setSetting('pin', pinInput.value.trim());
-    await store.setSetting('happyHour', { enabled: hhEnabled.checked, from: hhFrom.value, to: hhTo.value });
-    state.settings.pin = pinInput.value.trim();
-    state.settings.happyHour = { enabled: hhEnabled.checked, from: hhFrom.value, to: hhTo.value };
-    toast('Réglages enregistrés');
-    // Après la fermeture de la modale : le tuto attend un écran libre.
-    if (debutant.checked !== tutoOn()) setTutoOn(debutant.checked);
-  }
-}
-
-async function doExport() {
-  const dump = await store.exportAll();
-  const blob = new Blob([JSON.stringify(dump, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = h('a', { href: url, download: `bluebird-sauvegarde.json` });
-  document.body.append(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-  toast('Sauvegarde exportée');
+// ── Réglages : une page sans onglet (reglages.js), ouverte par ⚙ ──
+// Retoucher ⚙ sur la page la referme et ramène à l'écran d'où l'on venait.
+let avantReglages = null;
+function fermerReglages() { navigate(avantReglages || firstAllowedView()); }
+export function openSettings() {
+  if (current === 'reglages') { fermerReglages(); return; }
+  if (!HORS_ONGLETS.has(current)) avantReglages = current;
+  navigate('reglages');
 }
 
 // Vérifie le PIN si défini. Renvoie true si l'accès est autorisé.

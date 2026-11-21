@@ -97,6 +97,7 @@ body {
   display: grid; place-items: center;
 }
 .icon-btn:hover { border-color: var(--line-2); }
+.icon-btn.active { background: var(--text); color: var(--ink); border-color: var(--text); }
 
 /* ── Boutons génériques ────────────────────────────────────── */
 .btn {
@@ -870,6 +871,46 @@ body.mobile .tuto-foot .btn { min-height: 48px; padding-left: 16px; padding-righ
 .mg-row.fait .mg-tag { background: var(--ink-2); color: var(--faint); }
 .mg-row.retard .mg-box { border-color: rgba(210,121,107,.7); }
 .mg-option .mg-row:not(.fait) .mg-lbl { color: var(--muted); font-weight: 500; }
+
+/* ── Réglages ── */
+.rg-screen { min-height: 100%; }
+.rg-grid {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: start;
+  max-width: 1080px; margin: 0 auto; padding: 18px;
+}
+.rg-col { display: grid; gap: 18px; }
+.rg-bloc { background: var(--ink-1); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.rg-bloc-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 14px 18px 10px; }
+.rg-bloc-head h3 { margin: 0; font-family: var(--display); font-size: 22px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.rg-bloc-sub { font-size: 12px; color: var(--faint); text-align: right; }
+.rg-row {
+  display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 12px 18px;
+  border-top: 1px solid var(--line);
+}
+.rg-row[hidden] { display: none; }
+.rg-txt { flex: 1; min-width: 0; display: grid; gap: 3px; }
+.rg-lbl { font-weight: 700; font-size: 16px; }
+.rg-aide { font-size: 13px; line-height: 1.4; color: var(--muted); }
+.rg-cmd { flex: none; display: flex; align-items: center; gap: 8px; }
+.rg-val { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; margin-right: 4px; }
+.rg-lien {
+  appearance: none; width: 100%; text-align: left; cursor: pointer; border: 0; border-top: 1px solid var(--line);
+  background: transparent; color: var(--text); font-family: var(--ui);
+}
+.rg-lien:active { background: var(--ink-2); }
+.rg-chev { flex: none; color: var(--faint); font-size: 24px; line-height: 1; }
+/* Une commande large (trois choix côte à côte) passe sous son libellé. */
+.rg-pile { flex-direction: column; align-items: stretch; gap: 10px; }
+.rg-pile .rg-cmd { display: block; }
+.rg-sous { background: var(--ink-2); }
+.rg-heures { display: flex; align-items: center; gap: 8px; }
+.rg-heures .input { width: 112px; min-height: 40px; padding: 0 10px; }
+.rg-etat { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); text-align: right; }
+.rg-etat i { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--faint); }
+.rg-etat.ok { color: var(--text); }
+.rg-etat.ok i { background: var(--libre); }
+.rg-danger { color: var(--encaisser); border-color: rgba(242,135,123,.45); }
+.tu-retour { margin-right: 4px; }
 
 /* ── Tutos vidéo ── */
 .tu-screen { height: 100%; display: flex; flex-direction: column; }

@@ -182,7 +182,7 @@ const TOURS = {
       ? { el: '.m-nav .m-tab:last-child', title: 'Plus', text: ['Le Ménage, les Produits, le Tableau de bord et les Réglages sont rangés ici.'] }
       : null,
     { el: '#tuto-btn', title: 'Revoir un tuto', text: ['Ce bouton rejoue à tout moment le tuto de l\'écran où tu te trouves.'] },
-    { el: '#settings-btn', title: 'Réglages', text: ['Le code PIN, le Bluebird\'s Hour, la sauvegarde… et l\'interrupteur du mode débutant, pour l\'éteindre quand tu seras à l\'aise.'] },
+    { el: '#settings-btn', title: 'Réglages', text: ['Le code PIN, le Bluebird\'s Hour, les tutos vidéo, la sauvegarde… et l\'interrupteur du mode débutant, pour l\'éteindre quand tu seras à l\'aise.'] },
   ],
 
   // ── Accueil / Comptoir ──

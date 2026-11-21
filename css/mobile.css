@@ -305,6 +305,10 @@ body.mobile .mg-total { min-width: 0; width: 100%; }
 body.mobile .mg-grid { display: block; padding: 12px 14px calc(14px + var(--safe-b)); }
 body.mobile .mg-panel { margin-bottom: 12px; }
 body.mobile .mg-panel-body { overflow: visible; }
+body.mobile .rg-grid { grid-template-columns: minmax(0, 1fr); gap: 14px; padding: 14px 14px calc(14px + var(--safe-b)); }
+body.mobile .rg-col { gap: 14px; }
+body.mobile .rg-row { padding: 12px 14px; }
+body.mobile .rg-bloc-head { padding: 12px 14px 8px; }
 body.mobile .tu-screen { height: auto; display: block; }
 body.mobile .tu-grid { display: block; padding: 0 14px calc(14px + var(--safe-b)); }
 /* La vidéo reste collée en haut : on coche les étapes sans la perdre de vue. */

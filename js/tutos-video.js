@@ -53,7 +53,7 @@ const minSec = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 
 let choisi = TUTOS[0].id;
 
-export function renderTutos(container) {
+export function renderTutos(container, opts = {}) {
   clear(container);
   const tuto = TUTOS.find((x) => x.id === choisi) || TUTOS[0];
   const faites = new Set(lire()[tuto.id] || []);
@@ -113,10 +113,11 @@ export function renderTutos(container) {
 
   container.append(h('div', { class: 'tu-screen' },
     h('div', { class: 'viewbar' },
+      opts.retour ? h('button', { class: 'btn btn-sm btn-ghost tu-retour', type: 'button', onclick: opts.retour }, '‹ Réglages') : null,
       h('h2', {}, 'Tutos'),
       h('div', { class: 'segment' }, TUTOS.map((x) => h('button', {
         class: `chip ${x.id === tuto.id ? 'active' : ''}`,
-        onclick: () => { if (x.id !== choisi) { choisi = x.id; renderTutos(container); } },
+        onclick: () => { if (x.id !== choisi) { choisi = x.id; renderTutos(container, opts); } },
       }, x.titre))),
       h('div', { class: 'spacer' }),
       h('div', { class: 'mg-total' },
