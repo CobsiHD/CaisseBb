@@ -1,10 +1,10 @@
 // store.js — persistance locale (IndexedDB), sans dépendance.
-// Stores : settings, categories, products, layout, orders.
+// Stores : settings, categories, products, layout, orders, tiles, tickets, prints, optiongroups, menage.
 import { CATEGORIES, PRODUCTS, OPTION_GROUPS, DEMO_LAYOUT, SETTINGS_DEFAULTS, CATALOG_REV } from './seed.js';
 
 const DB_NAME = 'bluebird-caisse';
-const DB_VERSION = 5;
-const STORES = ['settings', 'categories', 'products', 'layout', 'orders', 'tiles', 'tickets', 'prints', 'optiongroups'];
+const DB_VERSION = 6;
+const STORES = ['settings', 'categories', 'products', 'layout', 'orders', 'tiles', 'tickets', 'prints', 'optiongroups', 'menage'];
 
 let dbPromise = null;
 
@@ -51,6 +51,9 @@ function openDB() {
       // ligne, donc l'agent et la cuisine ne doivent jamais viser la même.
       if (!db.objectStoreNames.contains('prints'))
         db.createObjectStore('prints', { keyPath: 'id' });
+      // Coches du planning ménage : une ligne par tâche faite (« tâche@échéance »).
+      if (!db.objectStoreNames.contains('menage'))
+        db.createObjectStore('menage', { keyPath: 'id' });
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
@@ -134,12 +137,10 @@ export async function init() {
 
 // ── Sauvegarde / restauration JSON ───────────────────────────
 export async function exportAll() {
-  const [settings, categories, products, layout, orders, tiles, tickets, prints, optiongroups] = await Promise.all(
-    STORES.map((s) => getAll(s))
-  );
+  const rows = await Promise.all(STORES.map((s) => getAll(s)));
   return {
     app: 'bluebird-caisse', version: DB_VERSION,
-    data: { settings, categories, products, layout, orders, tiles, tickets, prints, optiongroups },
+    data: Object.fromEntries(STORES.map((s, i) => [s, rows[i]])),
   };
 }
 

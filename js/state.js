@@ -11,6 +11,7 @@ export const state = {
   tiles: [],
   tickets: [],
   prints: [],
+  menage: [],            // coches du planning ménage
   area: 'terrasse',      // onglet actif du plan
   planMode: 'service',   // 'service' | 'edition'
 };
@@ -28,7 +29,7 @@ export function emit(evt, payload) {
 
 export async function loadAll() {
   await store.init();
-  const [settings, categories, products, optionGroups, layout, orders, tiles, tickets, prints] = await Promise.all([
+  const [settings, categories, products, optionGroups, layout, orders, tiles, tickets, prints, menage] = await Promise.all([
     store.getSettings(),
     store.getAll('categories'),
     store.getAll('products'),
@@ -38,6 +39,7 @@ export async function loadAll() {
     store.getAll('tiles'),
     store.getAll('tickets'),
     store.getAll('prints'),
+    store.getAll('menage'),
   ]);
   state.settings = settings;
   state.categories = categories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
@@ -48,6 +50,7 @@ export async function loadAll() {
   state.tiles = tiles;
   state.tickets = tickets;
   state.prints = prints;
+  state.menage = menage;
   state.area = settings.activeArea || 'terrasse';
 }
 
@@ -64,6 +67,11 @@ export async function reloadTickets() {
 export async function reloadPrints() {
   state.prints = await store.getAll('prints');
   emit('tickets');   // même écran : l'accusé d'impression s'affiche sur le bon
+}
+
+export async function reloadMenage() {
+  state.menage = await store.getAll('menage');
+  emit('menage');
 }
 
 export async function reloadOrders() {

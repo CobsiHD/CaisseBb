@@ -1,5 +1,5 @@
 // app.js — amorçage, navigation entre vues, réglages, service worker.
-import { state, loadAll, reloadCatalog, reloadLayout, reloadOrders, reloadTiles, reloadTickets, reloadPrints, on } from './state.js';
+import { state, loadAll, reloadCatalog, reloadLayout, reloadOrders, reloadTiles, reloadTickets, reloadPrints, reloadMenage, on } from './state.js';
 import { h, clear, toast, modal, field, confirmDialog } from './ui.js';
 import * as store from './store.js';
 import { renderFloor } from './floorplan.js';
@@ -9,6 +9,7 @@ import { renderRecettes } from './recettes.js';
 import { renderDashboard } from './dashboard.js';
 import { renderHome } from './home.js';
 import { renderCuisine } from './cuisine.js';
+import { renderMenage, menageEnRetard } from './menage.js';
 import { notifyNewTickets, newTicketCount } from './kitchen.js';
 import { initCloud, syncActive, clearToken, cloudEnabled } from './cloud.js';
 import { runMigrations } from './migrations.js';
@@ -28,6 +29,7 @@ const PAD_VIEWS = {
   catalog: renderCatalog,
   dashboard: renderDashboard,
   cuisine: renderCuisine,
+  menage: renderMenage,
 };
 
 // L'iPad garde son écran paysage ; le téléphone a ses propres vues Salle et
@@ -67,6 +69,13 @@ function navigate(view) {
 on('tickets', () => { notifyNewTickets(); refreshCuisineBadge(); });
 
 on('*', (evt) => {
+  // Une coche de ménage ne concerne que son écran : inutile de redessiner le
+  // comptoir ou la salle chaque fois qu'un autre iPad coche une tâche.
+  if (evt === 'menage') {
+    refreshMenageBadge();
+    if (current === 'menage') navigate(current);
+    return;
+  }
   if (['orders', 'layout', 'catalog', 'tiles', 'tickets'].includes(evt)) {
     // Le plan se met à jour finement lui-même ; les autres vues se redessinent
     // (sur téléphone, la Salle est une liste : elle a besoin du redessin).
@@ -79,6 +88,15 @@ on('*', (evt) => {
 function refreshCuisineBadge() {
   const n = newTicketCount();
   document.querySelectorAll('.tab[data-view="cuisine"]').forEach((tab) => {
+    tab.dataset.badge = n > 0 ? String(n) : '';
+    tab.classList.toggle('has-badge', n > 0);
+  });
+}
+
+// Pastille de l'onglet Ménage : tâches des jours précédents encore à faire.
+function refreshMenageBadge() {
+  const n = menageEnRetard();
+  document.querySelectorAll('.tab[data-view="menage"]').forEach((tab) => {
     tab.dataset.badge = n > 0 ? String(n) : '';
     tab.classList.toggle('has-badge', n > 0);
   });
@@ -112,7 +130,7 @@ export async function openSettings() {
       if (!(await confirmDialog('Remplacer toutes les données par cette sauvegarde ? Avec la synchro, cela remplace aussi celles des autres appareils.', { okLabel: 'Importer', danger: true }))) return;
       await store.importAll(dump);
       await loadAll();
-      reloadCatalog(); reloadLayout(); reloadOrders(); reloadTickets();
+      reloadCatalog(); reloadLayout(); reloadOrders(); reloadTickets(); reloadMenage();
       toast('Sauvegarde importée');
     } catch (e) { toast('Fichier invalide'); }
   });
@@ -237,6 +255,7 @@ async function boot() {
   if (MOBILE) mountMobileShell({ navigate, openSettings, tuto: { tutoOn, setTutoOn, startParcours } });
   navigate(current);
   refreshCuisineBadge();
+  refreshMenageBadge();
   // Synchro (si configurée) : répercute en direct ce que font les autres iPads.
   initCloud(async (tables) => {
     if (tables.has('categories') || tables.has('products') || tables.has('optiongroups')) await reloadCatalog();
@@ -245,6 +264,7 @@ async function boot() {
     if (tables.has('tickets')) await reloadTickets();
     if (tables.has('prints')) await reloadPrints();
     if (tables.has('tiles')) await reloadTiles();
+    if (tables.has('menage')) await reloadMenage();
     if (tables.has('settings')) state.settings = await store.getSettings();
   }).catch(() => {})
     // Retouches de la carte, une fois la synchro tentée : elles partent alors

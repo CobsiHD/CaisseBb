@@ -51,7 +51,7 @@ export function uiModeSelector() {
 
 // ── Barre d'onglets du bas ───────────────────────────────────
 // 5 entrées maximum : au-delà les cibles deviennent trop étroites au pouce.
-// Produits, Tableau de bord et Réglages passent par « Plus ».
+// Ménage, Produits, Tableau de bord et Réglages passent par « Plus ».
 const NAV = [
   { view: 'floor',   label: 'Salle',    icon: '🪑' },
   { view: 'home',    label: 'Comptoir', icon: '🍸' },
@@ -61,6 +61,7 @@ const NAV = [
 ];
 
 const MORE = [
+  { view: 'menage',    label: 'Ménage',         icon: '🧽' },
   { view: 'catalog',   label: 'Produits',       icon: '🏷' },
   { view: 'dashboard', label: 'Tableau de bord', icon: '📊' },
 ];

@@ -760,3 +760,80 @@ body.mobile .tuto-foot .btn { min-height: 48px; padding-left: 16px; padding-righ
 @media (prefers-reduced-motion: reduce) {
   .tuto-spot, .tuto-card, .tuto-bar > span { transition: none; }
 }
+
+/* ============================================================
+   Ménage — planning en liste à cocher
+   ============================================================ */
+/* L'écran tient dans la fenêtre : seules les colonnes défilent, chacune pour
+   elle-même, la barre des jours reste en place. */
+.mg-screen { height: 100%; display: flex; flex-direction: column; }
+.mg-screen .viewbar { position: static; flex: none; }
+.mg-days .chip { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+.mg-days .chip.auj:not(.active) { color: var(--brass-soft); }
+.mg-pastille {
+  min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px;
+  background: var(--encaisser); color: #fff;
+  font-size: 11px; font-weight: 800; line-height: 20px; text-align: center;
+}
+.mg-pastille.ok { background: var(--libre); }
+
+.mg-total { min-width: 210px; display: grid; gap: 6px; }
+.mg-total-txt { display: flex; justify-content: space-between; gap: 14px; font-size: 13px; }
+.mg-total-txt b { font-variant-numeric: tabular-nums; }
+.mg-bar { height: 6px; border-radius: 999px; background: var(--ink-2); overflow: hidden; }
+.mg-bar i { display: block; height: 100%; border-radius: 999px; background: var(--brass); transition: width .2s; }
+
+.mg-grid {
+  flex: 1; min-height: 0;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px;
+  padding: 14px 18px 18px;
+}
+.mg-panel {
+  min-height: 0; display: flex; flex-direction: column;
+  border: 1px solid var(--line); border-radius: 16px; background: var(--ink-1); overflow: hidden;
+}
+.mg-panel-head {
+  flex: none; display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+  padding: 12px 16px; border-bottom: 1px solid var(--line);
+  font-family: var(--display); font-size: 21px; font-weight: 600;
+}
+.mg-compte { font-family: var(--ui); font-size: 13px; font-weight: 800; color: var(--muted); font-variant-numeric: tabular-nums; }
+.mg-compte.ok { color: var(--libre); }
+.mg-panel-body { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 4px 8px 10px; }
+
+.mg-sec-title {
+  padding: 12px 8px 6px;
+  font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--faint);
+}
+.mg-late .mg-sec-title { color: var(--encaisser); }
+
+.mg-row {
+  appearance: none; width: 100%; text-align: left; cursor: pointer;
+  display: grid; grid-template-columns: 28px 1fr; gap: 12px; align-items: start;
+  min-height: var(--tap); padding: 10px 8px; border: 0; border-radius: 10px;
+  background: transparent; color: var(--text); font-family: var(--ui); font-size: 15px; line-height: 1.3;
+}
+.mg-row:active:not(:disabled) { background: var(--ink-2); }
+.mg-row:disabled { cursor: default; }
+.mg-row:disabled:not(.fait) { opacity: .55; }
+.mg-box {
+  width: 28px; height: 28px; border-radius: 8px; border: 2px solid var(--line-2);
+  display: grid; place-items: center; font-size: 17px; font-weight: 800; line-height: 1; color: #20160A;
+}
+.mg-txt { display: grid; gap: 4px; padding-top: 4px; min-width: 0; }
+.mg-lbl { font-weight: 600; overflow-wrap: anywhere; }
+.mg-meta { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; font-size: 12px; color: var(--faint); }
+.mg-meta:empty { display: none; }
+.mg-tag, .mg-quand { padding: 2px 8px; border-radius: 999px; font-weight: 700; }
+.mg-tag { background: rgba(210,121,107,.16); color: var(--encaisser); }
+.mg-quand.ouverture { background: rgba(94,140,106,.2); color: #8FC29C; }
+.mg-quand.apres { background: rgba(210,121,107,.16); color: var(--encaisser); }
+
+.mg-row.fait .mg-box { background: var(--brass); border-color: var(--brass); }
+.mg-row.fait .mg-lbl { color: var(--faint); text-decoration: line-through; font-weight: 500; }
+.mg-row.fait .mg-tag { background: var(--ink-2); color: var(--faint); }
+.mg-row.retard .mg-box { border-color: rgba(210,121,107,.7); }
+.mg-option .mg-row:not(.fait) .mg-lbl { color: var(--muted); font-weight: 500; }
+
+.mg-norme { display: grid; gap: 3px; padding: 10px 8px; font-size: 14px; line-height: 1.4; color: var(--muted); }
+.mg-norme b { color: var(--text); }

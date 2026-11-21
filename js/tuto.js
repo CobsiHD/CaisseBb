@@ -177,9 +177,9 @@ const TOURS = {
         'Avance avec « Suivant ». « Passer » saute le tuto de l\'onglet en cours.'] },
     P()
       ? { el: '#m-nav', title: 'Les onglets', text: ['La barre du bas mène aux écrans du service : la Salle, le Comptoir, la Cuisine et la Carte.'] }
-      : { el: '#tabs', title: 'Les onglets', text: ['Chaque onglet est un écran de la caisse : l\'accueil (comptoir), la salle, la carte, les recettes, les produits, la cuisine et le tableau de bord.'] },
+      : { el: '#tabs', title: 'Les onglets', text: ['Chaque onglet est un écran de la caisse : l\'accueil (comptoir), la salle, la carte, les recettes, les produits, la cuisine, le ménage et le tableau de bord.'] },
     P()
-      ? { el: '.m-nav .m-tab:last-child', title: 'Plus', text: ['Les Produits, le Tableau de bord et les Réglages sont rangés ici.'] }
+      ? { el: '.m-nav .m-tab:last-child', title: 'Plus', text: ['Le Ménage, les Produits, le Tableau de bord et les Réglages sont rangés ici.'] }
       : null,
     { el: '#tuto-btn', title: 'Revoir un tuto', text: ['Ce bouton rejoue à tout moment le tuto de l\'écran où tu te trouves.'] },
     { el: '#settings-btn', title: 'Réglages', text: ['Le code PIN, le Bluebird\'s Hour, la sauvegarde… et l\'interrupteur du mode débutant, pour l\'éteindre quand tu seras à l\'aise.'] },
@@ -273,6 +273,14 @@ const TOURS = {
     { el: '.cuisine-grid', title: 'Les bons', text: ['Chaque bon montre la table, l\'heure et les plats. Le bouton principal fait avancer le bon ; 🖨 le réimprime.'] },
   ],
 
+  // ── Ménage ──
+  menage: () => [
+    { title: 'Le Ménage', text: ['Le planning ménage & tâches du bar, en liste à cocher. Ce qui est coché ici l\'est sur tous les appareils.'] },
+    { el: '.mg-days', title: 'Les jours', text: ['Du mardi au samedi. La pastille compte ce qu\'il reste à faire ce jour-là ; « Mensuel » regroupe les tâches à faire une fois par mois.'] },
+    { el: '.mg-panel', title: 'Cocher', text: ['Touche une tâche quand elle est faite ; retouche-la pour la décocher. À gauche les tâches du jour, à côté celles de tous les jours.'] },
+    { el: '.mg-late', optional: true, title: 'Les reports', text: ['Une tâche pas faite ne disparaît pas : elle revient ici le lendemain, jusqu\'à ce qu\'elle soit cochée.'] },
+  ],
+
   // ── Tableau de bord ──
   dashboard: () => [
     { el: '.dash .cards', title: 'Le Tableau de bord', text: ['Les chiffres du service en un coup d\'œil.'] },
@@ -310,11 +318,11 @@ let parcours = null;     // visite complète : { pages, i }
 // masqués par le profil de l'appareil sont sautés. La note de table suit la
 // salle : c'est là qu'on en ouvre une.
 const NOMS = { home: 'Accueil', floor: 'Salle', note: 'Note de table', menu: 'Carte', recettes: 'Recettes',
-  catalog: 'Produits', cuisine: 'Cuisine', dashboard: 'Tableau de bord' };
+  catalog: 'Produits', cuisine: 'Cuisine', menage: 'Ménage', dashboard: 'Tableau de bord' };
 function pagesParcours() {
   const ordre = isMobileUI()
-    ? ['floor', 'note', 'home', 'cuisine', 'menu', 'catalog', 'dashboard']
-    : ['home', 'floor', 'note', 'menu', 'recettes', 'catalog', 'cuisine', 'dashboard'];
+    ? ['floor', 'note', 'home', 'cuisine', 'menu', 'menage', 'catalog', 'dashboard']
+    : ['home', 'floor', 'note', 'menu', 'recettes', 'catalog', 'cuisine', 'menage', 'dashboard'];
   return ordre.filter((v) => (v === 'note' ? tabAllowed('floor') : tabAllowed(v)));
 }
 
@@ -453,7 +461,9 @@ function render(st, el) {
   const derniere = !parcours || parcours.i >= parcours.pages.length - 1;
   const suite = !last ? 'Suivant ›' : !enVisite ? 'Terminer' : derniere ? 'Suivant ›' : 'Écran suivant ›';
 
-  clear(card).append(
+  // `append` natif écrit « null » en toutes lettres : hors visite complète, il
+  // n'y a pas de bandeau d'écran, et il ne faut rien poser à sa place.
+  clear(card).append(...[
     enVisite ? h('div', { class: 'tuto-page' },
       h('span', {}, page ? `${NOMS[page] || page} · écran ${parcours.i + 1}/${parcours.pages.length}` : 'Visite guidée'),
       h('button', { class: 'tuto-quit', onclick: quit, 'aria-label': 'Quitter la visite' }, '✕')) : null,
@@ -467,7 +477,7 @@ function render(st, el) {
       h('div', { class: 'spacer' }),
       i > 0 ? h('button', { class: 'btn btn-sm btn-ghost', onclick: () => go(-1), 'aria-label': 'Étape précédente' }, '‹') : null,
       h('button', { class: 'btn btn-sm btn-primary', onclick: () => go(1) }, suite)),
-  );
+  ].filter(Boolean));
 
   run.el = st.el || null;
   run.fixedEl = el;

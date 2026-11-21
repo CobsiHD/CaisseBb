@@ -41,6 +41,7 @@ const TABLES = {
   orders: 'id',
   tickets: 'id',
   prints: 'id',
+  menage: 'id',
   settings: 'key',
 };
 
