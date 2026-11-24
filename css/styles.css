@@ -1154,3 +1154,18 @@ body.mobile .tuto-foot .btn { min-height: 48px; padding-left: 16px; padding-righ
 .sv-proches-t { margin-top: 6px; }
 .sv-proches { display: grid; gap: 6px; }
 .sv-ouvrir { margin-top: 4px; }
+/* La roue des saveurs : un carré centré, le cercle et ses rayons en SVG dessous. */
+.sv-cadre.roue { display: flex; justify-content: center; align-items: stretch; }
+.sv-zone.roue { height: 100%; max-width: 100%; aspect-ratio: 1; background: transparent; border: 0; overflow: visible; }
+.sv-toile, .sv-toile svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.sv-toile circle { fill: #15181D; stroke: var(--line-2); stroke-width: .3; }
+.sv-toile circle.c { fill: var(--line-2); stroke: 0; }
+.sv-toile line { stroke: var(--line); stroke-width: .25; }
+.sv-saveur {
+  position: absolute; transform: translate(-50%, -50%); font-family: var(--display); font-size: 17px; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase; color: var(--brass-soft); white-space: nowrap; pointer-events: none;
+}
+.sv-saveur.g { transform: translate(0, -50%); }
+.sv-saveur.d { transform: translate(-100%, -50%); }
+.sv-saveur.on { color: var(--text); text-decoration: underline; }
+.sv-grille.deux { grid-template-columns: repeat(2, minmax(0, 1fr)); }

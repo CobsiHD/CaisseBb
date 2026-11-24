@@ -349,3 +349,6 @@ body.mobile .sv-plan { padding: 10px 12px; }
 body.mobile .sv-cadre { height: 62vh; flex: none; }
 body.mobile .sv-cote { border-left: 0; border-top: 1px solid var(--line); overflow: visible; padding-bottom: calc(24px + var(--safe-b)); }
 body.mobile .sv-nom { font-size: 11.5px; }
+body.mobile .sv-cadre.roue { height: auto; }
+body.mobile .sv-zone.roue { width: 100%; height: auto; }
+body.mobile .sv-saveur { font-size: 13px; }
