@@ -1106,3 +1106,51 @@ body.mobile .tuto-foot .btn { min-height: 48px; padding-left: 16px; padding-righ
 .fi-ed-lignes { display: grid; gap: 8px; }
 .fi-ed-pitch { height: auto; padding: 10px 14px; line-height: 1.4; resize: vertical; }
 .fi-ed-alerte { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); white-space: nowrap; }
+
+/* ── Produits · Saveurs : la carte des spiritueux ── */
+.sv-fams { flex-wrap: wrap; }
+.sv-main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 340px; border-top: 1px solid var(--line); }
+.sv-plan { min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 8px; padding: 14px 18px 16px; }
+.sv-titre { display: flex; align-items: baseline; gap: 12px; }
+.sv-titre b { font-family: var(--display); font-size: 24px; font-weight: 700; }
+.sv-titre span { color: var(--muted); font-size: 14px; }
+.sv-cadre { flex: 1; min-height: 0; display: grid; grid-template-columns: 26px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) 26px; gap: 6px; }
+.sv-axe-y, .sv-axe-x { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 600; color: var(--muted); }
+.sv-axe-y b, .sv-axe-x b { color: var(--text); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; }
+.sv-axe-y { writing-mode: vertical-rl; transform: rotate(180deg); }
+.sv-axe-x { grid-column: 2; }
+.sv-zone { position: relative; border-radius: 14px; background: #15181D; border: 1px solid var(--line); overflow: hidden; }
+.sv-croix-v { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--line); }
+.sv-croix-h { position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: var(--line); }
+.sv-coin { position: absolute; font-size: 11.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #5E6672; pointer-events: none; }
+.sv-coin.hg { left: 12px; top: 10px; } .sv-coin.hd { right: 12px; top: 10px; }
+.sv-coin.bg { left: 12px; bottom: 10px; } .sv-coin.bd { right: 12px; bottom: 10px; }
+.sv-pt {
+  appearance: none; position: absolute; width: 44px; height: 44px; margin: -22px 0 0 -22px; padding: 0;
+  border: 0; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2;
+}
+.sv-pt i { display: block; border-radius: 99px; background: var(--brass); box-shadow: 0 0 0 2px #15181D; }
+.sv-pt.off i { background: var(--ink-3); }
+.sv-pt.on { z-index: 3; }
+.sv-pt.on i { background: var(--text); box-shadow: 0 0 0 3px #15181D, 0 0 0 5px var(--brass); }
+.sv-nom {
+  position: absolute; transform: translateY(-50%); font-size: 13px; font-weight: 600; color: var(--muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; z-index: 1;
+}
+.sv-nom.on { color: var(--text); font-weight: 700; }
+.sv-cote { min-height: 0; overflow-y: auto; border-left: 1px solid var(--line); padding: 14px 16px 20px; display: flex; flex-direction: column; gap: 14px; }
+.sv-choix { display: grid; gap: 6px; }
+.sv-grille { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+.sv-grille .chip { justify-content: center; padding-inline: 4px; }
+.sv-vide { color: var(--faint); font-size: 14px; line-height: 1.45; padding: 6px 2px; }
+.sv-fiche { display: grid; gap: 8px; }
+.sv-fiche-tete { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.sv-fiche-tete h4 { margin: 0; }
+.sv-fiche-tete b { font-family: var(--display); font-size: 20px; color: var(--brass); white-space: nowrap; }
+.sv-fiche-sous { font-size: 13px; color: var(--faint); }
+.sv-fiche p { margin: 0; font-size: 14px; line-height: 1.4; }
+.sv-fiche .fi-jauges { margin-top: 2px; }
+.sv-fiche .fi-jauge.axe span { color: var(--brass-soft); font-weight: 700; }
+.sv-proches-t { margin-top: 6px; }
+.sv-proches { display: grid; gap: 6px; }
+.sv-ouvrir { margin-top: 4px; }

@@ -438,6 +438,25 @@ async function bouteillesDuBar() {
   if (ajouts.length) await store.bulkPut('products', ajouts);
 }
 
+// ── 17 · Les vrais noms des bouteilles (recherches du 24/11) ─
+// Les recherches faites pour la carte des saveurs ont relevé six noms faux ou
+// approximatifs. Seul le nom change : prix et réglages du comptoir restent.
+const VRAIS_NOMS = {
+  'spiritueux-mathusalem-15-ans': 'Matusalem 15 Ans',
+  'spiritueux-martel-vsop-cognac': 'Martell VSOP Cognac',
+  'spiritueux-hendrick-s-orange-cacao': 'Another Hendrick’s',
+  'spiritueux-patron-platinum': 'Gran Patrón Platinum',
+  'spiritueux-bellevoye-bleue': 'Bellevoye Bleu',
+  'spiritueux-bellevoye-blanche': 'Bellevoye Blanc',
+};
+
+async function vraisNoms() {
+  const retouches = state.products
+    .filter((p) => VRAIS_NOMS[p.id] && p.name !== VRAIS_NOMS[p.id])
+    .map((p) => ({ ...p, name: VRAIS_NOMS[p.id] }));
+  if (retouches.length) await store.bulkPut('products', retouches);
+}
+
 // Le dernier `rev` doit valoir CATALOG_REV : c'est le niveau qu'une base neuve
 // reçoit d'emblée, et ce qu'elle sauterait ici.
 const MIGRATIONS = [
@@ -457,6 +476,7 @@ const MIGRATIONS = [
   { rev: 14, run: rangeLesCocktails },
   { rev: 15, run: carteAlignee },
   { rev: 16, run: bouteillesDuBar },
+  { rev: 17, run: vraisNoms },
 ].filter((m) => m.rev <= CATALOG_REV);
 
 // Applique ce qui manque. À appeler une fois la synchro tentée : avant, les

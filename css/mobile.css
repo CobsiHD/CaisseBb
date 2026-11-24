@@ -342,3 +342,10 @@ body.mobile .fi-prix { margin-left: 0; text-align: left; display: flex; gap: 14p
 body.mobile .fi-faits { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 body.mobile .fi-cols { grid-template-columns: 1fr; }
 body.mobile .fi-pitch p { font-size: 17px; }
+
+/* ── Produits · Saveurs : la carte au-dessus, les réglages dessous ── */
+body.mobile .sv-main { grid-template-columns: 1fr; overflow-y: auto; }
+body.mobile .sv-plan { padding: 10px 12px; }
+body.mobile .sv-cadre { height: 62vh; flex: none; }
+body.mobile .sv-cote { border-left: 0; border-top: 1px solid var(--line); overflow: visible; padding-bottom: calc(24px + var(--safe-b)); }
+body.mobile .sv-nom { font-size: 11.5px; }

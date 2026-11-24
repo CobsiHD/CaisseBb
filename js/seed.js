@@ -7,7 +7,7 @@
 // migrations.js, qui importe déjà store.js.
 import { classeCocktail } from './classement.js';
 
-export const CATALOG_REV = 16;
+export const CATALOG_REV = 17;
 
 export const CATEGORIES = [
   {
@@ -1738,7 +1738,7 @@ export const PRODUCTS = [
     "id": "spiritueux-mathusalem-15-ans",
     "categoryId": "spiritueux",
     "sub": "Rhums",
-    "name": "Mathusalem 15 Ans",
+    "name": "Matusalem 15 Ans",
     "variants": [
       {
         "label": "4cl",
@@ -2152,7 +2152,7 @@ export const PRODUCTS = [
     "id": "spiritueux-bellevoye-bleue",
     "categoryId": "spiritueux",
     "sub": "Whiskys",
-    "name": "Bellevoye Bleue",
+    "name": "Bellevoye Bleu",
     "variants": [
       {
         "label": "4cl",
@@ -2175,7 +2175,7 @@ export const PRODUCTS = [
     "id": "spiritueux-bellevoye-blanche",
     "categoryId": "spiritueux",
     "sub": "Whiskys",
-    "name": "Bellevoye Blanche",
+    "name": "Bellevoye Blanc",
     "variants": [
       {
         "label": "4cl",
@@ -2267,7 +2267,7 @@ export const PRODUCTS = [
     "id": "spiritueux-patron-platinum",
     "categoryId": "spiritueux",
     "sub": "Tequilas",
-    "name": "Patrón Platinum",
+    "name": "Gran Patrón Platinum",
     "variants": [
       {
         "label": "4cl",
@@ -2750,7 +2750,7 @@ export const PRODUCTS = [
     "id": "spiritueux-martel-vsop-cognac",
     "categoryId": "spiritueux",
     "sub": "Liqueurs & Autres",
-    "name": "Martel VSOP Cognac",
+    "name": "Martell VSOP Cognac",
     "variants": [
       {
         "label": "Le verre",
@@ -4202,7 +4202,7 @@ export const PRODUCTS = [
     "id": "spiritueux-hendrick-s-orange-cacao",
     "categoryId": "spiritueux",
     "sub": "Gins & Tonic",
-    "name": "Hendrick’s Orange & Cacao",
+    "name": "Another Hendrick’s",
     "variants": [
       {
         "label": "4cl",

@@ -7,11 +7,13 @@ import { requirePin } from './app.js';
 import { colorPicker } from './pos.js';
 import { isCuisineProduct } from './kitchen.js';
 import { groupsEditor, manageLibrary } from './options.js';
-import { renderFiches } from './fiches.js';
+import { renderFiches, montrerFiche } from './fiches.js';
+import { renderSaveurs } from './saveurs.js';
 
 const slug = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
-// Deux modes : « Fiches », lisible par toute l'équipe pour répondre au client,
+// Trois modes : « Fiches », lisible par toute l'équipe pour répondre au client,
+// « Saveurs », la carte des spiritueux placés selon leur goût (sans PIN aussi),
 // et « Gestion » (prix, ruptures, création), derrière le code PIN. Le PIN est
 // demandé une fois en passant en Gestion, pas à chaque redessin après un
 // enregistrement ; revenir sur l'onglet repart en Fiches, verrouillé.
@@ -36,7 +38,7 @@ async function passerEn(m, container) {
 function dessiner(container) {
   clear(container);
   const seg = h('div', { class: 'segment fi-seg' },
-    [['fiches', 'Fiches'], ['gestion', state.settings.pin && !gestionOuverte ? 'Gestion 🔒' : 'Gestion']].map(([id, label]) =>
+    [['fiches', 'Fiches'], ['saveurs', 'Saveurs'], ['gestion', state.settings.pin && !gestionOuverte ? 'Gestion 🔒' : 'Gestion']].map(([id, label]) =>
       h('button', { class: `chip ${mode === id ? 'active' : ''}`, onclick: () => passerEn(id, container) }, label)));
 
   if (mode === 'fiches') {
@@ -45,6 +47,14 @@ function dessiner(container) {
       h('div', { class: 'viewbar' }, h('h2', {}, 'Produits'), seg, h('div', { class: 'spacer' })),
       corps));
     renderFiches(corps);
+    return;
+  }
+  if (mode === 'saveurs') {
+    const corps = h('div', { class: 'fi-body' });
+    container.append(h('div', { class: 'fi-screen' },
+      h('div', { class: 'viewbar' }, h('h2', {}, 'Produits'), seg, h('div', { class: 'spacer' })),
+      corps));
+    renderSaveurs(corps, { ouvrirFiche: (p) => { montrerFiche(p.id); mode = 'fiches'; dessiner(container); } });
     return;
   }
   renderGestion(container, seg);

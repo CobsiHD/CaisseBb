@@ -16,6 +16,7 @@ import spiritueuxBruns from './fiches/spiritueux-bruns.js';
 import spiritueuxBlancs from './fiches/spiritueux-blancs.js';
 import bieresSofts from './fiches/bieres-softs.js';
 import vinsCuisine from './fiches/vins-cuisine.js';
+import SAVEURS, { CRITERES } from './fiches/saveurs.js';
 
 const ORIGINE = { ...cocktails, ...spiritueuxBruns, ...spiritueuxBlancs, ...bieresSofts, ...vinsCuisine };
 
@@ -43,6 +44,9 @@ const prixCourt = (p) => p.variants.map((v) => money(v.price).replace(/,00\s/, '
 let selection = null;
 let recherche = '';
 let famille = 'tout';
+
+/** Ouvre la fiche d'un produit au prochain dessin du mode Fiches (depuis la carte des saveurs). */
+export function montrerFiche(id) { selection = id; recherche = ''; famille = 'tout'; }
 
 /** Dessine le mode Fiches sous la barre de l'onglet. */
 export function renderFiches(container) {
@@ -160,7 +164,8 @@ function dessinerFiche(panneau, p, { choisir, rafraichir }) {
         f.service ? h('div', { class: 'fi-deg fi-service' }, h('b', {}, 'Service'), h('div', {}, f.service)) : null),
       h('div', { class: 'fi-card' }, h('h4', {}, 'Profil'),
         h('div', { class: 'fi-tags' }, (f.tags || []).map((t) => h('span', { class: 'fi-tag' }, t))),
-        h('div', { class: 'fi-jauges' }, (f.jauges || []).map(([k, v]) =>
+        // Un spiritueux noté montre ses huit notes de saveur, plus fines que les trois jauges de la fiche.
+        h('div', { class: 'fi-jauges' }, (SAVEURS[p.id] ? CRITERES.map((k, i) => [k, SAVEURS[p.id][i]]) : (f.jauges || [])).map(([k, v]) =>
           h('div', { class: 'fi-jauge' }, h('span', {}, k),
             h('div', { class: 'fi-bar' }, h('i', { style: `width:${Math.max(0, Math.min(100, Number(v) || 0))}%` }))))))),
     alt.length ? h('div', { class: 'fi-card fi-alt' }, h('h4', {}, 'S’il hésite, proposer aussi'), alt) : null,
