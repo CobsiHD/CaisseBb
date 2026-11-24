@@ -7,7 +7,7 @@
 // migrations.js, qui importe déjà store.js.
 import { classeCocktail } from './classement.js';
 
-export const CATALOG_REV = 15;
+export const CATALOG_REV = 16;
 
 export const CATEGORIES = [
   {
@@ -3848,6 +3848,1066 @@ export const PRODUCTS = [
       ]
     },
     "order": 139
+  },
+  {
+    "id": "spiritueux-planteray-xo-20th",
+    "categoryId": "spiritueux",
+    "sub": "Rhums",
+    "name": "Planteray XO 20th Anniversary",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 12
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 54.01
+  },
+  {
+    "id": "spiritueux-eminente-7-ans",
+    "categoryId": "spiritueux",
+    "sub": "Rhums",
+    "name": "Eminente 7 Ans",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 12
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 54.02
+  },
+  {
+    "id": "spiritueux-bumbu-155",
+    "categoryId": "spiritueux",
+    "sub": "Rhums",
+    "name": "Bumbu",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 10
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 54.03
+  },
+  {
+    "id": "spiritueux-bumbu-xo",
+    "categoryId": "spiritueux",
+    "sub": "Rhums",
+    "name": "Bumbu XO",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 11
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 54.04
+  },
+  {
+    "id": "spiritueux-trois-rivieres",
+    "categoryId": "spiritueux",
+    "sub": "Rhums",
+    "name": "Trois Rivières",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 7
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 54.05
+  },
+  {
+    "id": "spiritueux-havana-club-especial",
+    "categoryId": "spiritueux",
+    "sub": "Rhums",
+    "name": "Havana Club Especial",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 7
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 54.06
+  },
+  {
+    "id": "spiritueux-havana-club-original",
+    "categoryId": "spiritueux",
+    "sub": "Rhums",
+    "name": "Havana Club Original",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 7
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 54.07
+  },
+  {
+    "id": "spiritueux-sailor-jerry-spiced",
+    "categoryId": "spiritueux",
+    "sub": "Rhums",
+    "name": "Sailor Jerry Spiced",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 7
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 54.08
+  },
+  {
+    "id": "spiritueux-havana-club-7-ans",
+    "categoryId": "spiritueux",
+    "sub": "Rhums",
+    "name": "Havana Club 7 Ans",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 10
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      }
+    ],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 54.09
+  },
+  {
+    "id": "spiritueux-havana-club-spiced",
+    "categoryId": "spiritueux",
+    "sub": "Rhums",
+    "name": "Havana Club Spiced",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 8
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 54.1
+  },
+  {
+    "id": "spiritueux-kraken-roast-coffee",
+    "categoryId": "spiritueux",
+    "sub": "Rhums",
+    "name": "Kraken Roast Coffee",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 9
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      },
+      {
+        "label": "Mule",
+        "delta": 3
+      }
+    ],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 54.11
+  },
+  {
+    "id": "spiritueux-kraken",
+    "categoryId": "spiritueux",
+    "sub": "Rhums",
+    "name": "Kraken",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 9
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      },
+      {
+        "label": "Mule",
+        "delta": 3
+      }
+    ],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 54.12
+  },
+  {
+    "id": "spiritueux-monkey-shoulder-fresh-monkey",
+    "categoryId": "spiritueux",
+    "sub": "Whiskys",
+    "name": "Monkey Shoulder Fresh Monkey",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 9
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      },
+      {
+        "label": "Mule",
+        "delta": 3
+      }
+    ],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 68.01
+  },
+  {
+    "id": "spiritueux-monkey-shoulder-smokey-monkey",
+    "categoryId": "spiritueux",
+    "sub": "Whiskys",
+    "name": "Monkey Shoulder Smokey Monkey",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 9
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      },
+      {
+        "label": "Mule",
+        "delta": 3
+      }
+    ],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 68.02
+  },
+  {
+    "id": "spiritueux-don-julio-reposado",
+    "categoryId": "spiritueux",
+    "sub": "Tequilas",
+    "name": "Don Julio Reposado",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 13
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 73.01
+  },
+  {
+    "id": "spiritueux-codigo-1530-reposado",
+    "categoryId": "spiritueux",
+    "sub": "Tequilas",
+    "name": "Código 1530 Reposado",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 13
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 73.02
+  },
+  {
+    "id": "spiritueux-hendrick-s-orange-cacao",
+    "categoryId": "spiritueux",
+    "sub": "Gins & Tonic",
+    "name": "Hendrick’s Orange & Cacao",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 10
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      },
+      {
+        "label": "Mule",
+        "delta": 3
+      }
+    ],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 89.01
+  },
+  {
+    "id": "spiritueux-hendrick-s-sunspell",
+    "categoryId": "spiritueux",
+    "sub": "Gins & Tonic",
+    "name": "Hendrick’s Sunspell",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 10
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      },
+      {
+        "label": "Mule",
+        "delta": 3
+      }
+    ],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 89.02
+  },
+  {
+    "id": "spiritueux-hendrick-s-amazonia",
+    "categoryId": "spiritueux",
+    "sub": "Gins & Tonic",
+    "name": "Hendrick’s Amazonia",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 10
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      },
+      {
+        "label": "Mule",
+        "delta": 3
+      }
+    ],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 89.03
+  },
+  {
+    "id": "spiritueux-hendrick-s-oasium",
+    "categoryId": "spiritueux",
+    "sub": "Gins & Tonic",
+    "name": "Hendrick’s Oasium",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 10
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      },
+      {
+        "label": "Mule",
+        "delta": 3
+      }
+    ],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 89.04
+  },
+  {
+    "id": "spiritueux-chambord",
+    "categoryId": "spiritueux",
+    "sub": "Liqueurs & Autres",
+    "name": "Chambord",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 7
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 98.01
+  },
+  {
+    "id": "spiritueux-hennessy",
+    "categoryId": "spiritueux",
+    "sub": "Liqueurs & Autres",
+    "name": "Hennessy",
+    "variants": [
+      {
+        "label": "Le verre",
+        "price": 10
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      },
+      {
+        "label": "Mule",
+        "delta": 3
+      },
+      {
+        "label": "Red Bull",
+        "delta": 2
+      }
+    ],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 98.02
+  },
+  {
+    "id": "spiritueux-cointreau-noir",
+    "categoryId": "spiritueux",
+    "sub": "Liqueurs & Autres",
+    "name": "Cointreau Noir",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 8
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      },
+      {
+        "label": "Mule",
+        "delta": 3
+      },
+      {
+        "label": "Red Bull",
+        "delta": 2
+      }
+    ],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 98.03
+  },
+  {
+    "id": "spiritueux-absolut-tabasco",
+    "categoryId": "spiritueux",
+    "sub": "Vodkas",
+    "name": "Absolut Tabasco",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 8
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      },
+      {
+        "label": "Mule",
+        "delta": 3
+      },
+      {
+        "label": "Red Bull",
+        "delta": 2
+      }
+    ],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 89.51
+  },
+  {
+    "id": "spiritueux-absolut-vanilia",
+    "categoryId": "spiritueux",
+    "sub": "Vodkas",
+    "name": "Absolut Vanilia",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 8
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      },
+      {
+        "label": "Mule",
+        "delta": 3
+      },
+      {
+        "label": "Red Bull",
+        "delta": 2
+      }
+    ],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 89.52
+  },
+  {
+    "id": "spiritueux-grey-goose",
+    "categoryId": "spiritueux",
+    "sub": "Vodkas",
+    "name": "Grey Goose",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 9
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      },
+      {
+        "label": "Mule",
+        "delta": 3
+      },
+      {
+        "label": "Red Bull",
+        "delta": 2
+      }
+    ],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 89.53
+  },
+  {
+    "id": "spiritueux-renaissance-the-menthe",
+    "categoryId": "spiritueux",
+    "sub": "Vodkas",
+    "name": "Renaissance Thé à la Menthe",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 9
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      },
+      {
+        "label": "Mule",
+        "delta": 3
+      },
+      {
+        "label": "Red Bull",
+        "delta": 2
+      }
+    ],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 89.54
+  },
+  {
+    "id": "spiritueux-zubrowka-czarna",
+    "categoryId": "spiritueux",
+    "sub": "Vodkas",
+    "name": "Żubrówka Czarna",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 9
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      },
+      {
+        "label": "Mule",
+        "delta": 3
+      },
+      {
+        "label": "Red Bull",
+        "delta": 2
+      }
+    ],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 89.55
+  },
+  {
+    "id": "spiritueux-ciroc-red-berry",
+    "categoryId": "spiritueux",
+    "sub": "Vodkas",
+    "name": "Cîroc Red Berry",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 10
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      },
+      {
+        "label": "Mule",
+        "delta": 3
+      },
+      {
+        "label": "Red Bull",
+        "delta": 2
+      }
+    ],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 89.56
+  },
+  {
+    "id": "spiritueux-martini-rosso",
+    "categoryId": "spiritueux",
+    "sub": "Apéritifs",
+    "name": "Martini Rosso",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 5
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 98.51
+  },
+  {
+    "id": "spiritueux-martini-bianco",
+    "categoryId": "spiritueux",
+    "sub": "Apéritifs",
+    "name": "Martini Bianco",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 5
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 98.52
+  },
+  {
+    "id": "spiritueux-suze",
+    "categoryId": "spiritueux",
+    "sub": "Apéritifs",
+    "name": "Suze",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 4
+      }
+    ],
+    "options": [
+      {
+        "label": "Diluant",
+        "delta": 1
+      },
+      {
+        "label": "Mule",
+        "delta": 3
+      },
+      {
+        "label": "Red Bull",
+        "delta": 2
+      }
+    ],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 98.53
+  },
+  {
+    "id": "spiritueux-dolin-dry",
+    "categoryId": "spiritueux",
+    "sub": "Apéritifs",
+    "name": "Dolin Vermouth Dry",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 5
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 98.54
+  },
+  {
+    "id": "spiritueux-del-professore-dry",
+    "categoryId": "spiritueux",
+    "sub": "Apéritifs",
+    "name": "Del Professore Vermouth Dry",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 6
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 98.55
+  },
+  {
+    "id": "spiritueux-limoncello",
+    "categoryId": "spiritueux",
+    "sub": "Apéritifs",
+    "name": "Limoncello",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 5
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 98.56
+  },
+  {
+    "id": "spiritueux-cachaca",
+    "categoryId": "spiritueux",
+    "sub": "Apéritifs",
+    "name": "Cachaça",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 6
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 98.57
+  },
+  {
+    "id": "spiritueux-italicus",
+    "categoryId": "spiritueux",
+    "sub": "Apéritifs",
+    "name": "Italicus",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 6
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 98.58
+  },
+  {
+    "id": "spiritueux-campari",
+    "categoryId": "spiritueux",
+    "sub": "Apéritifs",
+    "name": "Campari",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 6
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 98.59
+  },
+  {
+    "id": "spiritueux-aperol",
+    "categoryId": "spiritueux",
+    "sub": "Apéritifs",
+    "name": "Aperol",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 6
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 98.6
+  },
+  {
+    "id": "spiritueux-melonade",
+    "categoryId": "spiritueux",
+    "sub": "Apéritifs",
+    "name": "Melonade",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 6
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 98.61
+  },
+  {
+    "id": "spiritueux-fiorente",
+    "categoryId": "spiritueux",
+    "sub": "Apéritifs",
+    "name": "Fiorente",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 6
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 98.62
+  },
+  {
+    "id": "spiritueux-sarti-rosa",
+    "categoryId": "spiritueux",
+    "sub": "Apéritifs",
+    "name": "Sarti Rosa",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 6
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 98.63
+  },
+  {
+    "id": "spiritueux-disaronno",
+    "categoryId": "spiritueux",
+    "sub": "Liqueurs & Autres",
+    "name": "Disaronno",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 7
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 98.04
+  },
+  {
+    "id": "spiritueux-frangelico",
+    "categoryId": "spiritueux",
+    "sub": "Liqueurs & Autres",
+    "name": "Frangelico",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 7
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 98.05
+  },
+  {
+    "id": "spiritueux-fernet-branca",
+    "categoryId": "spiritueux",
+    "sub": "Liqueurs & Autres",
+    "name": "Fernet-Branca",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 7
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 98.06
+  },
+  {
+    "id": "spiritueux-pimm-s-n1",
+    "categoryId": "spiritueux",
+    "sub": "Liqueurs & Autres",
+    "name": "Pimm’s N°1",
+    "variants": [
+      {
+        "label": "4cl",
+        "price": 7
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 98.07
+  },
+  {
+    "id": "spiritueux-balvenie-164",
+    "categoryId": "spiritueux",
+    "sub": "",
+    "name": "Balvenie",
+    "variants": [
+      {
+        "label": "",
+        "price": 15
+      }
+    ],
+    "options": [],
+    "optionGroups": [],
+    "happyHour": false,
+    "desc": "",
+    "available": true,
+    "order": 164
   }
 ];
 

@@ -388,6 +388,56 @@ async function carteAlignee() {
   }
 }
 
+// ── 16 · Les bouteilles oubliées entrent au bar (24/11) ─────
+// 45 spiritueux et apéritifs de la liste du proprio, avec leurs prix, leur dose
+// et leurs options (diluant, mule, Red Bull), plus deux sous-familles neuves :
+// Vodkas et Apéritifs. Le Bumbu, ajouté au comptoir sans sous-famille, rejoint
+// les Rhums en 4 cl. Le Balvenie reste comme il est (choix du proprio).
+// Chaque bouteille se range après la dernière de sa sous-famille sur CET iPad :
+// les rangs du seed ne valent rien face à une carte retouchée au comptoir.
+const BOUTEILLES_AJOUTEES = [
+  'spiritueux-planteray-xo-20th', 'spiritueux-eminente-7-ans', 'spiritueux-bumbu-xo', 'spiritueux-trois-rivieres',
+  'spiritueux-havana-club-especial', 'spiritueux-havana-club-original', 'spiritueux-sailor-jerry-spiced',
+  'spiritueux-havana-club-7-ans', 'spiritueux-havana-club-spiced', 'spiritueux-kraken-roast-coffee', 'spiritueux-kraken',
+  'spiritueux-monkey-shoulder-fresh-monkey', 'spiritueux-monkey-shoulder-smokey-monkey',
+  'spiritueux-don-julio-reposado', 'spiritueux-codigo-1530-reposado',
+  'spiritueux-hendrick-s-orange-cacao', 'spiritueux-hendrick-s-sunspell', 'spiritueux-hendrick-s-amazonia', 'spiritueux-hendrick-s-oasium',
+  'spiritueux-chambord', 'spiritueux-hennessy', 'spiritueux-cointreau-noir',
+  'spiritueux-absolut-tabasco', 'spiritueux-absolut-vanilia', 'spiritueux-grey-goose', 'spiritueux-renaissance-the-menthe',
+  'spiritueux-zubrowka-czarna', 'spiritueux-ciroc-red-berry',
+  'spiritueux-martini-rosso', 'spiritueux-martini-bianco', 'spiritueux-suze', 'spiritueux-dolin-dry', 'spiritueux-del-professore-dry',
+  'spiritueux-limoncello', 'spiritueux-cachaca', 'spiritueux-italicus', 'spiritueux-campari', 'spiritueux-aperol',
+  'spiritueux-melonade', 'spiritueux-fiorente', 'spiritueux-sarti-rosa',
+  'spiritueux-disaronno', 'spiritueux-frangelico', 'spiritueux-fernet-branca', 'spiritueux-pimm-s-n1',
+];
+// Une sous-famille neuve se cale juste après sa voisine.
+const VOISINE = { 'Vodkas': 'Gins & Tonic', 'Apéritifs': 'Liqueurs & Autres' };
+
+async function bouteillesDuBar() {
+  const deja = new Set(state.products.map((p) => p.id));
+  const spiritueux = state.products.filter((p) => p.categoryId === 'spiritueux');
+  const dernier = (sub) => Math.max(0, ...spiritueux.filter((p) => (p.sub || '') === sub).map((p) => Number(p.order) || 0));
+  const rang = {};
+  const prochain = (sub) => {
+    if (rang[sub] == null) rang[sub] = VOISINE[sub] ? dernier(VOISINE[sub]) + 0.5 : dernier(sub);
+    rang[sub] = Math.round((rang[sub] + 0.01) * 100) / 100;
+    return rang[sub];
+  };
+
+  const ajouts = [];
+  // Le Bumbu passe le premier : il fait partie des Rhums avant que les neufs s'y rangent.
+  const bumbu = state.products.find((p) => p.id === 'spiritueux-bumbu-155');
+  if (bumbu && bumbu.sub !== 'Rhums') {
+    ajouts.push({ ...bumbu, sub: 'Rhums', variants: [{ label: '4cl', price: 10 }], order: prochain('Rhums') });
+  }
+  for (const id of BOUTEILLES_AJOUTEES) {
+    if (deja.has(id)) continue;
+    const neuve = PRODUCTS.find((x) => x.id === id);
+    if (neuve) ajouts.push({ ...neuve, order: prochain(neuve.sub) });
+  }
+  if (ajouts.length) await store.bulkPut('products', ajouts);
+}
+
 // Le dernier `rev` doit valoir CATALOG_REV : c'est le niveau qu'une base neuve
 // reçoit d'emblée, et ce qu'elle sauterait ici.
 const MIGRATIONS = [
@@ -406,6 +456,7 @@ const MIGRATIONS = [
   { rev: 13, run: recettesDeLHiver },
   { rev: 14, run: rangeLesCocktails },
   { rev: 15, run: carteAlignee },
+  { rev: 16, run: bouteillesDuBar },
 ].filter((m) => m.rev <= CATALOG_REV);
 
 // Applique ce qui manque. À appeler une fois la synchro tentée : avant, les
